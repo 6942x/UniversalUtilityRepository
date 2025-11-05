@@ -45,7 +45,7 @@ if game.PlaceId == 123638582555543 then
         DisableBuildWarnings = false,
         ConfigurationSaving = {
             Enabled = true,
-            FolderName = nil,
+            FolderName = "World",
             FileName = "NovaHub"
         },
         Discord = {
@@ -268,6 +268,7 @@ if game.PlaceId == 123638582555543 then
         local SelectedWorld = "Leaf Village"
         local TowerTargetWave = 50
         local TrialTargetWave = 30
+        local GamemodePriority = "Tower"
         
         local WorldSlider = GamemodesTab:CreateSlider({
             Name = "Select World",
@@ -303,6 +304,16 @@ if game.PlaceId == 123638582555543 then
             Flag = "TrialWave",
             Callback = function(Value)
                 TrialTargetWave = Value
+            end,
+        })
+        
+        local PriorityDropdown = GamemodesTab:CreateDropdown({
+            Name = "Gamemode Priority",
+            Options = {"Tower", "Trial"},
+            CurrentOption = "Tower",
+            Flag = "GamemodePriority",
+            Callback = function(Option)
+                GamemodePriority = Option
             end,
         })
         
@@ -378,6 +389,29 @@ if game.PlaceId == 123638582555543 then
             end
             return 0
         end
+
+        local function teleportToEnemies()
+            local targetEnemies = workspace.Client.Enemies
+            for _, enemy in pairs(targetEnemies:GetChildren()) do
+                if enemy:IsA("Model") and enemy:FindFirstChild("HumanoidRootPart") then
+                    local character = game.Players.LocalPlayer.Character
+                    if character and character:FindFirstChild("HumanoidRootPart") then
+                        character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame
+                        break
+                    end
+                end
+            end
+        end
+
+        local function isInTrial()
+            local currentWave = getCurrentWave("Trial")
+            return currentWave > 0
+        end
+
+        local function isInTower()
+            local currentWave = getCurrentWave("Tower")
+            return currentWave > 0
+        end
         
         local AutoTowerToggle = GamemodesTab:CreateToggle({
             Name = "Auto Tower",
@@ -397,6 +431,11 @@ if game.PlaceId == 123638582555543 then
                     
                     coroutine.wrap(function()
                         while _G.AutoTowerExecuting and AutoTowerEnabled do
+                            if GamemodePriority == "Trial" and isInTrial() then
+                                task.wait(10)
+                                continue
+                            end
+                            
                             local currentTime = os.date("*t")
                             local minute = currentTime.min
                             
@@ -408,7 +447,7 @@ if game.PlaceId == 123638582555543 then
                                 teleportToLobby()
                                 task.wait(2)
                                 startTower()
-                                task.wait(5)
+                                task.wait(30)
                                 
                                 local towerCompleted = false
                                 local startTime = tick()
@@ -423,7 +462,7 @@ if game.PlaceId == 123638582555543 then
                                     if tick() - startTime > 300 then
                                         towerCompleted = true
                                     end
-                                    
+
                                     task.wait(1)
                                 end
                                 
@@ -467,6 +506,11 @@ if game.PlaceId == 123638582555543 then
                     
                     coroutine.wrap(function()
                         while _G.AutoTrialExecuting and AutoTrialEnabled do
+                            if GamemodePriority == "Tower" and isInTower() then
+                                task.wait(10)
+                                continue
+                            end
+                            
                             local currentTime = os.date("*t")
                             local minute = currentTime.min
                             local second = currentTime.sec
@@ -475,7 +519,7 @@ if game.PlaceId == 123638582555543 then
                                 local currentSelectedWorld = SelectedWorld
                                 
                                 joinTrial()
-                                task.wait(5)
+                                task.wait(30)
                                 
                                 local trialCompleted = false
                                 local startTime = tick()
@@ -490,7 +534,7 @@ if game.PlaceId == 123638582555543 then
                                     if tick() - startTime > 600 then
                                         trialCompleted = true
                                     end
-                                    
+
                                     task.wait(1)
                                 end
                                 
