@@ -251,7 +251,7 @@ if game.PlaceId == 123638582555543 then
             Range = {0, 1},
             Increment = 0.001,
             Suffix = "seconds",
-            CurrentValue = 0.001,
+            CurrentValue = 0,
             Flag = "AutoClickSpeed",
             Callback = function(Value)
                 AutoClickSpeed = Value
