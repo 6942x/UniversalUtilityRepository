@@ -179,7 +179,7 @@ if game.PlaceId == 123638582555543 then
         end
 
         local AutoClickEnabled = false
-        local AutoClickSpeed = 0.001
+        local AutoClickSpeed = 0.000
         local AutoClickConnection
         local AutoClickStatusLabel = AutoFarmTab:CreateLabel("Auto Click: Stopped")
 
@@ -248,7 +248,7 @@ if game.PlaceId == 123638582555543 then
 
         local ClickSpeedSlider = AutoFarmTab:CreateSlider({
             Name = "Auto Click Speed",
-            Range = {0.001, 1},
+            Range = {0, 1},
             Increment = 0.001,
             Suffix = "seconds",
             CurrentValue = 0.001,
