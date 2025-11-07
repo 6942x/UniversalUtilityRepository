@@ -342,8 +342,6 @@ if game.PlaceId == 123638582555543 then
         local TowerTargetWave = 50
         local TrialTargetWave = 30
         local GamemodePriority = "Tower"
-        local AutoTimeChestEnabled = false
-        local TimeChestStatusLabel = GamemodesTab:CreateLabel("Time Chest: Stopped")
         
         local WorldSlider = GamemodesTab:CreateSlider({
             Name = "Select World",
@@ -684,89 +682,6 @@ if game.PlaceId == 123638582555543 then
                 end
             end,
         })
-
-        GamemodesTab:CreateSection("Auto Time Chest")
-        
-        local function pressEKey()
-            local virtualInput = game:GetService("VirtualInputManager")
-            virtualInput:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-            task.wait(0.1)
-            virtualInput:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-        end
-
-        local function collectTimeChest()
-            local timeChest = game.Workspace.Server.Chests.Time
-            if timeChest then
-                local character = game.Players.LocalPlayer.Character
-                if character and character:FindFirstChild("HumanoidRootPart") then
-                    local primaryPart = timeChest:FindFirstChild("PrimaryPart") or timeChest:FindFirstChild("Handle") or timeChest:FindFirstChildWhichIsA("BasePart")
-                    if primaryPart then
-                        character.HumanoidRootPart.CFrame = primaryPart.CFrame
-                    else
-                        character.HumanoidRootPart.CFrame = CFrame.new(timeChest:GetModelCFrame().Position + Vector3.new(0, 5, 0))
-                    end
-                    task.wait(1)
-                    
-                    for i = 1, 100 do
-                        pressEKey()
-                        task.wait(0.05)
-                    end
-                end
-            end
-        end
-
-        local function startAutoTimeChest()
-            if _G.AutoTimeChestExecuting then
-                _G.AutoTimeChestExecuting = false
-                task.wait(1)
-            end
-            
-            _G.AutoTimeChestExecuting = true
-            
-            coroutine.wrap(function()
-                while _G.AutoTimeChestExecuting and AutoTimeChestEnabled do
-                    TimeChestStatusLabel:Set("Time Chest: Collecting...")
-                    
-                    safeTeleportToLobby()
-                    task.wait(2)
-                    
-                    collectTimeChest()
-                    task.wait(2)
-                    
-                    safeTeleportToWorld()
-                    task.wait(2)
-                    
-                    TimeChestStatusLabel:Set("Time Chest: Waiting 1 hour")
-                    
-                    local waitTime = 3600
-                    local startWait = tick()
-                    
-                    while _G.AutoTimeChestExecuting and AutoTimeChestEnabled and (tick() - startWait) < waitTime do
-                        local remaining = waitTime - (tick() - startWait)
-                        TimeChestStatusLabel:Set("Time Chest: Waiting " .. math.floor(remaining) .. "s")
-                        task.wait(1)
-                    end
-                end
-                
-                TimeChestStatusLabel:Set("Time Chest: Stopped")
-            end)()
-        end
-
-        local AutoTimeChestToggle = GamemodesTab:CreateToggle({
-            Name = "Auto Time Chest",
-            CurrentValue = false,
-            Flag = "AutoTimeChestToggle",
-            Callback = function(Value)
-                AutoTimeChestEnabled = Value
-                
-                if Value then
-                    startAutoTimeChest()
-                else
-                    _G.AutoTimeChestExecuting = false
-                    TimeChestStatusLabel:Set("Time Chest: Stopped")
-                end
-            end,
-        })
         
         GamemodesTab:CreateSection("Manual Controls")
         
@@ -787,33 +702,18 @@ if game.PlaceId == 123638582555543 then
                 joinTrial()
             end,
         })
-
-        GamemodesTab:CreateButton({
-            Name = "Collect Time Chest Now",
-            Callback = function()
-                safeTeleportToLobby()
-                task.wait(2)
-                collectTimeChest()
-                task.wait(2)
-                safeTeleportToWorld()
-            end,
-        })
         
         GamemodesTab:CreateButton({
             Name = "Emergency Stop All",
             Callback = function()
                 _G.AutoTowerExecuting = false
                 _G.AutoTrialExecuting = false
-                _G.AutoTimeChestExecuting = false
                 AutoTowerEnabled = false
                 AutoTrialEnabled = false
-                AutoTimeChestEnabled = false
                 AutoTowerToggle:Set(false)
                 AutoTrialToggle:Set(false)
-                AutoTimeChestToggle:Set(false)
                 TowerStatusLabel:Set("Tower Status: Stopped")
                 TrialStatusLabel:Set("Trial Status: Stopped")
-                TimeChestStatusLabel:Set("Time Chest: Stopped")
             end,
         })
     end
