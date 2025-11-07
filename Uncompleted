@@ -83,12 +83,20 @@ if game.PlaceId == 123638582555543 then
 
         MainTab:CreateLabel("Script Name: Nova Hub")
         MainTab:CreateLabel("Developer: Nova")
-        MainTab:CreateLabel("Version: 2.0")
+        MainTab:CreateLabel("Version: 2.1")
         MainTab:CreateLabel("Description: Advanced farming utility for efficient gameplay")
     end
 
     local function CreateAutoFarmTab()
         AutoFarmTab:CreateSection("Auto Farm Settings")
+        
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local LocalPlayer = Players.LocalPlayer
+
+        local SelectedWorld = "Leaf Village"
+        local AutoFarmEnabled = false
+        local AutoFarmConnection
         
         if not _G.TeleportData then
             _G.TeleportData = {
@@ -96,17 +104,84 @@ if game.PlaceId == 123638582555543 then
             }
         end
 
+        local CustomTargetsLabel = AutoFarmTab:CreateLabel("Custom Targets: " .. table.concat(_G.TeleportData.enemyNames, ", "))
+        local ActiveEnemiesLabel = AutoFarmTab:CreateLabel("Active Enemies: 0")
+        local FarmStatusLabel = AutoFarmTab:CreateLabel("Farm Status: Stopped")
+
         local MapEnemies = {
             ["Leaf Village"] = {"Zabuze", "Sasore", "Itache", "Paen", "Madare"},
             ["Dragon Town"] = {"Nappe", "Raditis", "Android", "Frieze", "Boo"},
             ["Slayer Village"] = {"Rue", "Dake", "Akaze", "Kokoshibe", "Muzen"}
         }
 
-        local Players = game:GetService("Players")
-        local RunService = game:GetService("RunService")
-        local LocalPlayer = Players.LocalPlayer
+        local function getEnemyCounts()
+            local enemyCounts = {}
+            local targetEnemies = workspace.Client.Enemies
+            
+            for _, enemy in pairs(targetEnemies:GetChildren()) do
+                if enemy:IsA("Model") then
+                    local enemyName = enemy.Name
+                    enemyCounts[enemyName] = (enemyCounts[enemyName] or 0) + 1
+                end
+            end
+            
+            return enemyCounts
+        end
 
-        local SelectedWorld = "Leaf Village"
+        local function updateEnemyDisplay()
+            local enemyCounts = getEnemyCounts()
+            local displayText = ""
+            local totalEnemies = 0
+            
+            for enemyName, count in pairs(enemyCounts) do
+                if displayText ~= "" then
+                    displayText = displayText .. ", "
+                end
+                displayText = displayText .. enemyName .. " (x" .. count .. ")"
+                totalEnemies = totalEnemies + count
+            end
+            
+            if displayText == "" then
+                displayText = "None"
+            end
+            
+            ActiveEnemiesLabel:Set("Active Enemies: " .. totalEnemies .. " | " .. displayText)
+            
+            return enemyCounts
+        end
+
+        local function updateCustomTargetsDisplay()
+            CustomTargetsLabel:Set("Custom Targets: " .. table.concat(_G.TeleportData.enemyNames, ", "))
+        end
+
+        local function addEnemy(enemyName)
+            if enemyName ~= "" then
+                table.insert(_G.TeleportData.enemyNames, enemyName)
+                updateCustomTargetsDisplay()
+            end
+        end
+
+        local function removeEnemy(enemyName)
+            for i, name in ipairs(_G.TeleportData.enemyNames) do
+                if name == enemyName then
+                    table.remove(_G.TeleportData.enemyNames, i)
+                    updateCustomTargetsDisplay()
+                    return
+                end
+            end
+        end
+
+        local function removeLastEnemy()
+            if #_G.TeleportData.enemyNames > 0 then
+                table.remove(_G.TeleportData.enemyNames)
+                updateCustomTargetsDisplay()
+            end
+        end
+
+        local function clearAllEnemies()
+            _G.TeleportData.enemyNames = {}
+            updateCustomTargetsDisplay()
+        end
 
         local function teleportToMap(mapName)
             local args = {
@@ -124,25 +199,6 @@ if game.PlaceId == 123638582555543 then
                 local character = game.Players.LocalPlayer.Character
                 if character and character:FindFirstChild("HumanoidRootPart") then
                     character.HumanoidRootPart.CFrame = rootPart.CFrame
-                end
-            end
-        end
-
-        local function loadMapEnemies(mapName)
-            if MapEnemies[mapName] then
-                _G.TeleportData.enemyNames = MapEnemies[mapName]
-            end
-        end
-
-        local function addEnemy(enemyName)
-            table.insert(_G.TeleportData.enemyNames, enemyName)
-        end
-
-        local function removeEnemy(enemyName)
-            for i, name in ipairs(_G.TeleportData.enemyNames) do
-                if name == enemyName then
-                    table.remove(_G.TeleportData.enemyNames, i)
-                    return
                 end
             end
         end
@@ -170,26 +226,26 @@ if game.PlaceId == 123638582555543 then
             end
         end
 
-        local AutoTeleportEnabled = false
-        local AutoTeleportConnection
-        local AutoTeleportStatusLabel = AutoFarmTab:CreateLabel("Auto Teleport: Stopped")
-
-        local function toggleAutoTeleport()
-            if AutoTeleportEnabled then
-                AutoTeleportEnabled = false
-                if AutoTeleportConnection then
-                    AutoTeleportConnection:Disconnect()
-                    AutoTeleportConnection = nil
+        local function startAutoFarm()
+            if AutoFarmConnection then
+                AutoFarmConnection:Disconnect()
+            end
+            
+            AutoFarmConnection = RunService.Heartbeat:Connect(function()
+                if not AutoFarmEnabled then return end
+                
+                for _, enemyName in pairs(_G.TeleportData.enemyNames) do
+                    if not AutoFarmEnabled then break end
+                    teleportToEnemy(enemyName)
+                    task.wait(0.1)
                 end
-                AutoTeleportStatusLabel:Set("Auto Teleport: Stopped")
-            else
-                AutoTeleportEnabled = true
-                AutoTeleportConnection = RunService.Heartbeat:Connect(function()
-                    for _, enemyName in pairs(_G.TeleportData.enemyNames) do
-                        teleportToEnemy(enemyName)
-                    end
-                end)
-                AutoTeleportStatusLabel:Set("Auto Teleport: Running")
+            end)
+        end
+
+        local function stopAutoFarm()
+            if AutoFarmConnection then
+                AutoFarmConnection:Disconnect()
+                AutoFarmConnection = nil
             end
         end
 
@@ -206,60 +262,69 @@ if game.PlaceId == 123638582555543 then
                 teleportToMap(SelectedWorld)
                 task.wait(2)
                 teleportToWorldRoot(SelectedWorld)
-                loadMapEnemies(SelectedWorld)
+                
+                if MapEnemies[SelectedWorld] then
+                    _G.TeleportData.enemyNames = MapEnemies[SelectedWorld]
+                    updateCustomTargetsDisplay()
+                end
             end,
         })
 
         AutoFarmTab:CreateToggle({
-            Name = "Auto Teleport to Enemies",
+            Name = "Auto Farm Enemies",
             CurrentValue = false,
-            Flag = "AutoTeleportToggle",
+            Flag = "AutoFarmToggle",
             Callback = function(Value)
+                AutoFarmEnabled = Value
+                
                 if Value then
-                    toggleAutoTeleport()
+                    FarmStatusLabel:Set("Farm Status: Running")
+                    startAutoFarm()
                 else
-                    if AutoTeleportEnabled then
-                        toggleAutoTeleport()
-                    end
+                    FarmStatusLabel:Set("Farm Status: Stopped")
+                    stopAutoFarm()
                 end
             end,
         })
+
+        AutoFarmTab:CreateSection("Enemy Management")
 
         local EnemyInput = AutoFarmTab:CreateInput({
             Name = "Add Enemy",
             PlaceholderText = "Enter NPC Name",
             RemoveTextAfterFocusLost = false,
             Callback = function(Text)
-                if Text ~= "" then
-                    addEnemy(Text)
-                end
+                addEnemy(Text)
             end,
         })
 
         AutoFarmTab:CreateButton({
             Name = "Remove Last Enemy",
             Callback = function()
-                if #_G.TeleportData.enemyNames > 0 then
-                    local lastEnemy = _G.TeleportData.enemyNames[#_G.TeleportData.enemyNames]
-                    removeEnemy(lastEnemy)
-                end
+                removeLastEnemy()
             end,
         })
 
         AutoFarmTab:CreateButton({
             Name = "Clear All Enemies",
             Callback = function()
-                _G.TeleportData.enemyNames = {}
+                clearAllEnemies()
             end,
         })
 
-        local CurrentEnemiesLabel = AutoFarmTab:CreateLabel("Current Targets: " .. table.concat(_G.TeleportData.enemyNames, ", "))
+        AutoFarmTab:CreateButton({
+            Name = "Refresh Enemy List",
+            Callback = function()
+                updateEnemyDisplay()
+            end,
+        })
 
-        local function updateCurrentEnemiesLabel()
-            CurrentEnemiesLabel:Set("Current Targets: " .. table.concat(_G.TeleportData.enemyNames, ", "))
-        end
+        RunService.Heartbeat:Connect(function()
+            updateEnemyDisplay()
+        end)
 
-        game:GetService("RunService").Heartbeat:Connect(updateCurrentEnemiesLabel)
+        updateEnemyDisplay()
+        updateCustomTargetsDisplay()
     end
 
     local function CreateGamemodesTab()
@@ -425,7 +490,25 @@ if game.PlaceId == 123638582555543 then
         local function isTrialTime()
             local currentTime = os.date("*t")
             local minute = currentTime.min
-            return minute == 30 or minute == 0
+            return minute >= 30 or minute == 0
+        end
+
+        local function safeTeleportToWorld()
+            local success = pcall(function()
+                teleportToMap(SelectedWorld)
+                task.wait(2)
+                teleportToWorldRoot(SelectedWorld)
+                task.wait(2)
+            end)
+            return success
+        end
+
+        local function safeTeleportToLobby()
+            local success = pcall(function()
+                teleportToLobby()
+                task.wait(2)
+            end)
+            return success
         end
         
         local AutoTowerToggle = GamemodesTab:CreateToggle({
@@ -439,7 +522,7 @@ if game.PlaceId == 123638582555543 then
                 if Value then
                     if _G.AutoTowerExecuting then
                         _G.AutoTowerExecuting = false
-                        task.wait(0.1)
+                        task.wait(1)
                     end
                     
                     _G.AutoTowerExecuting = true
@@ -449,32 +532,27 @@ if game.PlaceId == 123638582555543 then
                             if GamemodePriority == "Trial" and isTrialTime() then
                                 if isInTower() then
                                     leaveTower()
-                                    task.wait(2)
-                                    teleportToMap(SelectedWorld)
-                                    task.wait(2)
-                                    teleportToWorldRoot(SelectedWorld)
-                                    task.wait(2)
+                                    task.wait(3)
                                 end
-                                teleportToLobby()
-                                task.wait(2)
-                                joinTrial()
-                                task.wait(10)
+                                if not isInTrial() then
+                                    safeTeleportToLobby()
+                                    task.wait(2)
+                                    joinTrial()
+                                    task.wait(5)
+                                end
+                                task.wait(5)
                             else
                                 if isInTrial() then
                                     leaveTrial()
-                                    task.wait(2)
-                                    teleportToMap(SelectedWorld)
-                                    task.wait(2)
-                                    teleportToWorldRoot(SelectedWorld)
-                                    task.wait(2)
+                                    task.wait(3)
                                 end
                                 
-                                local currentSelectedWorld = SelectedWorld
-                                
-                                teleportToLobby()
-                                task.wait(2)
-                                startTower()
-                                task.wait(2.5)
+                                if not isInTower() then
+                                    safeTeleportToLobby()
+                                    task.wait(2)
+                                    startTower()
+                                    task.wait(3)
+                                end
                                 
                                 local towerCompleted = false
                                 local startTime = tick()
@@ -496,18 +574,17 @@ if game.PlaceId == 123638582555543 then
                                         lastTeleportTime = tick()
                                     end
                                     
-                                    task.wait(0.1)
+                                    task.wait(0.5)
                                 end
                                 
                                 if _G.AutoTowerExecuting and AutoTowerEnabled then
                                     leaveTower()
-                                    task.wait(0.5)
-                                    teleportToMap(currentSelectedWorld)
                                     task.wait(2)
-                                    teleportToWorldRoot(currentSelectedWorld)
+                                    safeTeleportToWorld()
                                     task.wait(5)
                                 end
                             end
+                            task.wait(1)
                         end
                     end)()
                 else
@@ -532,7 +609,7 @@ if game.PlaceId == 123638582555543 then
                 if Value then
                     if _G.AutoTrialExecuting then
                         _G.AutoTrialExecuting = false
-                        task.wait(0.1)
+                        task.wait(1)
                     end
                     
                     _G.AutoTrialExecuting = true
@@ -547,19 +624,15 @@ if game.PlaceId == 123638582555543 then
                             if isTrialTime() then
                                 if isInTower() then
                                     leaveTower()
-                                    task.wait(2)
-                                    teleportToMap(SelectedWorld)
-                                    task.wait(2)
-                                    teleportToWorldRoot(SelectedWorld)
-                                    task.wait(2)
+                                    task.wait(3)
                                 end
                                 
-                                local currentSelectedWorld = SelectedWorld
-                                
-                                teleportToLobby()
-                                task.wait(2)
-                                joinTrial()
-                                task.wait(2.5)
+                                if not isInTrial() then
+                                    safeTeleportToLobby()
+                                    task.wait(2)
+                                    joinTrial()
+                                    task.wait(3)
+                                end
                                 
                                 local trialCompleted = false
                                 local startTime = tick()
@@ -581,17 +654,17 @@ if game.PlaceId == 123638582555543 then
                                         lastTeleportTime = tick()
                                     end
                                     
-                                    task.wait(0.1)
+                                    task.wait(0.5)
                                 end
                                 
                                 if _G.AutoTrialExecuting and AutoTrialEnabled then
                                     leaveTrial()
                                     task.wait(2)
-                                    teleportToMap(currentSelectedWorld)
-                                    task.wait(2)
-                                    teleportToWorldRoot(currentSelectedWorld)
+                                    safeTeleportToWorld()
                                     task.wait(5)
                                 end
+                            else
+                                task.wait(10)
                             end
                             task.wait(1)
                         end
@@ -607,7 +680,7 @@ if game.PlaceId == 123638582555543 then
         GamemodesTab:CreateButton({
             Name = "Manual Start Tower",
             Callback = function()
-                teleportToLobby()
+                safeTeleportToLobby()
                 task.wait(2)
                 startTower()
             end,
@@ -616,7 +689,7 @@ if game.PlaceId == 123638582555543 then
         GamemodesTab:CreateButton({
             Name = "Manual Join Trial",
             Callback = function()
-                teleportToLobby()
+                safeTeleportToLobby()
                 task.wait(2)
                 joinTrial()
             end,
