@@ -44,7 +44,17 @@ end
 
 local function CreateGradient(instance, colors, rotation)
     local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new(colors)
+    
+    if #colors == 2 then
+        gradient.Color = ColorSequence.new(colors[1], colors[2])
+    else
+        local keypoints = {}
+        for i, color in ipairs(colors) do
+            table.insert(keypoints, ColorSequenceKeypoint.new((i - 1) / (#colors - 1), color))
+        end
+        gradient.Color = ColorSequence.new(keypoints)
+    end
+    
     gradient.Rotation = rotation or 0
     gradient.Parent = instance
     return gradient
