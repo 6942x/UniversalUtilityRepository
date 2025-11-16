@@ -6,7 +6,6 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 
--- Make NovaHub global immediately
 getgenv().NovaHub = NovaHub
 
 NovaHub.Config = {
@@ -30,7 +29,6 @@ NovaHub.Enabled = true
 NovaHub.ConfigFile = "NovaHubConfig.json"
 NovaHub.SavedConfig = {}
 
--- Utility Functions
 local function CreateRoundCorners(instance, cornerSize)
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, cornerSize)
@@ -85,7 +83,7 @@ local function CreateGlow(parent, color, size, offset)
     local pulseAnim = TweenService:Create(
         glow,
         TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        {ImageTransparency = 0.6}
+        {ImageTransparency = 0.7}
     )
     pulseAnim:Play()
     
@@ -120,7 +118,6 @@ local function CreatePadding(parent, left, right, top, bottom)
     return padding
 end
 
--- Loading Screen Function
 function NovaHub:CreateLoadingScreen()
     local loadingGui = Instance.new("ScreenGui")
     loadingGui.Name = "NovaHubLoading"
@@ -130,23 +127,23 @@ function NovaHub:CreateLoadingScreen()
     local loadingFrame = Instance.new("Frame")
     loadingFrame.Name = "LoadingFrame"
     loadingFrame.BackgroundColor3 = self.Config.Theme.Background
-    loadingFrame.Size = UDim2.new(0, 400, 0, 200)
-    loadingFrame.Position = UDim2.new(0.5, -200, 0.5, -100)
+    loadingFrame.Size = UDim2.new(0, 420, 0, 220)
+    loadingFrame.Position = UDim2.new(0.5, -210, 0.5, -110)
     loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     
-    CreateRoundCorners(loadingFrame, 14)
-    CreateStroke(loadingFrame, self.Config.Theme.Primary, 2.5)
-    CreateGlow(loadingFrame, self.Config.Theme.Primary, 30, 15)
+    CreateRoundCorners(loadingFrame, 16)
+    CreateStroke(loadingFrame, self.Config.Theme.Primary, 3)
+    CreateGlow(loadingFrame, self.Config.Theme.Primary, 40, 20)
     
     local loadingLabel = Instance.new("TextLabel")
     loadingLabel.Name = "LoadingLabel"
     loadingLabel.BackgroundTransparency = 1
-    loadingLabel.Size = UDim2.new(1, 0, 0, 50)
-    loadingLabel.Position = UDim2.new(0, 0, 0.3, 0)
+    loadingLabel.Size = UDim2.new(1, 0, 0, 60)
+    loadingLabel.Position = UDim2.new(0, 0, 0.25, 0)
     loadingLabel.Font = Enum.Font.GothamBold
-    loadingLabel.Text = "🌟 Nova Hub"
+    loadingLabel.Text = "✨ Nova Hub"
     loadingLabel.TextColor3 = self.Config.Theme.Text
-    loadingLabel.TextSize = 24
+    loadingLabel.TextSize = 28
     loadingLabel.Parent = loadingFrame
     
     CreateGradient(loadingLabel, {self.Config.Theme.Primary, self.Config.Theme.Secondary}, 45)
@@ -154,22 +151,22 @@ function NovaHub:CreateLoadingScreen()
     local statusLabel = Instance.new("TextLabel")
     statusLabel.Name = "StatusLabel"
     statusLabel.BackgroundTransparency = 1
-    statusLabel.Size = UDim2.new(1, 0, 0, 30)
+    statusLabel.Size = UDim2.new(1, 0, 0, 35)
     statusLabel.Position = UDim2.new(0, 0, 0.5, 0)
     statusLabel.Font = Enum.Font.Gotham
-    statusLabel.Text = "Loading..."
+    statusLabel.Text = "Carregando..."
     statusLabel.TextColor3 = self.Config.Theme.Text
-    statusLabel.TextSize = 16
+    statusLabel.TextSize = 17
     statusLabel.Parent = loadingFrame
     
     local progressBar = Instance.new("Frame")
     progressBar.Name = "ProgressBar"
     progressBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    progressBar.Size = UDim2.new(0.8, 0, 0, 8)
-    progressBar.Position = UDim2.new(0.1, 0, 0.7, 0)
+    progressBar.Size = UDim2.new(0.8, 0, 0, 10)
+    progressBar.Position = UDim2.new(0.1, 0, 0.72, 0)
     progressBar.Parent = loadingFrame
     
-    CreateRoundCorners(progressBar, 4)
+    CreateRoundCorners(progressBar, 5)
     
     local progressFill = Instance.new("Frame")
     progressFill.Name = "ProgressFill"
@@ -177,7 +174,7 @@ function NovaHub:CreateLoadingScreen()
     progressFill.Size = UDim2.new(0, 0, 1, 0)
     progressFill.Parent = progressBar
     
-    CreateRoundCorners(progressFill, 4)
+    CreateRoundCorners(progressFill, 5)
     CreateGradient(progressFill, {self.Config.Theme.Primary, self.Config.Theme.Secondary}, 90)
     
     loadingFrame.Parent = loadingGui
@@ -186,7 +183,7 @@ function NovaHub:CreateLoadingScreen()
         statusLabel.Text = text
         TweenService:Create(
             progressFill,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+            TweenInfo.new(0.4, Enum.EasingStyle.Quad),
             {Size = UDim2.new(progress, 0, 1, 0)}
         ):Play()
     end
@@ -194,7 +191,6 @@ function NovaHub:CreateLoadingScreen()
     return loadingGui, UpdateProgress
 end
 
--- Core Functions
 function NovaHub:JoinDiscord(inviteCode)
     local success, err = pcall(function()
         local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request)
@@ -219,13 +215,13 @@ function NovaHub:JoinDiscord(inviteCode)
     end)
     
     if success then
-        self:Notify("Discord", "Discord invite sent!", 3, "Success")
+        self:Notify("Discord", "Convite enviado!", 3, "Success")
     else
         if setclipboard then
             setclipboard("https://discord.gg/" .. inviteCode)
-            self:Notify("Discord", "Invite link copied to clipboard!", 3, "Info")
+            self:Notify("Discord", "Link copiado para área de transferência!", 3, "Info")
         else
-            self:Notify("Discord", "Join: discord.gg/" .. inviteCode, 5, "Info")
+            self:Notify("Discord", "Entre em: discord.gg/" .. inviteCode, 5, "Info")
         end
     end
 end
@@ -296,13 +292,13 @@ function NovaHub:Notify(title, content, duration, notificationType)
     local notification = Instance.new("Frame")
     notification.Name = "Notification"
     notification.BackgroundColor3 = self.Config.Theme.Background
-    notification.Size = UDim2.new(0, 320, 0, 100)
+    notification.Size = UDim2.new(0, 340, 0, 110)
     notification.Position = UDim2.new(1, 20, 0.1, 0)
     notification.AnchorPoint = Vector2.new(1, 0)
     
-    CreateRoundCorners(notification, 10)
-    CreateStroke(notification, self.Config.Theme.Primary, 2)
-    CreateGlow(notification, self.Config.Theme.Primary, 30, 15)
+    CreateRoundCorners(notification, 12)
+    CreateStroke(notification, self.Config.Theme.Primary, 2.5)
+    CreateGlow(notification, self.Config.Theme.Primary, 35, 17)
     
     local iconColor = self.Config.Theme.Primary
     if notificationType == "Success" then iconColor = self.Config.Theme.Success
@@ -312,33 +308,33 @@ function NovaHub:Notify(title, content, duration, notificationType)
     local iconFrame = Instance.new("Frame")
     iconFrame.Name = "IconFrame"
     iconFrame.BackgroundColor3 = iconColor
-    iconFrame.Size = UDim2.new(0, 4, 1, 0)
+    iconFrame.Size = UDim2.new(0, 5, 1, 0)
     iconFrame.Position = UDim2.new(0, 0, 0, 0)
     iconFrame.Parent = notification
     
-    CreateRoundCorners(iconFrame, 10)
+    CreateRoundCorners(iconFrame, 12)
     
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "Title"
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Position = UDim2.new(0, 20, 0, 10)
-    titleLabel.Size = UDim2.new(1, -40, 0, 25)
+    titleLabel.Position = UDim2.new(0, 25, 0, 12)
+    titleLabel.Size = UDim2.new(1, -45, 0, 28)
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.Text = title
     titleLabel.TextColor3 = self.Config.Theme.Text
-    titleLabel.TextSize = 16
+    titleLabel.TextSize = 17
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = notification
     
     local contentLabel = Instance.new("TextLabel")
     contentLabel.Name = "Content"
     contentLabel.BackgroundTransparency = 1
-    contentLabel.Position = UDim2.new(0, 20, 0, 40)
-    contentLabel.Size = UDim2.new(1, -40, 1, -55)
+    contentLabel.Position = UDim2.new(0, 25, 0, 45)
+    contentLabel.Size = UDim2.new(1, -45, 1, -60)
     contentLabel.Font = Enum.Font.Gotham
     contentLabel.Text = content
     contentLabel.TextColor3 = self.Config.Theme.Text
-    contentLabel.TextSize = 14
+    contentLabel.TextSize = 15
     contentLabel.TextWrapped = true
     contentLabel.TextXAlignment = Enum.TextXAlignment.Left
     contentLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -347,8 +343,8 @@ function NovaHub:Notify(title, content, duration, notificationType)
     local progressBar = Instance.new("Frame")
     progressBar.Name = "ProgressBar"
     progressBar.BackgroundColor3 = iconColor
-    progressBar.Size = UDim2.new(1, 0, 0, 3)
-    progressBar.Position = UDim2.new(0, 0, 1, -3)
+    progressBar.Size = UDim2.new(1, 0, 0, 4)
+    progressBar.Position = UDim2.new(0, 0, 1, -4)
     progressBar.Parent = notification
     
     CreateRoundCorners(progressBar, 2)
@@ -357,7 +353,7 @@ function NovaHub:Notify(title, content, duration, notificationType)
     
     local slideIn = TweenService:Create(
         notification,
-        TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
         {Position = UDim2.new(1, -15, 0.1, 0)}
     )
     slideIn:Play()
@@ -365,14 +361,14 @@ function NovaHub:Notify(title, content, duration, notificationType)
     local progressTween = TweenService:Create(
         progressBar,
         TweenInfo.new(duration, Enum.EasingStyle.Linear),
-        {Size = UDim2.new(0, 0, 0, 3)}
+        {Size = UDim2.new(0, 0, 0, 4)}
     )
     progressTween:Play()
     
     delay(duration, function()
         local slideOut = TweenService:Create(
             notification,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
             {Position = UDim2.new(1, 20, 0.1, 0)}
         )
         slideOut:Play()
@@ -386,16 +382,15 @@ end
 function NovaHub:CreateWindow(config)
     config = config or {}
     
-    -- Create loading screen
     local loadingGui, UpdateProgress = self:CreateLoadingScreen()
-    UpdateProgress(0.1, "Initializing...")
+    UpdateProgress(0.1, "Inicializando...")
     
     if config.DiscordInvite then
-        UpdateProgress(0.2, "Joining Discord...")
+        UpdateProgress(0.2, "Conectando ao Discord...")
         self:JoinDiscord(config.DiscordInvite)
     end
     
-    UpdateProgress(0.3, "Creating interface...")
+    UpdateProgress(0.3, "Criando interface...")
     
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "NovaHub"
@@ -407,26 +402,26 @@ function NovaHub:CreateWindow(config)
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
     mainFrame.BackgroundColor3 = self.Config.Theme.Background
-    mainFrame.Size = UDim2.new(0, 650, 0, 480)
-    mainFrame.Position = UDim2.new(0.5, -325, 0.5, -240)
+    mainFrame.Size = UDim2.new(0, 680, 0, 500)
+    mainFrame.Position = UDim2.new(0.5, -340, 0.5, -250)
     mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     
-    CreateRoundCorners(mainFrame, 14)
-    CreateStroke(mainFrame, self.Config.Theme.Primary, 2.5)
-    CreateGlow(mainFrame, self.Config.Theme.Primary, 50, 25)
+    CreateRoundCorners(mainFrame, 16)
+    CreateStroke(mainFrame, self.Config.Theme.Primary, 3)
+    CreateGlow(mainFrame, self.Config.Theme.Primary, 60, 30)
     
-    UpdateProgress(0.4, "Creating top bar...")
+    UpdateProgress(0.4, "Criando barra superior...")
     
     local topBar = Instance.new("Frame")
     topBar.Name = "TopBar"
     topBar.BackgroundColor3 = self.Config.Theme.Topbar
-    topBar.Size = UDim2.new(1, 0, 0, 45)
+    topBar.Size = UDim2.new(1, 0, 0, 50)
     topBar.Parent = mainFrame
     
-    CreateRoundCorners(topBar, 14)
+    CreateRoundCorners(topBar, 16)
     CreateGradient(topBar, {self.Config.Theme.Topbar, self.Config.Theme.Background}, 180)
     
-    local topBarStroke = CreateStroke(topBar, self.Config.Theme.Primary, 2)
+    local topBarStroke = CreateStroke(topBar, self.Config.Theme.Primary, 2.5)
     topBarStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     
     local titleContainer = Instance.new("Frame")
@@ -435,7 +430,7 @@ function NovaHub:CreateWindow(config)
     titleContainer.Size = UDim2.new(0.6, 0, 1, 0)
     titleContainer.Parent = topBar
     
-    CreatePadding(titleContainer, 20, 0, 0, 0)
+    CreatePadding(titleContainer, 25, 0, 0, 0)
     
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "Title"
@@ -444,7 +439,7 @@ function NovaHub:CreateWindow(config)
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.Text = config.Name or "Nova Hub"
     titleLabel.TextColor3 = self.Config.Theme.Text
-    titleLabel.TextSize = 20
+    titleLabel.TextSize = 22
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = titleContainer
     
@@ -453,26 +448,26 @@ function NovaHub:CreateWindow(config)
     local buttonContainer = Instance.new("Frame")
     buttonContainer.Name = "ButtonContainer"
     buttonContainer.BackgroundTransparency = 1
-    buttonContainer.Size = UDim2.new(0, 70, 0, 30)
-    buttonContainer.Position = UDim2.new(1, -80, 0.5, -15)
+    buttonContainer.Size = UDim2.new(0, 75, 0, 32)
+    buttonContainer.Position = UDim2.new(1, -85, 0.5, -16)
     buttonContainer.Parent = topBar
     
     local buttonLayout = Instance.new("UIListLayout")
     buttonLayout.FillDirection = Enum.FillDirection.Horizontal
-    buttonLayout.Padding = UDim.new(0, 8)
+    buttonLayout.Padding = UDim.new(0, 10)
     buttonLayout.Parent = buttonContainer
     
     local minimizeButton = Instance.new("TextButton")
     minimizeButton.Name = "MinimizeButton"
     minimizeButton.BackgroundColor3 = self.Config.Theme.Warning
-    minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+    minimizeButton.Size = UDim2.new(0, 32, 0, 32)
     minimizeButton.Font = Enum.Font.GothamBold
     minimizeButton.Text = "_"
     minimizeButton.TextColor3 = self.Config.Theme.Text
-    minimizeButton.TextSize = 16
+    minimizeButton.TextSize = 18
     minimizeButton.AutoButtonColor = false
     
-    CreateRoundCorners(minimizeButton, 8)
+    CreateRoundCorners(minimizeButton, 9)
     AnimateHover(minimizeButton, self.Config.Theme.Secondary, self.Config.Theme.Warning)
     
     minimizeButton.MouseButton1Click:Connect(function()
@@ -484,20 +479,20 @@ function NovaHub:CreateWindow(config)
     local closeButton = Instance.new("TextButton")
     closeButton.Name = "CloseButton"
     closeButton.BackgroundColor3 = self.Config.Theme.Error
-    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Size = UDim2.new(0, 32, 0, 32)
     closeButton.Font = Enum.Font.GothamBold
     closeButton.Text = "×"
     closeButton.TextColor3 = self.Config.Theme.Text
-    closeButton.TextSize = 20
+    closeButton.TextSize = 22
     closeButton.AutoButtonColor = false
     
-    CreateRoundCorners(closeButton, 8)
+    CreateRoundCorners(closeButton, 9)
     AnimateHover(closeButton, Color3.fromRGB(255, 50, 50), self.Config.Theme.Error)
     
     closeButton.MouseButton1Click:Connect(function()
         local closeTween = TweenService:Create(
             mainFrame,
-            TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+            TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
             {Size = UDim2.new(0, 0, 0, 0)}
         )
         closeTween:Play()
@@ -509,37 +504,36 @@ function NovaHub:CreateWindow(config)
     
     closeButton.Parent = buttonContainer
     
-    UpdateProgress(0.6, "Creating tabs...")
+    UpdateProgress(0.6, "Criando abas...")
     
     local tabButtonsContainer = Instance.new("Frame")
     tabButtonsContainer.Name = "TabButtons"
     tabButtonsContainer.BackgroundColor3 = self.Config.Theme.Topbar
-    tabButtonsContainer.Size = UDim2.new(1, 0, 0, 55)
-    tabButtonsContainer.Position = UDim2.new(0, 0, 0, 45)
+    tabButtonsContainer.Size = UDim2.new(1, 0, 0, 60)
+    tabButtonsContainer.Position = UDim2.new(0, 0, 0, 50)
     tabButtonsContainer.Parent = mainFrame
     
-    CreatePadding(tabButtonsContainer, 15, 15, 10, 10)
+    CreatePadding(tabButtonsContainer, 18, 18, 12, 12)
     
     local tabButtonsList = Instance.new("UIListLayout")
     tabButtonsList.FillDirection = Enum.FillDirection.Horizontal
-    tabButtonsList.Padding = UDim.new(0, 8)
+    tabButtonsList.Padding = UDim.new(0, 10)
     tabButtonsList.Parent = tabButtonsContainer
     
     local contentArea = Instance.new("Frame")
     contentArea.Name = "ContentArea"
     contentArea.BackgroundTransparency = 1
-    contentArea.Size = UDim2.new(1, -30, 1, -125)
-    contentArea.Position = UDim2.new(0, 15, 0, 110)
+    contentArea.Size = UDim2.new(1, -35, 1, -135)
+    contentArea.Position = UDim2.new(0, 17, 0, 120)
     contentArea.Parent = mainFrame
     
     mainFrame.Parent = screenGui
     
-    UpdateProgress(0.8, "Loading configuration...")
+    UpdateProgress(0.8, "Carregando configurações...")
     
     self:LoadConfig()
     self:AutoSaveConfig()
     
-    -- Make functions global
     getgenv().CreateTab = function(tabConfig)
         return self:CreateTab(tabConfig, contentArea, tabButtonsContainer)
     end
@@ -572,24 +566,21 @@ function NovaHub:CreateWindow(config)
         self:ToggleUI()
     end
     
-    UpdateProgress(1, "Complete!")
+    UpdateProgress(1, "Concluído!")
     
-    -- Animate window in
     local fadeIn = TweenService:Create(
         mainFrame,
-        TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {Size = UDim2.new(0, 650, 0, 480)}
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Size = UDim2.new(0, 680, 0, 500)}
     )
     
     mainFrame.Size = UDim2.new(0, 0, 0, 0)
     fadeIn:Play()
     
-    -- Remove loading screen after animation
-    delay(0.5, function()
+    delay(0.6, function()
         loadingGui:Destroy()
     end)
     
-    -- Dragging functionality
     local dragging = false
     local dragInput, dragStart, startPos
     
@@ -597,7 +588,7 @@ function NovaHub:CreateWindow(config)
         local delta = input.Position - dragStart
         TweenService:Create(
             mainFrame,
-            TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
             {Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)}
         ):Play()
     end
@@ -670,15 +661,15 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
     local tabButton = Instance.new("TextButton")
     tabButton.Name = tabConfig.Name .. "Button"
     tabButton.BackgroundColor3 = self.Config.Theme.Element
-    tabButton.Size = UDim2.new(0, 130, 0, 35)
+    tabButton.Size = UDim2.new(0, 140, 0, 38)
     tabButton.Font = Enum.Font.GothamBold
     tabButton.Text = tabConfig.Name
     tabButton.TextColor3 = self.Config.Theme.Text
-    tabButton.TextSize = 14
+    tabButton.TextSize = 15
     tabButton.AutoButtonColor = false
     
-    CreateRoundCorners(tabButton, 8)
-    CreateStroke(tabButton, self.Config.Theme.Primary, 1.5)
+    CreateRoundCorners(tabButton, 10)
+    CreateStroke(tabButton, self.Config.Theme.Primary, 2)
     
     local tabContent = Instance.new("ScrollingFrame")
     tabContent.Name = tabConfig.Name .. "Content"
@@ -687,16 +678,16 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
     tabContent.Position = UDim2.new(0, 0, 0, 0)
     tabContent.Visible = false
     tabContent.ScrollingEnabled = true
-    tabContent.ScrollBarThickness = 6
+    tabContent.ScrollBarThickness = 8
     tabContent.ScrollBarImageColor3 = self.Config.Theme.Primary
     tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
     tabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
     tabContent.Parent = contentArea
     
-    CreatePadding(tabContent, 5, 5, 5, 5)
+    CreatePadding(tabContent, 6, 6, 6, 6)
     
     local contentLayout = Instance.new("UIListLayout")
-    contentLayout.Padding = UDim.new(0, 12)
+    contentLayout.Padding = UDim.new(0, 14)
     contentLayout.Parent = tabContent
     
     tabButton.MouseButton1Click:Connect(function()
@@ -707,7 +698,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             if otherTab.Button then
                 TweenService:Create(
                     otherTab.Button,
-                    TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                    TweenInfo.new(0.25, Enum.EasingStyle.Quad),
                     {BackgroundColor3 = self.Config.Theme.Element}
                 ):Play()
             end
@@ -716,7 +707,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
         tabContent.Visible = true
         TweenService:Create(
             tabButton,
-            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad),
             {BackgroundColor3 = self.Config.Theme.Primary}
         ):Play()
     end)
@@ -739,21 +730,21 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local section = Instance.new("Frame")
             section.Name = "Section"
             section.BackgroundColor3 = self.Config.Theme.Element
-            section.Size = UDim2.new(1, 0, 0, 45)
+            section.Size = UDim2.new(1, 0, 0, 48)
             
-            CreateRoundCorners(section, 10)
-            CreateStroke(section, self.Config.Theme.Primary, 1.5)
+            CreateRoundCorners(section, 12)
+            CreateStroke(section, self.Config.Theme.Primary, 2)
             CreateGradient(section, {self.Config.Theme.Element, self.Config.Theme.Topbar}, 90)
             
             local sectionLabel = Instance.new("TextLabel")
             sectionLabel.Name = "SectionLabel"
             sectionLabel.BackgroundTransparency = 1
-            sectionLabel.Size = UDim2.new(1, -25, 1, 0)
-            sectionLabel.Position = UDim2.new(0, 15, 0, 0)
+            sectionLabel.Size = UDim2.new(1, -30, 1, 0)
+            sectionLabel.Position = UDim2.new(0, 18, 0, 0)
             sectionLabel.Font = Enum.Font.GothamBold
             sectionLabel.Text = sectionName
             sectionLabel.TextColor3 = self.Config.Theme.Text
-            sectionLabel.TextSize = 17
+            sectionLabel.TextSize = 18
             sectionLabel.TextXAlignment = Enum.TextXAlignment.Left
             sectionLabel.Parent = section
             
@@ -768,20 +759,20 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local labelContainer = Instance.new("Frame")
             labelContainer.Name = "LabelContainer"
             labelContainer.BackgroundColor3 = self.Config.Theme.Element
-            labelContainer.Size = UDim2.new(1, 0, 0, 30)
+            labelContainer.Size = UDim2.new(1, 0, 0, 33)
             
-            CreateRoundCorners(labelContainer, 8)
-            CreateStroke(labelContainer, self.Config.Theme.Primary, 1)
+            CreateRoundCorners(labelContainer, 10)
+            CreateStroke(labelContainer, self.Config.Theme.Primary, 1.5)
             
             local label = Instance.new("TextLabel")
             label.Name = "Label"
             label.BackgroundTransparency = 1
-            label.Size = UDim2.new(1, -20, 1, 0)
-            label.Position = UDim2.new(0, 10, 0, 0)
+            label.Size = UDim2.new(1, -24, 1, 0)
+            label.Position = UDim2.new(0, 12, 0, 0)
             label.Font = Enum.Font.Gotham
             label.Text = labelConfig.Text or labelConfig.Name or "Label"
             label.TextColor3 = self.Config.Theme.Text
-            label.TextSize = 14
+            label.TextSize = 15
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = labelContainer
             
@@ -800,15 +791,15 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local button = Instance.new("TextButton")
             button.Name = "Button"
             button.BackgroundColor3 = self.Config.Theme.Element
-            button.Size = UDim2.new(1, 0, 0, 40)
+            button.Size = UDim2.new(1, 0, 0, 43)
             button.Font = Enum.Font.GothamBold
             button.Text = buttonConfig.Text or buttonConfig.Name or "Button"
             button.TextColor3 = self.Config.Theme.Text
-            button.TextSize = 15
+            button.TextSize = 16
             button.AutoButtonColor = false
             
-            CreateRoundCorners(button, 10)
-            CreateStroke(button, self.Config.Theme.Primary, 1.5)
+            CreateRoundCorners(button, 12)
+            CreateStroke(button, self.Config.Theme.Primary, 2)
             CreateGradient(button, {self.Config.Theme.Element, self.Config.Theme.Topbar}, 90)
             
             AnimateHover(button, self.Config.Theme.Primary, self.Config.Theme.Element)
@@ -817,7 +808,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 local clickAnim = TweenService:Create(
                     button,
                     TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {Size = UDim2.new(0.98, 0, 0, 38)}
+                    {Size = UDim2.new(0.97, 0, 0, 40)}
                 )
                 clickAnim:Play()
                 
@@ -825,7 +816,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                     TweenService:Create(
                         button,
                         TweenInfo.new(0.1, Enum.EasingStyle.Quad),
-                        {Size = UDim2.new(1, 0, 0, 40)}
+                        {Size = UDim2.new(1, 0, 0, 43)}
                     ):Play()
                 end)
                 
@@ -849,11 +840,11 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local toggleContainer = Instance.new("Frame")
             toggleContainer.Name = "ToggleContainer"
             toggleContainer.BackgroundColor3 = self.Config.Theme.Element
-            toggleContainer.Size = UDim2.new(1, 0, 0, 35)
+            toggleContainer.Size = UDim2.new(1, 0, 0, 38)
             
-            CreateRoundCorners(toggleContainer, 10)
-            CreateStroke(toggleContainer, self.Config.Theme.Primary, 1.5)
-            CreatePadding(toggleContainer, 15, 15, 0, 0)
+            CreateRoundCorners(toggleContainer, 12)
+            CreateStroke(toggleContainer, self.Config.Theme.Primary, 2)
+            CreatePadding(toggleContainer, 18, 18, 0, 0)
             
             local toggleLabel = Instance.new("TextLabel")
             toggleLabel.Name = "ToggleLabel"
@@ -862,32 +853,32 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             toggleLabel.Font = Enum.Font.GothamBold
             toggleLabel.Text = toggleConfig.Text or toggleConfig.Name or "Toggle"
             toggleLabel.TextColor3 = self.Config.Theme.Text
-            toggleLabel.TextSize = 14
+            toggleLabel.TextSize = 15
             toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
             toggleLabel.Parent = toggleContainer
             
             local toggleButton = Instance.new("TextButton")
             toggleButton.Name = "ToggleButton"
             toggleButton.BackgroundColor3 = toggleConfig.Default and self.Config.Theme.Success or Color3.fromRGB(80, 80, 80)
-            toggleButton.Size = UDim2.new(0, 55, 0, 28)
-            toggleButton.Position = UDim2.new(1, -55, 0.5, -14)
+            toggleButton.Size = UDim2.new(0, 60, 0, 30)
+            toggleButton.Position = UDim2.new(1, -60, 0.5, -15)
             toggleButton.AnchorPoint = Vector2.new(1, 0.5)
             toggleButton.Font = Enum.Font.GothamBold
             toggleButton.Text = toggleConfig.Default and "ON" or "OFF"
             toggleButton.TextColor3 = self.Config.Theme.Text
-            toggleButton.TextSize = 12
+            toggleButton.TextSize = 13
             toggleButton.AutoButtonColor = false
             
-            CreateRoundCorners(toggleButton, 14)
-            CreateStroke(toggleButton, self.Config.Theme.Primary, 2)
+            CreateRoundCorners(toggleButton, 15)
+            CreateStroke(toggleButton, self.Config.Theme.Primary, 2.5)
             
             local toggleIndicator = Instance.new("Frame")
             toggleIndicator.Name = "Indicator"
             toggleIndicator.BackgroundColor3 = self.Config.Theme.Text
-            toggleIndicator.Size = UDim2.new(0, 20, 0, 20)
-            toggleIndicator.Position = toggleConfig.Default and UDim2.new(1, -24, 0.5, -10) or UDim2.new(0, 4, 0.5, -10)
+            toggleIndicator.Size = UDim2.new(0, 22, 0, 22)
+            toggleIndicator.Position = toggleConfig.Default and UDim2.new(1, -26, 0.5, -11) or UDim2.new(0, 4, 0.5, -11)
             
-            CreateRoundCorners(toggleIndicator, 10)
+            CreateRoundCorners(toggleIndicator, 11)
             
             toggleIndicator.Parent = toggleButton
             
@@ -898,7 +889,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             if savedValue ~= toggleState then
                 toggleState = savedValue
                 local targetColor = toggleState and self.Config.Theme.Success or Color3.fromRGB(80, 80, 80)
-                local targetPos = toggleState and UDim2.new(1, -24, 0.5, -10) or UDim2.new(0, 4, 0.5, -10)
+                local targetPos = toggleState and UDim2.new(1, -26, 0.5, -11) or UDim2.new(0, 4, 0.5, -11)
                 toggleButton.BackgroundColor3 = targetColor
                 toggleIndicator.Position = targetPos
                 toggleButton.Text = toggleState and "ON" or "OFF"
@@ -908,17 +899,17 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 toggleState = not toggleState
                 
                 local targetColor = toggleState and self.Config.Theme.Success or Color3.fromRGB(80, 80, 80)
-                local targetPos = toggleState and UDim2.new(1, -24, 0.5, -10) or UDim2.new(0, 4, 0.5, -10)
+                local targetPos = toggleState and UDim2.new(1, -26, 0.5, -11) or UDim2.new(0, 4, 0.5, -11)
                 
                 TweenService:Create(
                     toggleButton,
-                    TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                    TweenInfo.new(0.35, Enum.EasingStyle.Quad),
                     {BackgroundColor3 = targetColor}
                 ):Play()
                 
                 TweenService:Create(
                     toggleIndicator,
-                    TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+                    TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
                     {Position = targetPos}
                 ):Play()
                 
@@ -938,10 +929,10 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 SetValue = function(value)
                     toggleState = value
                     local targetColor = value and self.Config.Theme.Success or Color3.fromRGB(80, 80, 80)
-                    local targetPos = value and UDim2.new(1, -24, 0.5, -10) or UDim2.new(0, 4, 0.5, -10)
+                    local targetPos = value and UDim2.new(1, -26, 0.5, -11) or UDim2.new(0, 4, 0.5, -11)
                     
-                    TweenService:Create(toggleButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = targetColor}):Play()
-                    TweenService:Create(toggleIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+                    TweenService:Create(toggleButton, TweenInfo.new(0.35, Enum.EasingStyle.Quad), {BackgroundColor3 = targetColor}):Play()
+                    TweenService:Create(toggleIndicator, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = targetPos}):Play()
                     
                     toggleButton.Text = value and "ON" or "OFF"
                     self:SetConfigValue(toggleName, value)
@@ -961,16 +952,16 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local sliderContainer = Instance.new("Frame")
             sliderContainer.Name = "SliderContainer"
             sliderContainer.BackgroundColor3 = self.Config.Theme.Element
-            sliderContainer.Size = UDim2.new(1, 0, 0, 70)
+            sliderContainer.Size = UDim2.new(1, 0, 0, 75)
             
-            CreateRoundCorners(sliderContainer, 10)
-            CreateStroke(sliderContainer, self.Config.Theme.Primary, 1.5)
-            CreatePadding(sliderContainer, 15, 15, 10, 10)
+            CreateRoundCorners(sliderContainer, 12)
+            CreateStroke(sliderContainer, self.Config.Theme.Primary, 2)
+            CreatePadding(sliderContainer, 18, 18, 12, 12)
             
             local topContainer = Instance.new("Frame")
             topContainer.Name = "TopContainer"
             topContainer.BackgroundTransparency = 1
-            topContainer.Size = UDim2.new(1, 0, 0, 25)
+            topContainer.Size = UDim2.new(1, 0, 0, 28)
             topContainer.Parent = sliderContainer
             
             local sliderLabel = Instance.new("TextLabel")
@@ -980,7 +971,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             sliderLabel.Font = Enum.Font.GothamBold
             sliderLabel.Text = sliderConfig.Text or sliderConfig.Name or "Slider"
             sliderLabel.TextColor3 = self.Config.Theme.Text
-            sliderLabel.TextSize = 14
+            sliderLabel.TextSize = 15
             sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
             sliderLabel.Parent = topContainer
             
@@ -992,18 +983,18 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             valueLabel.Font = Enum.Font.GothamBold
             valueLabel.Text = tostring(sliderConfig.Default or sliderConfig.Min) .. (sliderConfig.Suffix or "")
             valueLabel.TextColor3 = self.Config.Theme.Primary
-            valueLabel.TextSize = 14
+            valueLabel.TextSize = 15
             valueLabel.TextXAlignment = Enum.TextXAlignment.Right
             valueLabel.Parent = topContainer
             
             local sliderTrack = Instance.new("Frame")
             sliderTrack.Name = "SliderTrack"
             sliderTrack.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-            sliderTrack.Size = UDim2.new(1, 0, 0, 8)
-            sliderTrack.Position = UDim2.new(0, 0, 1, -10)
+            sliderTrack.Size = UDim2.new(1, 0, 0, 10)
+            sliderTrack.Position = UDim2.new(0, 0, 1, -12)
             sliderTrack.AnchorPoint = Vector2.new(0, 1)
             
-            CreateRoundCorners(sliderTrack, 4)
+            CreateRoundCorners(sliderTrack, 5)
             
             local sliderFill = Instance.new("Frame")
             sliderFill.Name = "SliderFill"
@@ -1011,25 +1002,25 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             sliderFill.Size = UDim2.new((sliderConfig.Default - sliderConfig.Min) / (sliderConfig.Max - sliderConfig.Min), 0, 1, 0)
             sliderFill.Position = UDim2.new(0, 0, 0, 0)
             
-            CreateRoundCorners(sliderFill, 4)
+            CreateRoundCorners(sliderFill, 5)
             CreateGradient(sliderFill, {self.Config.Theme.Primary, self.Config.Theme.Secondary}, 90)
             
             local sliderButton = Instance.new("TextButton")
             sliderButton.Name = "SliderButton"
             sliderButton.BackgroundColor3 = self.Config.Theme.Text
-            sliderButton.Size = UDim2.new(0, 18, 0, 18)
-            sliderButton.Position = UDim2.new(sliderFill.Size.X.Scale, -9, 0.5, -9)
+            sliderButton.Size = UDim2.new(0, 20, 0, 20)
+            sliderButton.Position = UDim2.new(sliderFill.Size.X.Scale, -10, 0.5, -10)
             sliderButton.AnchorPoint = Vector2.new(0, 0.5)
             sliderButton.Text = ""
             sliderButton.AutoButtonColor = false
             
-            CreateRoundCorners(sliderButton, 9)
-            CreateStroke(sliderButton, self.Config.Theme.Primary, 2.5)
+            CreateRoundCorners(sliderButton, 10)
+            CreateStroke(sliderButton, self.Config.Theme.Primary, 3)
             
             local buttonGlow = Instance.new("ImageLabel")
             buttonGlow.Name = "ButtonGlow"
             buttonGlow.BackgroundTransparency = 1
-            buttonGlow.Size = UDim2.new(1, 15, 1, 15)
+            buttonGlow.Size = UDim2.new(1, 18, 1, 18)
             buttonGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
             buttonGlow.AnchorPoint = Vector2.new(0.5, 0.5)
             buttonGlow.ZIndex = 0
@@ -1055,7 +1046,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 local max = sliderConfig.Max
                 local normalized = math.clamp((currentValue - min) / (max - min), 0, 1)
                 sliderFill.Size = UDim2.new(normalized, 0, 1, 0)
-                sliderButton.Position = UDim2.new(normalized, -9, 0.5, -9)
+                sliderButton.Position = UDim2.new(normalized, -10, 0.5, -10)
                 valueLabel.Text = tostring(math.floor(currentValue * 100) / 100) .. (sliderConfig.Suffix or "")
             end
             
@@ -1066,14 +1057,14 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 
                 TweenService:Create(
                     sliderFill,
-                    TweenInfo.new(0.1, Enum.EasingStyle.Quad),
+                    TweenInfo.new(0.15, Enum.EasingStyle.Quad),
                     {Size = UDim2.new(normalized, 0, 1, 0)}
                 ):Play()
                 
                 TweenService:Create(
                     sliderButton,
-                    TweenInfo.new(0.1, Enum.EasingStyle.Quad),
-                    {Position = UDim2.new(normalized, -9, 0.5, -9)}
+                    TweenInfo.new(0.15, Enum.EasingStyle.Quad),
+                    {Position = UDim2.new(normalized, -10, 0.5, -10)}
                 ):Play()
                 
                 valueLabel.Text = tostring(math.floor(value * 100) / 100) .. (sliderConfig.Suffix or "")
@@ -1087,13 +1078,13 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             
             sliderButton.MouseButton1Down:Connect(function()
                 isSliding = true
-                TweenService:Create(sliderButton, TweenInfo.new(0.1), {Size = UDim2.new(0, 22, 0, 22)}):Play()
+                TweenService:Create(sliderButton, TweenInfo.new(0.1), {Size = UDim2.new(0, 24, 0, 24)}):Play()
             end)
             
             UserInputService.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     isSliding = false
-                    TweenService:Create(sliderButton, TweenInfo.new(0.1), {Size = UDim2.new(0, 18, 0, 18)}):Play()
+                    TweenService:Create(sliderButton, TweenInfo.new(0.1), {Size = UDim2.new(0, 20, 0, 20)}):Play()
                 end
             end)
             
@@ -1138,46 +1129,46 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local dropdownContainer = Instance.new("Frame")
             dropdownContainer.Name = "DropdownContainer"
             dropdownContainer.BackgroundTransparency = 1
-            dropdownContainer.Size = UDim2.new(1, 0, 0, 35)
+            dropdownContainer.Size = UDim2.new(1, 0, 0, 38)
             
             local dropdownButton = Instance.new("TextButton")
             dropdownButton.Name = "DropdownButton"
             dropdownButton.BackgroundColor3 = self.Config.Theme.Element
-            dropdownButton.Size = UDim2.new(1, 0, 0, 35)
+            dropdownButton.Size = UDim2.new(1, 0, 0, 38)
             dropdownButton.Font = Enum.Font.GothamBold
             dropdownButton.Text = (dropdownConfig.Text or dropdownConfig.Name or "Dropdown") .. ": " .. (dropdownConfig.Default or dropdownConfig.Options[1])
             dropdownButton.TextColor3 = self.Config.Theme.Text
-            dropdownButton.TextSize = 14
+            dropdownButton.TextSize = 15
             dropdownButton.AutoButtonColor = false
             
-            CreateRoundCorners(dropdownButton, 10)
-            CreateStroke(dropdownButton, self.Config.Theme.Primary, 1.5)
+            CreateRoundCorners(dropdownButton, 12)
+            CreateStroke(dropdownButton, self.Config.Theme.Primary, 2)
             CreateGradient(dropdownButton, {self.Config.Theme.Element, self.Config.Theme.Topbar}, 90)
-            CreatePadding(dropdownButton, 15, 15, 0, 0)
+            CreatePadding(dropdownButton, 18, 18, 0, 0)
             
             local dropdownArrow = Instance.new("TextLabel")
             dropdownArrow.Name = "DropdownArrow"
             dropdownArrow.BackgroundTransparency = 1
-            dropdownArrow.Size = UDim2.new(0, 30, 1, 0)
-            dropdownArrow.Position = UDim2.new(1, -30, 0, 0)
+            dropdownArrow.Size = UDim2.new(0, 35, 1, 0)
+            dropdownArrow.Position = UDim2.new(1, -35, 0, 0)
             dropdownArrow.AnchorPoint = Vector2.new(1, 0)
             dropdownArrow.Font = Enum.Font.GothamBold
             dropdownArrow.Text = "▼"
             dropdownArrow.TextColor3 = self.Config.Theme.Primary
-            dropdownArrow.TextSize = 14
+            dropdownArrow.TextSize = 15
             dropdownArrow.Parent = dropdownButton
             
             local dropdownList = Instance.new("Frame")
             dropdownList.Name = "DropdownList"
             dropdownList.BackgroundColor3 = self.Config.Theme.Element
             dropdownList.Size = UDim2.new(1, 0, 0, 0)
-            dropdownList.Position = UDim2.new(0, 0, 1, 5)
+            dropdownList.Position = UDim2.new(0, 0, 1, 6)
             dropdownList.Visible = false
             dropdownList.ClipsDescendants = true
             dropdownList.ZIndex = 10
             
-            CreateRoundCorners(dropdownList, 10)
-            CreateStroke(dropdownList, self.Config.Theme.Primary, 1.5)
+            CreateRoundCorners(dropdownList, 12)
+            CreateStroke(dropdownList, self.Config.Theme.Primary, 2)
             
             local listLayout = Instance.new("UIListLayout")
             listLayout.Parent = dropdownList
@@ -1204,18 +1195,18 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 isOpen = not isOpen
                 dropdownList.Visible = isOpen
                 
-                local targetSize = isOpen and UDim2.new(1, 0, 0, math.min(#dropdownConfig.Options * 35, 175)) or UDim2.new(1, 0, 0, 0)
+                local targetSize = isOpen and UDim2.new(1, 0, 0, math.min(#dropdownConfig.Options * 38, 190)) or UDim2.new(1, 0, 0, 0)
                 local targetRotation = isOpen and 180 or 0
                 
                 TweenService:Create(
                     dropdownList,
-                    TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+                    TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
                     {Size = targetSize}
                 ):Play()
                 
                 TweenService:Create(
                     dropdownArrow,
-                    TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                    TweenInfo.new(0.35, Enum.EasingStyle.Quad),
                     {Rotation = targetRotation}
                 ):Play()
             end
@@ -1224,14 +1215,14 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 local optionButton = Instance.new("TextButton")
                 optionButton.Name = option .. "Option"
                 optionButton.BackgroundColor3 = self.Config.Theme.Element
-                optionButton.Size = UDim2.new(1, 0, 0, 35)
+                optionButton.Size = UDim2.new(1, 0, 0, 38)
                 optionButton.Font = Enum.Font.Gotham
                 optionButton.Text = option
                 optionButton.TextColor3 = self.Config.Theme.Text
-                optionButton.TextSize = 14
+                optionButton.TextSize = 15
                 optionButton.AutoButtonColor = false
                 
-                CreatePadding(optionButton, 15, 15, 0, 0)
+                CreatePadding(optionButton, 18, 18, 0, 0)
                 
                 AnimateHover(optionButton, self.Config.Theme.Primary, self.Config.Theme.Element)
                 
@@ -1271,27 +1262,27 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local inputContainer = Instance.new("Frame")
             inputContainer.Name = "InputContainer"
             inputContainer.BackgroundTransparency = 1
-            inputContainer.Size = UDim2.new(1, 0, 0, 35)
+            inputContainer.Size = UDim2.new(1, 0, 0, 38)
             
             local inputBox = Instance.new("TextBox")
             inputBox.Name = "InputBox"
             inputBox.BackgroundColor3 = self.Config.Theme.Element
             inputBox.Size = UDim2.new(1, 0, 1, 0)
             inputBox.Font = Enum.Font.Gotham
-            inputBox.PlaceholderText = inputConfig.Placeholder or "Enter text..."
+            inputBox.PlaceholderText = inputConfig.Placeholder or "Digite aqui..."
             inputBox.Text = inputConfig.Default or ""
             inputBox.TextColor3 = self.Config.Theme.Text
-            inputBox.TextSize = 14
+            inputBox.TextSize = 15
             inputBox.ClearTextOnFocus = inputConfig.ClearTextOnFocus or false
             
-            CreateRoundCorners(inputBox, 10)
-            CreateStroke(inputBox, self.Config.Theme.Primary, 1.5)
-            CreatePadding(inputBox, 15, 15, 0, 0)
+            CreateRoundCorners(inputBox, 12)
+            CreateStroke(inputBox, self.Config.Theme.Primary, 2)
+            CreatePadding(inputBox, 18, 18, 0, 0)
             
             inputBox.Focused:Connect(function()
                 TweenService:Create(
                     inputBox,
-                    TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                    TweenInfo.new(0.25, Enum.EasingStyle.Quad),
                     {BackgroundColor3 = Color3.fromRGB(50, 40, 65)}
                 ):Play()
             end)
@@ -1299,7 +1290,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             inputBox.FocusLost:Connect(function(enterPressed)
                 TweenService:Create(
                     inputBox,
-                    TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                    TweenInfo.new(0.25, Enum.EasingStyle.Quad),
                     {BackgroundColor3 = self.Config.Theme.Element}
                 ):Play()
                 
@@ -1330,33 +1321,33 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local paragraphContainer = Instance.new("Frame")
             paragraphContainer.Name = "ParagraphContainer"
             paragraphContainer.BackgroundColor3 = self.Config.Theme.Element
-            paragraphContainer.Size = UDim2.new(1, 0, 0, 80)
+            paragraphContainer.Size = UDim2.new(1, 0, 0, 85)
             paragraphContainer.AutomaticSize = Enum.AutomaticSize.Y
             
-            CreateRoundCorners(paragraphContainer, 10)
-            CreateStroke(paragraphContainer, self.Config.Theme.Primary, 1.5)
-            CreatePadding(paragraphContainer, 15, 15, 10, 10)
+            CreateRoundCorners(paragraphContainer, 12)
+            CreateStroke(paragraphContainer, self.Config.Theme.Primary, 2)
+            CreatePadding(paragraphContainer, 18, 18, 12, 12)
             
             local titleLabel = Instance.new("TextLabel")
             titleLabel.Name = "Title"
             titleLabel.BackgroundTransparency = 1
-            titleLabel.Size = UDim2.new(1, 0, 0, 25)
+            titleLabel.Size = UDim2.new(1, 0, 0, 28)
             titleLabel.Font = Enum.Font.GothamBold
-            titleLabel.Text = paragraphConfig.Title or "Information"
+            titleLabel.Text = paragraphConfig.Title or "Informação"
             titleLabel.TextColor3 = self.Config.Theme.Primary
-            titleLabel.TextSize = 16
+            titleLabel.TextSize = 17
             titleLabel.TextXAlignment = Enum.TextXAlignment.Left
             titleLabel.Parent = paragraphContainer
             
             local contentLabel = Instance.new("TextLabel")
             contentLabel.Name = "Content"
             contentLabel.BackgroundTransparency = 1
-            contentLabel.Position = UDim2.new(0, 0, 0, 30)
-            contentLabel.Size = UDim2.new(1, 0, 0, 40)
+            contentLabel.Position = UDim2.new(0, 0, 0, 33)
+            contentLabel.Size = UDim2.new(1, 0, 0, 42)
             contentLabel.Font = Enum.Font.Gotham
-            contentLabel.Text = paragraphConfig.Content or "Paragraph content"
+            contentLabel.Text = paragraphConfig.Content or "Conteúdo do parágrafo"
             contentLabel.TextColor3 = self.Config.Theme.Text
-            contentLabel.TextSize = 14
+            contentLabel.TextSize = 15
             contentLabel.TextWrapped = true
             contentLabel.TextXAlignment = Enum.TextXAlignment.Left
             contentLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -1391,17 +1382,17 @@ function NovaHub:ToggleUI()
                 mainFrame.Visible = true
                 TweenService:Create(
                     mainFrame,
-                    TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-                    {Size = UDim2.new(0, 650, 0, 480)}
+                    TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+                    {Size = UDim2.new(0, 680, 0, 500)}
                 ):Play()
             else
                 TweenService:Create(
                     mainFrame,
-                    TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+                    TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
                     {Size = UDim2.new(0, 0, 0, 0)}
                 ):Play()
                 
-                task.delay(0.3, function()
+                task.delay(0.4, function()
                     mainFrame.Visible = false
                 end)
             end
@@ -1409,7 +1400,6 @@ function NovaHub:ToggleUI()
     end
 end
 
--- Make CreateWindow globally accessible immediately
 getgenv().CreateWindow = function(config)
     return NovaHub:CreateWindow(config)
 end
