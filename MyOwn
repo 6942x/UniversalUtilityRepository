@@ -1,4 +1,4 @@
-local NovaHub = {}
+local Nova = {}
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -6,9 +6,13 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 
-getgenv().NovaHub = NovaHub
+if not getgenv().Nova then
+    getgenv().Nova = {}
+end
 
-NovaHub.Config = {
+getgenv().Nova = Nova
+
+Nova.Config = {
     ToggleKey = "K",
     Theme = {
         Primary = Color3.fromRGB(140, 80, 255),
@@ -23,11 +27,11 @@ NovaHub.Config = {
     }
 }
 
-NovaHub.MainUI = nil
-NovaHub.Tabs = {}
-NovaHub.Enabled = true
-NovaHub.ConfigFile = "NovaHubConfig.json"
-NovaHub.SavedConfig = {}
+Nova.MainUI = nil
+Nova.Tabs = {}
+Nova.Enabled = true
+Nova.ConfigFile = "NovaConfig.json"
+Nova.SavedConfig = {}
 
 local function CreateRoundCorners(instance, cornerSize)
     local corner = Instance.new("UICorner")
@@ -118,9 +122,9 @@ local function CreatePadding(parent, left, right, top, bottom)
     return padding
 end
 
-function NovaHub:CreateLoadingScreen()
+function Nova:CreateLoadingScreen()
     local loadingGui = Instance.new("ScreenGui")
-    loadingGui.Name = "NovaHubLoading"
+    loadingGui.Name = "NovaLoading"
     loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     loadingGui.Parent = game:GetService("CoreGui")
     
@@ -141,7 +145,7 @@ function NovaHub:CreateLoadingScreen()
     loadingLabel.Size = UDim2.new(1, 0, 0, 60)
     loadingLabel.Position = UDim2.new(0, 0, 0.25, 0)
     loadingLabel.Font = Enum.Font.GothamBold
-    loadingLabel.Text = "✨ Nova Hub"
+    loadingLabel.Text = "✨ Nova"
     loadingLabel.TextColor3 = self.Config.Theme.Text
     loadingLabel.TextSize = 28
     loadingLabel.Parent = loadingFrame
@@ -154,7 +158,7 @@ function NovaHub:CreateLoadingScreen()
     statusLabel.Size = UDim2.new(1, 0, 0, 35)
     statusLabel.Position = UDim2.new(0, 0, 0.5, 0)
     statusLabel.Font = Enum.Font.Gotham
-    statusLabel.Text = "Carregando..."
+    statusLabel.Text = "Loading..."
     statusLabel.TextColor3 = self.Config.Theme.Text
     statusLabel.TextSize = 17
     statusLabel.Parent = loadingFrame
@@ -191,7 +195,7 @@ function NovaHub:CreateLoadingScreen()
     return loadingGui, UpdateProgress
 end
 
-function NovaHub:JoinDiscord(inviteCode)
+function Nova:JoinDiscord(inviteCode)
     local success, err = pcall(function()
         local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request)
         
@@ -215,18 +219,18 @@ function NovaHub:JoinDiscord(inviteCode)
     end)
     
     if success then
-        self:Notify("Discord", "Convite enviado!", 3, "Success")
+        self:Notify("Discord", "Invite sent!", 3, "Success")
     else
         if setclipboard then
             setclipboard("https://discord.gg/" .. inviteCode)
-            self:Notify("Discord", "Link copiado para área de transferência!", 3, "Info")
+            self:Notify("Discord", "Link copied to clipboard!", 3, "Info")
         else
-            self:Notify("Discord", "Entre em: discord.gg/" .. inviteCode, 5, "Info")
+            self:Notify("Discord", "Join: discord.gg/" .. inviteCode, 5, "Info")
         end
     end
 end
 
-function NovaHub:SaveConfig()
+function Nova:SaveConfig()
     local success, err = pcall(function()
         if writefile then
             writefile(self.ConfigFile, HttpService:JSONEncode(self.SavedConfig))
@@ -236,7 +240,7 @@ function NovaHub:SaveConfig()
     return success
 end
 
-function NovaHub:AutoSaveConfig()
+function Nova:AutoSaveConfig()
     spawn(function()
         while task.wait(5) do
             if self.SavedConfig and next(self.SavedConfig) ~= nil then
@@ -246,7 +250,7 @@ function NovaHub:AutoSaveConfig()
     end)
 end
 
-function NovaHub:LoadConfig()
+function Nova:LoadConfig()
     local success, result = pcall(function()
         if readfile and isfile and isfile(self.ConfigFile) then
             return HttpService:JSONDecode(readfile(self.ConfigFile))
@@ -263,30 +267,30 @@ function NovaHub:LoadConfig()
     end
 end
 
-function NovaHub:SetConfigValue(key, value)
+function Nova:SetConfigValue(key, value)
     self.SavedConfig[key] = value
 end
 
-function NovaHub:GetConfigValue(key, default)
+function Nova:GetConfigValue(key, default)
     if self.SavedConfig[key] ~= nil then
         return self.SavedConfig[key]
     end
     return default
 end
 
-function NovaHub:Notify(title, content, duration, notificationType)
+function Nova:Notify(title, content, duration, notificationType)
     duration = duration or 5
     notificationType = notificationType or "Info"
     
-    if not NovaHub.MainUI then return end
+    if not Nova.MainUI then return end
     
-    local notificationContainer = NovaHub.MainUI:FindFirstChild("NotificationContainer")
+    local notificationContainer = Nova.MainUI:FindFirstChild("NotificationContainer")
     if not notificationContainer then
         notificationContainer = Instance.new("Frame")
         notificationContainer.Name = "NotificationContainer"
         notificationContainer.BackgroundTransparency = 1
         notificationContainer.Size = UDim2.new(1, 0, 1, 0)
-        notificationContainer.Parent = NovaHub.MainUI
+        notificationContainer.Parent = Nova.MainUI
     end
     
     local notification = Instance.new("Frame")
@@ -379,25 +383,25 @@ function NovaHub:Notify(title, content, duration, notificationType)
     end)
 end
 
-function NovaHub:CreateWindow(config)
+function Nova:CreateWindow(config)
     config = config or {}
     
     local loadingGui, UpdateProgress = self:CreateLoadingScreen()
-    UpdateProgress(0.1, "Inicializando...")
+    UpdateProgress(0.1, "Initializing...")
     
     if config.DiscordInvite then
-        UpdateProgress(0.2, "Conectando ao Discord...")
+        UpdateProgress(0.2, "Connecting to Discord...")
         self:JoinDiscord(config.DiscordInvite)
     end
     
-    UpdateProgress(0.3, "Criando interface...")
+    UpdateProgress(0.3, "Creating interface...")
     
     local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "NovaHub"
+    screenGui.Name = "Nova"
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     screenGui.Parent = game:GetService("CoreGui")
     
-    NovaHub.MainUI = screenGui
+    Nova.MainUI = screenGui
     
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
@@ -410,7 +414,7 @@ function NovaHub:CreateWindow(config)
     CreateStroke(mainFrame, self.Config.Theme.Primary, 3)
     CreateGlow(mainFrame, self.Config.Theme.Primary, 60, 30)
     
-    UpdateProgress(0.4, "Criando barra superior...")
+    UpdateProgress(0.4, "Creating top bar...")
     
     local topBar = Instance.new("Frame")
     topBar.Name = "TopBar"
@@ -437,7 +441,7 @@ function NovaHub:CreateWindow(config)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Size = UDim2.new(1, 0, 1, 0)
     titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.Text = config.Name or "Nova Hub"
+    titleLabel.Text = config.Name or "Nova"
     titleLabel.TextColor3 = self.Config.Theme.Text
     titleLabel.TextSize = 22
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -498,13 +502,13 @@ function NovaHub:CreateWindow(config)
         closeTween:Play()
         closeTween.Completed:Connect(function()
             screenGui:Destroy()
-            NovaHub.MainUI = nil
+            Nova.MainUI = nil
         end)
     end)
     
     closeButton.Parent = buttonContainer
     
-    UpdateProgress(0.6, "Criando abas...")
+    UpdateProgress(0.6, "Creating tabs...")
     
     local tabButtonsContainer = Instance.new("Frame")
     tabButtonsContainer.Name = "TabButtons"
@@ -529,7 +533,7 @@ function NovaHub:CreateWindow(config)
     
     mainFrame.Parent = screenGui
     
-    UpdateProgress(0.8, "Carregando configurações...")
+    UpdateProgress(0.8, "Loading settings...")
     
     self:LoadConfig()
     self:AutoSaveConfig()
@@ -566,7 +570,7 @@ function NovaHub:CreateWindow(config)
         self:ToggleUI()
     end
     
-    UpdateProgress(1, "Concluído!")
+    UpdateProgress(1, "Complete!")
     
     local fadeIn = TweenService:Create(
         mainFrame,
@@ -649,11 +653,11 @@ function NovaHub:CreateWindow(config)
         end
     }
     
-    getgenv().NovaHubWindow = windowTable
+    getgenv().NovaWindow = windowTable
     return windowTable
 end
 
-function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
+function Nova:CreateTab(tabConfig, contentArea, tabButtonsContainer)
     local tab = {}
     tab.Name = tabConfig.Name
     tab.Buttons = {}
@@ -1269,7 +1273,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             inputBox.BackgroundColor3 = self.Config.Theme.Element
             inputBox.Size = UDim2.new(1, 0, 1, 0)
             inputBox.Font = Enum.Font.Gotham
-            inputBox.PlaceholderText = inputConfig.Placeholder or "Digite aqui..."
+            inputBox.PlaceholderText = inputConfig.Placeholder or "Type here..."
             inputBox.Text = inputConfig.Default or ""
             inputBox.TextColor3 = self.Config.Theme.Text
             inputBox.TextSize = 15
@@ -1333,7 +1337,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             titleLabel.BackgroundTransparency = 1
             titleLabel.Size = UDim2.new(1, 0, 0, 28)
             titleLabel.Font = Enum.Font.GothamBold
-            titleLabel.Text = paragraphConfig.Title or "Informação"
+            titleLabel.Text = paragraphConfig.Title or "Information"
             titleLabel.TextColor3 = self.Config.Theme.Primary
             titleLabel.TextSize = 17
             titleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1345,7 +1349,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             contentLabel.Position = UDim2.new(0, 0, 0, 33)
             contentLabel.Size = UDim2.new(1, 0, 0, 42)
             contentLabel.Font = Enum.Font.Gotham
-            contentLabel.Text = paragraphConfig.Content or "Conteúdo do parágrafo"
+            contentLabel.Text = paragraphConfig.Content or "Paragraph content"
             contentLabel.TextColor3 = self.Config.Theme.Text
             contentLabel.TextSize = 15
             contentLabel.TextWrapped = true
@@ -1372,13 +1376,13 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
     return tabTable
 end
 
-function NovaHub:ToggleUI()
-    if NovaHub.MainUI then
-        NovaHub.Enabled = not NovaHub.Enabled
+function Nova:ToggleUI()
+    if Nova.MainUI then
+        Nova.Enabled = not Nova.Enabled
         
-        local mainFrame = NovaHub.MainUI:FindFirstChild("MainFrame")
+        local mainFrame = Nova.MainUI:FindFirstChild("MainFrame")
         if mainFrame then
-            if NovaHub.Enabled then
+            if Nova.Enabled then
                 mainFrame.Visible = true
                 TweenService:Create(
                     mainFrame,
@@ -1401,9 +1405,9 @@ function NovaHub:ToggleUI()
 end
 
 getgenv().CreateWindow = function(config)
-    return NovaHub:CreateWindow(config)
+    return Nova:CreateWindow(config)
 end
 
-getgenv().NovaHub = NovaHub
+getgenv().Nova = Nova
 
-return NovaHub
+return Nova
