@@ -120,6 +120,80 @@ local function CreatePadding(parent, left, right, top, bottom)
     return padding
 end
 
+-- Loading Screen Function
+function NovaHub:CreateLoadingScreen()
+    local loadingGui = Instance.new("ScreenGui")
+    loadingGui.Name = "NovaHubLoading"
+    loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    loadingGui.Parent = game:GetService("CoreGui")
+    
+    local loadingFrame = Instance.new("Frame")
+    loadingFrame.Name = "LoadingFrame"
+    loadingFrame.BackgroundColor3 = self.Config.Theme.Background
+    loadingFrame.Size = UDim2.new(0, 400, 0, 200)
+    loadingFrame.Position = UDim2.new(0.5, -200, 0.5, -100)
+    loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    
+    CreateRoundCorners(loadingFrame, 14)
+    CreateStroke(loadingFrame, self.Config.Theme.Primary, 2.5)
+    CreateGlow(loadingFrame, self.Config.Theme.Primary, 30, 15)
+    
+    local loadingLabel = Instance.new("TextLabel")
+    loadingLabel.Name = "LoadingLabel"
+    loadingLabel.BackgroundTransparency = 1
+    loadingLabel.Size = UDim2.new(1, 0, 0, 50)
+    loadingLabel.Position = UDim2.new(0, 0, 0.3, 0)
+    loadingLabel.Font = Enum.Font.GothamBold
+    loadingLabel.Text = "🌟 Nova Hub"
+    loadingLabel.TextColor3 = self.Config.Theme.Text
+    loadingLabel.TextSize = 24
+    loadingLabel.Parent = loadingFrame
+    
+    CreateGradient(loadingLabel, {self.Config.Theme.Primary, self.Config.Theme.Secondary}, 45)
+    
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Name = "StatusLabel"
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Size = UDim2.new(1, 0, 0, 30)
+    statusLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.Text = "Loading..."
+    statusLabel.TextColor3 = self.Config.Theme.Text
+    statusLabel.TextSize = 16
+    statusLabel.Parent = loadingFrame
+    
+    local progressBar = Instance.new("Frame")
+    progressBar.Name = "ProgressBar"
+    progressBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    progressBar.Size = UDim2.new(0.8, 0, 0, 8)
+    progressBar.Position = UDim2.new(0.1, 0, 0.7, 0)
+    progressBar.Parent = loadingFrame
+    
+    CreateRoundCorners(progressBar, 4)
+    
+    local progressFill = Instance.new("Frame")
+    progressFill.Name = "ProgressFill"
+    progressFill.BackgroundColor3 = self.Config.Theme.Primary
+    progressFill.Size = UDim2.new(0, 0, 1, 0)
+    progressFill.Parent = progressBar
+    
+    CreateRoundCorners(progressFill, 4)
+    CreateGradient(progressFill, {self.Config.Theme.Primary, self.Config.Theme.Secondary}, 90)
+    
+    loadingFrame.Parent = loadingGui
+    
+    local function UpdateProgress(progress, text)
+        statusLabel.Text = text
+        TweenService:Create(
+            progressFill,
+            TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+            {Size = UDim2.new(progress, 0, 1, 0)}
+        ):Play()
+    end
+    
+    return loadingGui, UpdateProgress
+end
+
 -- Core Functions
 function NovaHub:JoinDiscord(inviteCode)
     local success, err = pcall(function()
@@ -312,9 +386,16 @@ end
 function NovaHub:CreateWindow(config)
     config = config or {}
     
+    -- Create loading screen
+    local loadingGui, UpdateProgress = self:CreateLoadingScreen()
+    UpdateProgress(0.1, "Initializing...")
+    
     if config.DiscordInvite then
+        UpdateProgress(0.2, "Joining Discord...")
         self:JoinDiscord(config.DiscordInvite)
     end
+    
+    UpdateProgress(0.3, "Creating interface...")
     
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "NovaHub"
@@ -333,6 +414,8 @@ function NovaHub:CreateWindow(config)
     CreateRoundCorners(mainFrame, 14)
     CreateStroke(mainFrame, self.Config.Theme.Primary, 2.5)
     CreateGlow(mainFrame, self.Config.Theme.Primary, 50, 25)
+    
+    UpdateProgress(0.4, "Creating top bar...")
     
     local topBar = Instance.new("Frame")
     topBar.Name = "TopBar"
@@ -426,6 +509,8 @@ function NovaHub:CreateWindow(config)
     
     closeButton.Parent = buttonContainer
     
+    UpdateProgress(0.6, "Creating tabs...")
+    
     local tabButtonsContainer = Instance.new("Frame")
     tabButtonsContainer.Name = "TabButtons"
     tabButtonsContainer.BackgroundColor3 = self.Config.Theme.Topbar
@@ -449,6 +534,47 @@ function NovaHub:CreateWindow(config)
     
     mainFrame.Parent = screenGui
     
+    UpdateProgress(0.8, "Loading configuration...")
+    
+    self:LoadConfig()
+    self:AutoSaveConfig()
+    
+    -- Make functions global
+    getgenv().CreateTab = function(tabConfig)
+        return self:CreateTab(tabConfig, contentArea, tabButtonsContainer)
+    end
+    
+    getgenv().Notify = function(title, content, duration, type)
+        self:Notify(title, content, duration, type)
+    end
+    
+    getgenv().JoinDiscord = function(inviteCode)
+        self:JoinDiscord(inviteCode)
+    end
+    
+    getgenv().SaveConfig = function()
+        self:SaveConfig()
+    end
+    
+    getgenv().LoadConfig = function()
+        return self:LoadConfig()
+    end
+    
+    getgenv().SetConfigValue = function(key, value)
+        self:SetConfigValue(key, value)
+    end
+    
+    getgenv().GetConfigValue = function(key, default)
+        return self:GetConfigValue(key, default)
+    end
+    
+    getgenv().ToggleUI = function()
+        self:ToggleUI()
+    end
+    
+    UpdateProgress(1, "Complete!")
+    
+    -- Animate window in
     local fadeIn = TweenService:Create(
         mainFrame,
         TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
@@ -458,6 +584,12 @@ function NovaHub:CreateWindow(config)
     mainFrame.Size = UDim2.new(0, 0, 0, 0)
     fadeIn:Play()
     
+    -- Remove loading screen after animation
+    delay(0.5, function()
+        loadingGui:Destroy()
+    end)
+    
+    -- Dragging functionality
     local dragging = false
     local dragInput, dragStart, startPos
     
@@ -501,42 +633,6 @@ function NovaHub:CreateWindow(config)
             self:ToggleUI()
         end
     end)
-    
-    self:LoadConfig()
-    self:AutoSaveConfig()
-    
-    -- Make functions global
-    getgenv().CreateTab = function(tabConfig)
-        return self:CreateTab(tabConfig, contentArea, tabButtonsContainer)
-    end
-    
-    getgenv().Notify = function(title, content, duration, type)
-        self:Notify(title, content, duration, type)
-    end
-    
-    getgenv().JoinDiscord = function(inviteCode)
-        self:JoinDiscord(inviteCode)
-    end
-    
-    getgenv().SaveConfig = function()
-        self:SaveConfig()
-    end
-    
-    getgenv().LoadConfig = function()
-        return self:LoadConfig()
-    end
-    
-    getgenv().SetConfigValue = function(key, value)
-        self:SetConfigValue(key, value)
-    end
-    
-    getgenv().GetConfigValue = function(key, default)
-        return self:GetConfigValue(key, default)
-    end
-    
-    getgenv().ToggleUI = function()
-        self:ToggleUI()
-    end
     
     local windowTable = {
         CreateTab = function(tabConfig)
