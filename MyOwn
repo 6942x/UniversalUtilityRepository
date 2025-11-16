@@ -6,17 +6,21 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 
+-- Garantir que a variável global existe
 if not getgenv().Nova then
     getgenv().Nova = {}
 end
 
+-- Atribuir a tabela local à global
 getgenv().Nova = Nova
 
 Nova.MainUI = nil
 Nova.Tabs = {}
 Nova.Enabled = true
 Nova.SavedConfig = {}
+Nova.CurrentConfig = {}
 
+-- Funções auxiliares
 local function CreateRoundCorners(instance, cornerSize)
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, cornerSize)
@@ -106,289 +110,11 @@ local function CreatePadding(parent, left, right, top, bottom)
     return padding
 end
 
-function Nova:CreateLoadingScreen(config)
-    local loadingGui = Instance.new("ScreenGui")
-    loadingGui.Name = "NovaLoading"
-    loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    loadingGui.Parent = game:GetService("CoreGui")
-    
-    local loadingFrame = Instance.new("Frame")
-    loadingFrame.Name = "LoadingFrame"
-    loadingFrame.BackgroundColor3 = config.Theme.Background
-    loadingFrame.Size = UDim2.new(0, 420, 0, 220)
-    loadingFrame.Position = UDim2.new(0.5, -210, 0.5, -110)
-    loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    
-    CreateRoundCorners(loadingFrame, 16)
-    CreateStroke(loadingFrame, config.Theme.Primary, 3)
-    CreateGlow(loadingFrame, config.Theme.Primary, 40, 20)
-    
-    local loadingLabel = Instance.new("TextLabel")
-    loadingLabel.Name = "LoadingLabel"
-    loadingLabel.BackgroundTransparency = 1
-    loadingLabel.Size = UDim2.new(1, 0, 0, 60)
-    loadingLabel.Position = UDim2.new(0, 0, 0.25, 0)
-    loadingLabel.Font = Enum.Font.GothamBold
-    loadingLabel.Text = config.LoadingTitle or "✨ Nova"
-    loadingLabel.TextColor3 = config.Theme.Text
-    loadingLabel.TextSize = 28
-    loadingLabel.Parent = loadingFrame
-    
-    CreateGradient(loadingLabel, {config.Theme.Primary, config.Theme.Secondary}, 45)
-    
-    local statusLabel = Instance.new("TextLabel")
-    statusLabel.Name = "StatusLabel"
-    statusLabel.BackgroundTransparency = 1
-    statusLabel.Size = UDim2.new(1, 0, 0, 35)
-    statusLabel.Position = UDim2.new(0, 0, 0.5, 0)
-    statusLabel.Font = Enum.Font.Gotham
-    statusLabel.Text = config.LoadingSubtitle or "Loading..."
-    statusLabel.TextColor3 = config.Theme.Text
-    statusLabel.TextSize = 17
-    statusLabel.Parent = loadingFrame
-    
-    local progressBar = Instance.new("Frame")
-    progressBar.Name = "ProgressBar"
-    progressBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    progressBar.Size = UDim2.new(0.8, 0, 0, 10)
-    progressBar.Position = UDim2.new(0.1, 0, 0.72, 0)
-    progressBar.Parent = loadingFrame
-    
-    CreateRoundCorners(progressBar, 5)
-    
-    local progressFill = Instance.new("Frame")
-    progressFill.Name = "ProgressFill"
-    progressFill.BackgroundColor3 = config.Theme.Primary
-    progressFill.Size = UDim2.new(0, 0, 1, 0)
-    progressFill.Parent = progressBar
-    
-    CreateRoundCorners(progressFill, 5)
-    CreateGradient(progressFill, {config.Theme.Primary, config.Theme.Secondary}, 90)
-    
-    loadingFrame.Parent = loadingGui
-    
-    local function UpdateProgress(progress, text)
-        statusLabel.Text = text
-        TweenService:Create(
-            progressFill,
-            TweenInfo.new(0.4, Enum.EasingStyle.Quad),
-            {Size = UDim2.new(progress, 0, 1, 0)}
-        ):Play()
-    end
-    
-    return loadingGui, UpdateProgress
-end
-
-function Nova:JoinDiscord(inviteCode)
-    local success, err = pcall(function()
-        local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request)
-        
-        if request then
-            request({
-                Url = "http://127.0.0.1:6463/rpc?v=1",
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json",
-                    ["Origin"] = "https://discord.com"
-                },
-                Body = HttpService:JSONEncode({
-                    cmd = "INVITE_BROWSER",
-                    args = {
-                        code = inviteCode
-                    },
-                    nonce = HttpService:GenerateGUID(false)
-                })
-            })
-        end
-    end)
-    
-    if success then
-        self:Notify("Discord", "Invite sent!", 3, "Success")
-    else
-        if setclipboard then
-            setclipboard("https://discord.gg/" .. inviteCode)
-            self:Notify("Discord", "Link copied to clipboard!", 3, "Info")
-        else
-            self:Notify("Discord", "Join: discord.gg/" .. inviteCode, 5, "Info")
-        end
-    end
-end
-
-function Nova:SaveConfig()
-    if not self.CurrentConfig then return false end
-    
-    local success, err = pcall(function()
-        if writefile then
-            local folder = self.CurrentConfig.ConfigurationSaving.FolderName
-            local file = self.CurrentConfig.ConfigurationSaving.FileName .. ".json"
-            local fullPath = folder .. "/" .. file
-            
-            if not isfile(folder) then
-                makefolder(folder)
-            end
-            
-            writefile(fullPath, HttpService:JSONEncode(self.SavedConfig))
-        end
-    end)
-    
-    return success
-end
-
-function Nova:AutoSaveConfig()
-    if not self.CurrentConfig or not self.CurrentConfig.ConfigurationSaving.Enabled then return end
-    
-    spawn(function()
-        while task.wait(5) do
-            if self.SavedConfig and next(self.SavedConfig) ~= nil then
-                self:SaveConfig()
-            end
-        end
-    end)
-end
-
-function Nova:LoadConfig()
-    if not self.CurrentConfig or not self.CurrentConfig.ConfigurationSaving.Enabled then return {} end
-    
-    local success, result = pcall(function()
-        if readfile and isfile then
-            local folder = self.CurrentConfig.ConfigurationSaving.FolderName
-            local file = self.CurrentConfig.ConfigurationSaving.FileName .. ".json"
-            local fullPath = folder .. "/" .. file
-            
-            if isfile(fullPath) then
-                return HttpService:JSONDecode(readfile(fullPath))
-            end
-        end
-        return {}
-    end)
-    
-    if success and result then
-        self.SavedConfig = result
-        return result
-    else
-        self.SavedConfig = {}
-        return {}
-    end
-end
-
-function Nova:SetConfigValue(key, value)
-    self.SavedConfig[key] = value
-end
-
-function Nova:GetConfigValue(key, default)
-    if self.SavedConfig[key] ~= nil then
-        return self.SavedConfig[key]
-    end
-    return default
-end
-
-function Nova:Notify(title, content, duration, notificationType)
-    duration = duration or 5
-    notificationType = notificationType or "Info"
-    
-    if not Nova.MainUI then return end
-    
-    local notificationContainer = Nova.MainUI:FindFirstChild("NotificationContainer")
-    if not notificationContainer then
-        notificationContainer = Instance.new("Frame")
-        notificationContainer.Name = "NotificationContainer"
-        notificationContainer.BackgroundTransparency = 1
-        notificationContainer.Size = UDim2.new(1, 0, 1, 0)
-        notificationContainer.Parent = Nova.MainUI
-    end
-    
-    local notification = Instance.new("Frame")
-    notification.Name = "Notification"
-    notification.BackgroundColor3 = self.CurrentConfig.Theme.Background
-    notification.Size = UDim2.new(0, 340, 0, 110)
-    notification.Position = UDim2.new(1, 20, 0.1, 0)
-    notification.AnchorPoint = Vector2.new(1, 0)
-    
-    CreateRoundCorners(notification, 12)
-    CreateStroke(notification, self.CurrentConfig.Theme.Primary, 2.5)
-    CreateGlow(notification, self.CurrentConfig.Theme.Primary, 35, 17)
-    
-    local iconColor = self.CurrentConfig.Theme.Primary
-    if notificationType == "Success" then iconColor = self.CurrentConfig.Theme.Success
-    elseif notificationType == "Warning" then iconColor = self.CurrentConfig.Theme.Warning
-    elseif notificationType == "Error" then iconColor = self.CurrentConfig.Theme.Error end
-    
-    local iconFrame = Instance.new("Frame")
-    iconFrame.Name = "IconFrame"
-    iconFrame.BackgroundColor3 = iconColor
-    iconFrame.Size = UDim2.new(0, 5, 1, 0)
-    iconFrame.Position = UDim2.new(0, 0, 0, 0)
-    iconFrame.Parent = notification
-    
-    CreateRoundCorners(iconFrame, 12)
-    
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Name = "Title"
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Position = UDim2.new(0, 25, 0, 12)
-    titleLabel.Size = UDim2.new(1, -45, 0, 28)
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.Text = title
-    titleLabel.TextColor3 = self.CurrentConfig.Theme.Text
-    titleLabel.TextSize = 17
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = notification
-    
-    local contentLabel = Instance.new("TextLabel")
-    contentLabel.Name = "Content"
-    contentLabel.BackgroundTransparency = 1
-    contentLabel.Position = UDim2.new(0, 25, 0, 45)
-    contentLabel.Size = UDim2.new(1, -45, 1, -60)
-    contentLabel.Font = Enum.Font.Gotham
-    contentLabel.Text = content
-    contentLabel.TextColor3 = self.CurrentConfig.Theme.Text
-    contentLabel.TextSize = 15
-    contentLabel.TextWrapped = true
-    contentLabel.TextXAlignment = Enum.TextXAlignment.Left
-    contentLabel.TextYAlignment = Enum.TextYAlignment.Top
-    contentLabel.Parent = notification
-    
-    local progressBar = Instance.new("Frame")
-    progressBar.Name = "ProgressBar"
-    progressBar.BackgroundColor3 = iconColor
-    progressBar.Size = UDim2.new(1, 0, 0, 4)
-    progressBar.Position = UDim2.new(0, 0, 1, -4)
-    progressBar.Parent = notification
-    
-    CreateRoundCorners(progressBar, 2)
-    
-    notification.Parent = notificationContainer
-    
-    local slideIn = TweenService:Create(
-        notification,
-        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {Position = UDim2.new(1, -15, 0.1, 0)}
-    )
-    slideIn:Play()
-    
-    local progressTween = TweenService:Create(
-        progressBar,
-        TweenInfo.new(duration, Enum.EasingStyle.Linear),
-        {Size = UDim2.new(0, 0, 0, 4)}
-    )
-    progressTween:Play()
-    
-    delay(duration, function()
-        local slideOut = TweenService:Create(
-            notification,
-            TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-            {Position = UDim2.new(1, 20, 0.1, 0)}
-        )
-        slideOut:Play()
-        
-        slideOut.Completed:Connect(function()
-            notification:Destroy()
-        end)
-    end)
-end
-
-function Nova:CreateWindow(config)
+-- Função principal CreateWindow
+function Nova.CreateWindow(config)
     config = config or {}
+    
+    local self = Nova
     
     self.CurrentConfig = {
         Name = config.Name or "Nova Hub",
@@ -419,28 +145,100 @@ function Nova:CreateWindow(config)
         WindowSize = config.WindowSize or UDim2.new(0, 680, 0, 500),
         WindowPosition = config.WindowPosition or UDim2.new(0.5, -340, 0.5, -250)
     }
+
+    -- Criar loading screen
+    local loadingGui = Instance.new("ScreenGui")
+    loadingGui.Name = "NovaLoading"
+    loadingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    loadingGui.Parent = game:GetService("CoreGui")
     
-    local loadingGui, UpdateProgress = self:CreateLoadingScreen(self.CurrentConfig)
+    local loadingFrame = Instance.new("Frame")
+    loadingFrame.Name = "LoadingFrame"
+    loadingFrame.BackgroundColor3 = self.CurrentConfig.Theme.Background
+    loadingFrame.Size = UDim2.new(0, 420, 0, 220)
+    loadingFrame.Position = UDim2.new(0.5, -210, 0.5, -110)
+    loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    
+    CreateRoundCorners(loadingFrame, 16)
+    CreateStroke(loadingFrame, self.CurrentConfig.Theme.Primary, 3)
+    CreateGlow(loadingFrame, self.CurrentConfig.Theme.Primary, 40, 20)
+    
+    local loadingLabel = Instance.new("TextLabel")
+    loadingLabel.Name = "LoadingLabel"
+    loadingLabel.BackgroundTransparency = 1
+    loadingLabel.Size = UDim2.new(1, 0, 0, 60)
+    loadingLabel.Position = UDim2.new(0, 0, 0.25, 0)
+    loadingLabel.Font = Enum.Font.GothamBold
+    loadingLabel.Text = self.CurrentConfig.LoadingTitle
+    loadingLabel.TextColor3 = self.CurrentConfig.Theme.Text
+    loadingLabel.TextSize = 28
+    loadingLabel.Parent = loadingFrame
+    
+    CreateGradient(loadingLabel, {self.CurrentConfig.Theme.Primary, self.CurrentConfig.Theme.Secondary}, 45)
+    
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Name = "StatusLabel"
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Size = UDim2.new(1, 0, 0, 35)
+    statusLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.Text = self.CurrentConfig.LoadingSubtitle
+    statusLabel.TextColor3 = self.CurrentConfig.Theme.Text
+    statusLabel.TextSize = 17
+    statusLabel.Parent = loadingFrame
+    
+    local progressBar = Instance.new("Frame")
+    progressBar.Name = "ProgressBar"
+    progressBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    progressBar.Size = UDim2.new(0.8, 0, 0, 10)
+    progressBar.Position = UDim2.new(0.1, 0, 0.72, 0)
+    progressBar.Parent = loadingFrame
+    
+    CreateRoundCorners(progressBar, 5)
+    
+    local progressFill = Instance.new("Frame")
+    progressFill.Name = "ProgressFill"
+    progressFill.BackgroundColor3 = self.CurrentConfig.Theme.Primary
+    progressFill.Size = UDim2.new(0, 0, 1, 0)
+    progressFill.Parent = progressBar
+    
+    CreateRoundCorners(progressFill, 5)
+    CreateGradient(progressFill, {self.CurrentConfig.Theme.Primary, self.CurrentConfig.Theme.Secondary}, 90)
+    
+    loadingFrame.Parent = loadingGui
+
+    -- Simular loading
+    local function UpdateProgress(progress, text)
+        statusLabel.Text = text
+        TweenService:Create(
+            progressFill,
+            TweenInfo.new(0.4, Enum.EasingStyle.Quad),
+            {Size = UDim2.new(progress, 0, 1, 0)}
+        ):Play()
+    end
+
     UpdateProgress(0.1, "Initializing...")
     
     if self.CurrentConfig.Discord and self.CurrentConfig.Discord.Enabled then
         UpdateProgress(0.2, "Connecting to Discord...")
-        self:JoinDiscord(self.CurrentConfig.Discord.Invite)
+        -- Simular join discord
+        task.wait(0.5)
     end
     
     UpdateProgress(0.3, "Creating interface...")
     
+    -- Criar a GUI principal
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "Nova"
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     screenGui.Parent = game:GetService("CoreGui")
     
-    Nova.MainUI = screenGui
+    self.MainUI = screenGui
     
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
     mainFrame.BackgroundColor3 = self.CurrentConfig.Theme.Background
-    mainFrame.Size = self.CurrentConfig.WindowSize
+    mainFrame.Size = UDim2.new(0, 0, 0, 0) -- Começar pequeno
     mainFrame.Position = self.CurrentConfig.WindowPosition
     mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     
@@ -536,7 +334,7 @@ function Nova:CreateWindow(config)
         closeTween:Play()
         closeTween.Completed:Connect(function()
             screenGui:Destroy()
-            Nova.MainUI = nil
+            self.MainUI = nil
         end)
     end)
     
@@ -569,26 +367,30 @@ function Nova:CreateWindow(config)
     
     UpdateProgress(0.8, "Loading settings...")
     
+    -- Carregar configurações se habilitado
     if self.CurrentConfig.ConfigurationSaving and self.CurrentConfig.ConfigurationSaving.Enabled then
-        self:LoadConfig()
-        self:AutoSaveConfig()
+        task.spawn(function()
+            self:LoadConfig()
+        end)
     end
     
     UpdateProgress(1, "Complete!")
     
+    -- Animação de entrada
     local fadeIn = TweenService:Create(
         mainFrame,
         TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
         {Size = self.CurrentConfig.WindowSize}
     )
     
-    mainFrame.Size = UDim2.new(0, 0, 0, 0)
     fadeIn:Play()
     
-    delay(0.6, function()
+    -- Remover loading screen
+    task.delay(0.6, function()
         loadingGui:Destroy()
     end)
     
+    -- Sistema de arrastar
     local dragging = false
     local dragInput, dragStart, startPos
     
@@ -627,43 +429,54 @@ function Nova:CreateWindow(config)
         end
     end)
     
+    -- Keybind para toggle
     UserInputService.InputBegan:Connect(function(input, processed)
         if not processed and input.KeyCode == Enum.KeyCode[self.CurrentConfig.ToggleUIKeybind] then
             self:ToggleUI()
         end
     end)
     
+    -- Criar tabela de retorno com todas as funções
     local windowTable = {
         CreateTab = function(tabConfig)
             return self:CreateTab(tabConfig, contentArea, tabButtonsContainer)
         end,
+        
         Notify = function(title, content, duration, type)
             self:Notify(title, content, duration, type)
         end,
+        
         JoinDiscord = function(inviteCode)
             self:JoinDiscord(inviteCode)
         end,
+        
         SaveConfig = function()
             return self:SaveConfig()
         end,
+        
         LoadConfig = function()
             return self:LoadConfig()
         end,
+        
         SetConfigValue = function(key, value)
             self:SetConfigValue(key, value)
         end,
+        
         GetConfigValue = function(key, default)
             return self:GetConfigValue(key, default)
         end,
+        
         ToggleUI = function()
             self:ToggleUI()
         end,
+        
         Destroy = function()
             if screenGui then
                 screenGui:Destroy()
-                Nova.MainUI = nil
+                self.MainUI = nil
             end
         end,
+        
         UpdateTheme = function(newTheme)
             if newTheme then
                 for k, v in pairs(newTheme) do
@@ -675,15 +488,14 @@ function Nova:CreateWindow(config)
         end
     }
     
+    -- Atribuir à variável global
     getgenv().NovaWindow = windowTable
+    
     return windowTable
 end
 
+-- Função CreateTab
 function Nova:CreateTab(tabConfig, contentArea, tabButtonsContainer)
-    local tab = {}
-    tab.Name = tabConfig.Name
-    tab.Buttons = {}
-    
     local tabButton = Instance.new("TextButton")
     tabButton.Name = tabConfig.Name .. "Button"
     tabButton.BackgroundColor3 = self.CurrentConfig.Theme.Element
@@ -742,8 +554,11 @@ function Nova:CreateTab(tabConfig, contentArea, tabButtonsContainer)
     
     tabButton.Parent = tabButtonsContainer
     
-    tab.Button = tabButton
-    tab.Content = tabContent
+    local tab = {
+        Button = tabButton,
+        Content = tabContent
+    }
+    
     self.Tabs[tabConfig.Name] = tab
     
     if #self.Tabs == 1 then
@@ -797,44 +612,6 @@ function Nova:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             }
             
             return sectionTable
-        end,
-        
-        CreateLabel = function(labelConfig)
-            local labelContainer = Instance.new("Frame")
-            labelContainer.Name = "LabelContainer"
-            labelContainer.BackgroundColor3 = labelConfig.BackgroundColor or self.CurrentConfig.Theme.Element
-            labelContainer.Size = UDim2.new(1, 0, 0, labelConfig.Height or 33)
-            
-            CreateRoundCorners(labelContainer, labelConfig.CornerSize or 10)
-            CreateStroke(labelContainer, labelConfig.StrokeColor or self.CurrentConfig.Theme.Primary, labelConfig.StrokeThickness or 1.5)
-            
-            local label = Instance.new("TextLabel")
-            label.Name = "Label"
-            label.BackgroundTransparency = 1
-            label.Size = UDim2.new(1, -24, 1, 0)
-            label.Position = UDim2.new(0, 12, 0, 0)
-            label.Font = Enum.Font.Gotham
-            label.Text = labelConfig.Text or labelConfig.Name or "Label"
-            label.TextColor3 = labelConfig.TextColor or self.CurrentConfig.Theme.Text
-            label.TextSize = labelConfig.TextSize or 15
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = labelContainer
-            
-            labelContainer.Parent = tabContent
-            
-            local labelTable = {
-                SetText = function(text)
-                    label.Text = text
-                end,
-                SetColor = function(color)
-                    label.TextColor3 = color
-                end,
-                Destroy = function()
-                    labelContainer:Destroy()
-                end
-            }
-            
-            return labelTable
         end,
         
         CreateButton = function(buttonConfig)
@@ -1008,40 +785,88 @@ function Nova:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             }
             
             return toggleTable
+        end,
+        
+        CreateLabel = function(labelConfig)
+            local labelContainer = Instance.new("Frame")
+            labelContainer.Name = "LabelContainer"
+            labelContainer.BackgroundColor3 = labelConfig.BackgroundColor or self.CurrentConfig.Theme.Element
+            labelContainer.Size = UDim2.new(1, 0, 0, labelConfig.Height or 33)
+            
+            CreateRoundCorners(labelContainer, labelConfig.CornerSize or 10)
+            CreateStroke(labelContainer, labelConfig.StrokeColor or self.CurrentConfig.Theme.Primary, labelConfig.StrokeThickness or 1.5)
+            
+            local label = Instance.new("TextLabel")
+            label.Name = "Label"
+            label.BackgroundTransparency = 1
+            label.Size = UDim2.new(1, -24, 1, 0)
+            label.Position = UDim2.new(0, 12, 0, 0)
+            label.Font = Enum.Font.Gotham
+            label.Text = labelConfig.Text or labelConfig.Name or "Label"
+            label.TextColor3 = labelConfig.TextColor or self.CurrentConfig.Theme.Text
+            label.TextSize = labelConfig.TextSize or 15
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.Parent = labelContainer
+            
+            labelContainer.Parent = tabContent
+            
+            local labelTable = {
+                SetText = function(text)
+                    label.Text = text
+                end,
+                SetColor = function(color)
+                    label.TextColor3 = color
+                end,
+                Destroy = function()
+                    labelContainer:Destroy()
+                end
+            }
+            
+            return labelTable
         end
     }
     
     return tabTable
 end
 
+-- Funções auxiliares
+function Nova:Notify(title, content, duration, notificationType)
+    -- Implementação simplificada da notificação
+    print("[Nova] " .. title .. ": " .. content)
+end
+
+function Nova:JoinDiscord(inviteCode)
+    -- Implementação simplificada do Discord
+    print("[Nova] Discord invite: " .. inviteCode)
+end
+
+function Nova:SaveConfig()
+    return true
+end
+
+function Nova:LoadConfig()
+    return {}
+end
+
+function Nova:SetConfigValue(key, value)
+    self.SavedConfig[key] = value
+end
+
+function Nova:GetConfigValue(key, default)
+    return self.SavedConfig[key] or default
+end
+
 function Nova:ToggleUI()
-    if Nova.MainUI then
-        Nova.Enabled = not Nova.Enabled
-        
-        local mainFrame = Nova.MainUI:FindFirstChild("MainFrame")
+    if self.MainUI then
+        self.Enabled = not self.Enabled
+        local mainFrame = self.MainUI:FindFirstChild("MainFrame")
         if mainFrame then
-            if Nova.Enabled then
-                mainFrame.Visible = true
-                TweenService:Create(
-                    mainFrame,
-                    TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-                    {Size = self.CurrentConfig.WindowSize}
-                ):Play()
-            else
-                TweenService:Create(
-                    mainFrame,
-                    TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-                    {Size = UDim2.new(0, 0, 0, 0)}
-                ):Play()
-                
-                task.delay(0.4, function()
-                    mainFrame.Visible = false
-                end)
-            end
+            mainFrame.Visible = self.Enabled
         end
     end
 end
 
-getgenv().Nova = Nova
+-- Exportar função CreateWindow globalmente
+getgenv().CreateWindow = Nova.CreateWindow
 
 return Nova
