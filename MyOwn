@@ -6,7 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 
--- Make NovaHub global
+-- Make NovaHub global immediately
 getgenv().NovaHub = NovaHub
 
 NovaHub.Config = {
@@ -30,15 +30,15 @@ NovaHub.Enabled = true
 NovaHub.ConfigFile = "NovaHubConfig.json"
 NovaHub.SavedConfig = {}
 
--- Make utility functions global
-getgenv().CreateRoundCorners = function(instance, cornerSize)
+-- Utility Functions
+local function CreateRoundCorners(instance, cornerSize)
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, cornerSize)
     corner.Parent = instance
     return corner
 end
 
-getgenv().CreateStroke = function(instance, color, thickness)
+local function CreateStroke(instance, color, thickness)
     local stroke = Instance.new("UIStroke")
     stroke.Color = color
     stroke.Thickness = thickness
@@ -46,7 +46,7 @@ getgenv().CreateStroke = function(instance, color, thickness)
     return stroke
 end
 
-getgenv().CreateGradient = function(instance, colors, rotation)
+local function CreateGradient(instance, colors, rotation)
     local gradient = Instance.new("UIGradient")
     
     if #colors == 2 then
@@ -68,7 +68,7 @@ getgenv().CreateGradient = function(instance, colors, rotation)
     return gradient
 end
 
-getgenv().CreateGlow = function(parent, color, size, offset)
+local function CreateGlow(parent, color, size, offset)
     local glow = Instance.new("ImageLabel")
     glow.Name = "Glow"
     glow.BackgroundTransparency = 1
@@ -92,7 +92,7 @@ getgenv().CreateGlow = function(parent, color, size, offset)
     return glow
 end
 
-getgenv().AnimateHover = function(element, hoverColor, normalColor)
+local function AnimateHover(element, hoverColor, normalColor)
     element.MouseEnter:Connect(function()
         TweenService:Create(
             element,
@@ -110,7 +110,7 @@ getgenv().AnimateHover = function(element, hoverColor, normalColor)
     end)
 end
 
-getgenv().CreatePadding = function(parent, left, right, top, bottom)
+local function CreatePadding(parent, left, right, top, bottom)
     local padding = Instance.new("UIPadding")
     padding.PaddingLeft = UDim.new(0, left)
     padding.PaddingRight = UDim.new(0, right)
@@ -120,8 +120,8 @@ getgenv().CreatePadding = function(parent, left, right, top, bottom)
     return padding
 end
 
--- Make core functions global
-getgenv().JoinDiscord = function(inviteCode)
+-- Core Functions
+function NovaHub:JoinDiscord(inviteCode)
     local success, err = pcall(function()
         local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request)
         
@@ -145,61 +145,61 @@ getgenv().JoinDiscord = function(inviteCode)
     end)
     
     if success then
-        NovaHub:Notify("Discord", "Discord invite sent!", 3, "Success")
+        self:Notify("Discord", "Discord invite sent!", 3, "Success")
     else
         if setclipboard then
             setclipboard("https://discord.gg/" .. inviteCode)
-            NovaHub:Notify("Discord", "Invite link copied to clipboard!", 3, "Info")
+            self:Notify("Discord", "Invite link copied to clipboard!", 3, "Info")
         else
-            NovaHub:Notify("Discord", "Join: discord.gg/" .. inviteCode, 5, "Info")
+            self:Notify("Discord", "Join: discord.gg/" .. inviteCode, 5, "Info")
         end
     end
 end
 
-getgenv().SaveConfig = function()
+function NovaHub:SaveConfig()
     local success, err = pcall(function()
         if writefile then
-            writefile(NovaHub.ConfigFile, HttpService:JSONEncode(NovaHub.SavedConfig))
+            writefile(self.ConfigFile, HttpService:JSONEncode(self.SavedConfig))
         end
     end)
     
     return success
 end
 
-getgenv().AutoSaveConfig = function()
+function NovaHub:AutoSaveConfig()
     spawn(function()
         while task.wait(5) do
-            if NovaHub.SavedConfig and next(NovaHub.SavedConfig) ~= nil then
-                SaveConfig()
+            if self.SavedConfig and next(self.SavedConfig) ~= nil then
+                self:SaveConfig()
             end
         end
     end)
 end
 
-getgenv().LoadConfig = function()
+function NovaHub:LoadConfig()
     local success, result = pcall(function()
-        if readfile and isfile and isfile(NovaHub.ConfigFile) then
-            return HttpService:JSONDecode(readfile(NovaHub.ConfigFile))
+        if readfile and isfile and isfile(self.ConfigFile) then
+            return HttpService:JSONDecode(readfile(self.ConfigFile))
         end
         return {}
     end)
     
     if success and result then
-        NovaHub.SavedConfig = result
+        self.SavedConfig = result
         return result
     else
-        NovaHub.SavedConfig = {}
+        self.SavedConfig = {}
         return {}
     end
 end
 
-getgenv().SetConfigValue = function(key, value)
-    NovaHub.SavedConfig[key] = value
+function NovaHub:SetConfigValue(key, value)
+    self.SavedConfig[key] = value
 end
 
-getgenv().GetConfigValue = function(key, default)
-    if NovaHub.SavedConfig[key] ~= nil then
-        return NovaHub.SavedConfig[key]
+function NovaHub:GetConfigValue(key, default)
+    if self.SavedConfig[key] ~= nil then
+        return self.SavedConfig[key]
     end
     return default
 end
@@ -309,13 +309,11 @@ function NovaHub:Notify(title, content, duration, notificationType)
     end)
 end
 
-getgenv().Notify = NovaHub.Notify
-
 function NovaHub:CreateWindow(config)
     config = config or {}
     
     if config.DiscordInvite then
-        JoinDiscord(config.DiscordInvite)
+        self:JoinDiscord(config.DiscordInvite)
     end
     
     local screenGui = Instance.new("ScreenGui")
@@ -504,38 +502,69 @@ function NovaHub:CreateWindow(config)
         end
     end)
     
-    LoadConfig()
-    AutoSaveConfig()
+    self:LoadConfig()
+    self:AutoSaveConfig()
+    
+    -- Make functions global
+    getgenv().CreateTab = function(tabConfig)
+        return self:CreateTab(tabConfig, contentArea, tabButtonsContainer)
+    end
+    
+    getgenv().Notify = function(title, content, duration, type)
+        self:Notify(title, content, duration, type)
+    end
+    
+    getgenv().JoinDiscord = function(inviteCode)
+        self:JoinDiscord(inviteCode)
+    end
+    
+    getgenv().SaveConfig = function()
+        self:SaveConfig()
+    end
+    
+    getgenv().LoadConfig = function()
+        return self:LoadConfig()
+    end
+    
+    getgenv().SetConfigValue = function(key, value)
+        self:SetConfigValue(key, value)
+    end
+    
+    getgenv().GetConfigValue = function(key, default)
+        return self:GetConfigValue(key, default)
+    end
+    
+    getgenv().ToggleUI = function()
+        self:ToggleUI()
+    end
     
     local windowTable = {
         CreateTab = function(tabConfig)
-            return NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
+            return self:CreateTab(tabConfig, contentArea, tabButtonsContainer)
         end,
         Notify = function(title, content, duration, type)
-            NovaHub:Notify(title, content, duration, type)
+            self:Notify(title, content, duration, type)
         end,
         JoinDiscord = function(inviteCode)
-            JoinDiscord(inviteCode)
+            self:JoinDiscord(inviteCode)
         end,
         SaveConfig = function()
-            SaveConfig()
+            self:SaveConfig()
         end,
         LoadConfig = function()
-            return LoadConfig()
+            return self:LoadConfig()
         end,
         SetConfigValue = function(key, value)
-            SetConfigValue(key, value)
+            self:SetConfigValue(key, value)
         end,
         GetConfigValue = function(key, default)
-            return GetConfigValue(key, default)
+            return self:GetConfigValue(key, default)
         end
     }
     
     getgenv().NovaHubWindow = windowTable
     return windowTable
 end
-
-getgenv().CreateWindow = NovaHub.CreateWindow
 
 function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
     local tab = {}
@@ -668,7 +697,6 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 end
             }
             
-            getgenv()[labelConfig.Name .. "Label"] = labelTable
             return labelTable
         end,
         
@@ -718,7 +746,6 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 end
             }
             
-            getgenv()[buttonConfig.Name .. "Button"] = buttonTable
             return buttonTable
         end,
         
@@ -771,7 +798,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local toggleState = toggleConfig.Default or false
             local toggleName = toggleConfig.Text or toggleConfig.Name or "Toggle"
             
-            local savedValue = GetConfigValue(toggleName, toggleState)
+            local savedValue = self:GetConfigValue(toggleName, toggleState)
             if savedValue ~= toggleState then
                 toggleState = savedValue
                 local targetColor = toggleState and self.Config.Theme.Success or Color3.fromRGB(80, 80, 80)
@@ -801,7 +828,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 
                 toggleButton.Text = toggleState and "ON" or "OFF"
                 
-                SetConfigValue(toggleName, toggleState)
+                self:SetConfigValue(toggleName, toggleState)
                 
                 if toggleConfig.Callback then
                     toggleConfig.Callback(toggleState)
@@ -821,14 +848,16 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                     TweenService:Create(toggleIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = targetPos}):Play()
                     
                     toggleButton.Text = value and "ON" or "OFF"
-                    SetConfigValue(toggleName, value)
+                    self:SetConfigValue(toggleName, value)
                     if toggleConfig.Callback then
                         toggleConfig.Callback(value)
                     end
+                end,
+                GetValue = function()
+                    return toggleState
                 end
             }
             
-            getgenv()[toggleConfig.Name .. "Toggle"] = toggleTable
             return toggleTable
         end,
         
@@ -923,7 +952,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local isSliding = false
             local sliderName = sliderConfig.Text or sliderConfig.Name or "Slider"
             
-            local savedValue = GetConfigValue(sliderName, currentValue)
+            local savedValue = self:GetConfigValue(sliderName, currentValue)
             if savedValue ~= currentValue then
                 currentValue = savedValue
                 local min = sliderConfig.Min
@@ -953,7 +982,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 
                 valueLabel.Text = tostring(math.floor(value * 100) / 100) .. (sliderConfig.Suffix or "")
                 
-                SetConfigValue(sliderName, value)
+                self:SetConfigValue(sliderName, value)
                 
                 if sliderConfig.Callback then
                     sliderConfig.Callback(value)
@@ -1000,10 +1029,12 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 SetValue = function(value)
                     currentValue = math.clamp(value, sliderConfig.Min, sliderConfig.Max)
                     updateSlider(currentValue)
+                end,
+                GetValue = function()
+                    return currentValue
                 end
             }
             
-            getgenv()[sliderConfig.Name .. "Slider"] = sliderTable
             return sliderTable
         end,
         
@@ -1059,7 +1090,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             local isOpen = false
             local dropdownName = dropdownConfig.Text or dropdownConfig.Name or "Dropdown"
             
-            local savedValue = GetConfigValue(dropdownName, currentOption)
+            local savedValue = self:GetConfigValue(dropdownName, currentOption)
             if savedValue ~= currentOption and table.find(dropdownConfig.Options, savedValue) then
                 currentOption = savedValue
                 dropdownButton.Text = dropdownName .. ": " .. currentOption
@@ -1067,7 +1098,7 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
             
             local function updateDropdown()
                 dropdownButton.Text = dropdownName .. ": " .. currentOption
-                SetConfigValue(dropdownName, currentOption)
+                self:SetConfigValue(dropdownName, currentOption)
                 if dropdownConfig.Callback then
                     dropdownConfig.Callback(currentOption)
                 end
@@ -1137,7 +1168,6 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 end
             }
             
-            getgenv()[dropdownConfig.Name .. "Dropdown"] = dropdownTable
             return dropdownTable
         end,
         
@@ -1197,7 +1227,6 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 end
             }
             
-            getgenv()[inputConfig.Name .. "Input"] = inputTable
             return inputTable
         end,
         
@@ -1249,16 +1278,12 @@ function NovaHub:CreateTab(tabConfig, contentArea, tabButtonsContainer)
                 end
             }
             
-            getgenv()[paragraphConfig.Title .. "Paragraph"] = paragraphTable
             return paragraphTable
         end
     }
     
-    getgenv()[tabConfig.Name .. "Tab"] = tabTable
     return tabTable
 end
-
-getgenv().CreateTab = NovaHub.CreateTab
 
 function NovaHub:ToggleUI()
     if NovaHub.MainUI then
@@ -1287,7 +1312,5 @@ function NovaHub:ToggleUI()
         end
     end
 end
-
-getgenv().ToggleUI = NovaHub.ToggleUI
 
 return NovaHub
