@@ -4,6 +4,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local VirtualInputManager = game:GetService("VirtualInputManager")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -12,7 +13,7 @@ ScreenGui.Name = "UniversalUtility"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local function protectGui()
+local function ProtectGui()
     if syn and syn.protect_gui then
         syn.protect_gui(ScreenGui)
         ScreenGui.Parent = CoreGui
@@ -23,31 +24,18 @@ local function protectGui()
     end
 end
 
-protectGui()
+ProtectGui()
 
-local Themes = {
-    {Name = "Purple Dark", TopBar = Color3.fromRGB(35, 35, 42), Background = Color3.fromRGB(25, 25, 30), Section = Color3.fromRGB(35, 35, 42), Accent = Color3.fromRGB(100, 150, 255)},
-    {Name = "Ocean Blue", TopBar = Color3.fromRGB(25, 40, 60), Background = Color3.fromRGB(15, 25, 40), Section = Color3.fromRGB(25, 40, 60), Accent = Color3.fromRGB(50, 150, 255)},
-    {Name = "Forest Green", TopBar = Color3.fromRGB(30, 50, 35), Background = Color3.fromRGB(20, 35, 25), Section = Color3.fromRGB(30, 50, 35), Accent = Color3.fromRGB(80, 200, 120)},
-    {Name = "Sunset Orange", TopBar = Color3.fromRGB(60, 35, 25), Background = Color3.fromRGB(40, 25, 15), Section = Color3.fromRGB(60, 35, 25), Accent = Color3.fromRGB(255, 140, 50)},
-    {Name = "Cherry Red", TopBar = Color3.fromRGB(50, 25, 30), Background = Color3.fromRGB(35, 15, 20), Section = Color3.fromRGB(50, 25, 30), Accent = Color3.fromRGB(255, 80, 100)},
-    {Name = "Royal Purple", TopBar = Color3.fromRGB(45, 30, 60), Background = Color3.fromRGB(30, 20, 45), Section = Color3.fromRGB(45, 30, 60), Accent = Color3.fromRGB(180, 100, 255)},
-    {Name = "Mint Fresh", TopBar = Color3.fromRGB(25, 50, 45), Background = Color3.fromRGB(15, 35, 30), Section = Color3.fromRGB(25, 50, 45), Accent = Color3.fromRGB(100, 255, 200)},
-    {Name = "Golden Hour", TopBar = Color3.fromRGB(55, 45, 25), Background = Color3.fromRGB(40, 30, 15), Section = Color3.fromRGB(55, 45, 25), Accent = Color3.fromRGB(255, 200, 80)},
-    {Name = "Deep Space", TopBar = Color3.fromRGB(20, 20, 35), Background = Color3.fromRGB(10, 10, 20), Section = Color3.fromRGB(20, 20, 35), Accent = Color3.fromRGB(150, 100, 255)},
-    {Name = "Neon Pink", TopBar = Color3.fromRGB(50, 25, 45), Background = Color3.fromRGB(35, 15, 30), Section = Color3.fromRGB(50, 25, 45), Accent = Color3.fromRGB(255, 100, 200)}
-}
-
-local CurrentTheme = Themes[1]
 local CurrentKeybind = Enum.KeyCode.G
 local CurrentPerformanceLevel = 0
-local CurrentShader = 0
 local CurrentClickType = "Current"
 
 local JumpEnabled = false
 local ClickEnabled = false
 local AutoSpamEnabled = false
 local IsChangingKeybind = false
+local FPSUnlockEnabled = false
+local TargetFPS = 60
 
 local JumpDelay = 10.0
 local ClickDelay = 3.0
@@ -60,8 +48,6 @@ local OriginalSettings = {
     Materials = {}, Reflectances = {}, Transparencies = {}, Decals = {},
     Lighting = {}, CastShadows = {}, RenderFidelity = {}
 }
-
-local OriginalShaders = {}
 
 local KeyCodeNames = {}
 for i = 65, 90 do KeyCodeNames[Enum.KeyCode[string.char(i)]] = string.char(i) end
@@ -103,7 +89,7 @@ local function CreateNotification(title, message, duration)
     local NotificationFrame = Instance.new("Frame")
     NotificationFrame.Size = UDim2.new(0, 320, 0, 0)
     NotificationFrame.Position = UDim2.new(1, -340, 0, 20)
-    NotificationFrame.BackgroundColor3 = CurrentTheme.Section
+    NotificationFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
     NotificationFrame.BorderSizePixel = 0
     NotificationFrame.ClipsDescendants = true
     NotificationFrame.Parent = ScreenGui
@@ -117,7 +103,7 @@ local function CreateNotification(title, message, duration)
     NotifGlow.Position = UDim2.new(0, -12, 0, -12)
     NotifGlow.BackgroundTransparency = 1
     NotifGlow.Image = "rbxasset://textures/ui/Keyboard/key_selection_9slice.png"
-    NotifGlow.ImageColor3 = CurrentTheme.Accent
+    NotifGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
     NotifGlow.ImageTransparency = 0.8
     NotifGlow.ScaleType = Enum.ScaleType.Slice
     NotifGlow.SliceCenter = Rect.new(12, 12, 52, 52)
@@ -180,7 +166,7 @@ local ReopenButton = Instance.new("ImageButton")
 ReopenButton.Name = "ReopenButton"
 ReopenButton.Size = UDim2.new(0, 0, 0, 0)
 ReopenButton.Position = UDim2.new(0.5, 0, 0, 30)
-ReopenButton.BackgroundColor3 = CurrentTheme.Accent
+ReopenButton.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 ReopenButton.BorderSizePixel = 0
 ReopenButton.Visible = false
 ReopenButton.ZIndex = 10
@@ -201,7 +187,7 @@ ReopenIcon.Parent = ReopenButton
 
 local ReopenPulse = Instance.new("Frame")
 ReopenPulse.Size = UDim2.new(1, 0, 1, 0)
-ReopenPulse.BackgroundColor3 = CurrentTheme.Accent
+ReopenPulse.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 ReopenPulse.BackgroundTransparency = 0.7
 ReopenPulse.BorderSizePixel = 0
 ReopenPulse.Parent = ReopenButton
@@ -214,7 +200,7 @@ local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.BackgroundColor3 = CurrentTheme.Background
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -230,7 +216,7 @@ MainGlow.Size = UDim2.new(1, 40, 1, 40)
 MainGlow.Position = UDim2.new(0, -20, 0, -20)
 MainGlow.BackgroundTransparency = 1
 MainGlow.Image = "rbxasset://textures/ui/Keyboard/key_selection_9slice.png"
-MainGlow.ImageColor3 = CurrentTheme.Accent
+MainGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
 MainGlow.ImageTransparency = 0.9
 MainGlow.ScaleType = Enum.ScaleType.Slice
 MainGlow.SliceCenter = Rect.new(12, 12, 52, 52)
@@ -239,8 +225,8 @@ MainGlow.Parent = MainFrame
 
 local TopBar = Instance.new("Frame")
 TopBar.Name = "TopBar"
-TopBar.Size = UDim2.new(1, 0, 0, 50)
-TopBar.BackgroundColor3 = CurrentTheme.TopBar
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
 TopBar.BorderSizePixel = 0
 TopBar.Parent = MainFrame
 
@@ -249,29 +235,29 @@ TopBarCorner.CornerRadius = UDim.new(0, 16)
 TopBarCorner.Parent = TopBar
 
 local TopBarGlow = Instance.new("Frame")
-TopBarGlow.Size = UDim2.new(1, 0, 0, 4)
+TopBarGlow.Size = UDim2.new(1, 0, 0, 3)
 TopBarGlow.Position = UDim2.new(0, 0, 1, 0)
-TopBarGlow.BackgroundColor3 = CurrentTheme.Accent
+TopBarGlow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 TopBarGlow.BackgroundTransparency = 0.8
 TopBarGlow.BorderSizePixel = 0
 TopBarGlow.Parent = TopBar
 
 local Title = Instance.new("TextLabel")
 Title.Name = "Title"
-Title.Size = UDim2.new(1, -120, 1, 0)
-Title.Position = UDim2.new(0, 20, 0, 0)
+Title.Size = UDim2.new(1, -80, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Text = "⚡ Universal Utility"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 20
+Title.TextSize = 18
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
 local CloseButton = Instance.new("ImageButton")
 CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 40, 0, 40)
-CloseButton.Position = UDim2.new(1, -50, 0.5, -20)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -40, 0.5, -15)
 CloseButton.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
 CloseButton.BorderSizePixel = 0
 CloseButton.Image = "rbxassetid://3926305904"
@@ -281,24 +267,24 @@ CloseButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.Parent = TopBar
 
 local CloseButtonCorner = Instance.new("UICorner")
-CloseButtonCorner.CornerRadius = UDim.new(0, 10)
+CloseButtonCorner.CornerRadius = UDim.new(0, 8)
 CloseButtonCorner.Parent = CloseButton
 
 local ScrollFrame = Instance.new("ScrollingFrame")
 ScrollFrame.Name = "ScrollFrame"
-ScrollFrame.Size = UDim2.new(1, -30, 1, -80)
-ScrollFrame.Position = UDim2.new(0, 15, 0, 65)
+ScrollFrame.Size = UDim2.new(1, -20, 1, -60)
+ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
-ScrollFrame.ScrollBarThickness = 8
-ScrollFrame.ScrollBarImageColor3 = CurrentTheme.Accent
+ScrollFrame.ScrollBarThickness = 6
+ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
 ScrollFrame.ScrollBarImageTransparency = 0.7
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1620)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1500)
 ScrollFrame.Parent = MainFrame
 
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "ContentFrame"
-ContentFrame.Size = UDim2.new(1, 0, 0, 1620)
+ContentFrame.Size = UDim2.new(1, 0, 0, 1500)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.Parent = ScrollFrame
 
@@ -306,29 +292,29 @@ local function CreateSection(name, position, height)
     local section = Instance.new("Frame")
     section.Size = UDim2.new(1, 0, 0, height)
     section.Position = position
-    section.BackgroundColor3 = CurrentTheme.Section
+    section.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
     section.BorderSizePixel = 0
     section.Parent = ContentFrame
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
+    corner.CornerRadius = UDim.new(0, 10)
     corner.Parent = section
     
     local glow = Instance.new("Frame")
     glow.Size = UDim2.new(1, 0, 0, 3)
     glow.Position = UDim2.new(0, 0, 1, -3)
-    glow.BackgroundColor3 = CurrentTheme.Accent
+    glow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
     glow.BackgroundTransparency = 0.6
     glow.BorderSizePixel = 0
     glow.Parent = section
     
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -24, 0, 28)
-    title.Position = UDim2.new(0, 12, 0, 10)
+    title.Size = UDim2.new(1, -20, 0, 24)
+    title.Position = UDim2.new(0, 10, 0, 8)
     title.BackgroundTransparency = 1
     title.Text = name
     title.Font = Enum.Font.GothamBold
-    title.TextSize = 16
+    title.TextSize = 15
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = section
@@ -343,38 +329,55 @@ local function CreateButton(parent, size, position, text)
     button.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     button.Text = text
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
+    button.TextSize = 13
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.BorderSizePixel = 0
     button.Parent = parent
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = button
     
     return button
 end
 
-local function CreateSlider(parent, size, position, fillSize)
+local function CreateSlider(parent, size, position, minValue, maxValue, currentValue, labelText)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(size.X.Scale, size.X.Offset, 0, 36)
+    sliderFrame.Position = position
+    sliderFrame.BackgroundTransparency = 1
+    sliderFrame.Parent = parent
+    
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Size = UDim2.new(1, 0, 0, 16)
+    valueLabel.Position = UDim2.new(0, 0, 0, 0)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.Text = labelText
+    valueLabel.Font = Enum.Font.Gotham
+    valueLabel.TextSize = 12
+    valueLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+    valueLabel.Parent = sliderFrame
+    
     local slider = Instance.new("Frame")
-    slider.Size = size
-    slider.Position = position
+    slider.Size = UDim2.new(1, 0, 0, 6)
+    slider.Position = UDim2.new(0, 0, 0, 18)
     slider.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     slider.BorderSizePixel = 0
-    slider.Parent = parent
+    slider.Parent = sliderFrame
     
     local sliderCorner = Instance.new("UICorner")
-    sliderCorner.CornerRadius = UDim.new(0, 4)
+    sliderCorner.CornerRadius = UDim.new(0, 3)
     sliderCorner.Parent = slider
     
     local fill = Instance.new("Frame")
-    fill.Size = fillSize
-    fill.BackgroundColor3 = CurrentTheme.Accent
+    fill.Size = UDim2.new(0.5, 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
     fill.BorderSizePixel = 0
     fill.Parent = slider
     
     local fillCorner = Instance.new("UICorner")
-    fillCorner.CornerRadius = UDim.new(0, 4)
+    fillCorner.CornerRadius = UDim.new(0, 3)
     fillCorner.Parent = fill
     
     local button = Instance.new("TextButton")
@@ -383,29 +386,114 @@ local function CreateSlider(parent, size, position, fillSize)
     button.Text = ""
     button.Parent = slider
     
-    return slider, fill, button
+    local valueBox = Instance.new("TextBox")
+    valueBox.Size = UDim2.new(0, 50, 0, 24)
+    valueBox.Position = UDim2.new(1, -55, 0, 16)
+    valueBox.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    valueBox.Text = tostring(currentValue)
+    valueBox.Font = Enum.Font.Gotham
+    valueBox.TextSize = 13
+    valueBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    valueBox.ClearTextOnFocus = false
+    valueBox.Parent = sliderFrame
+    
+    local valueCorner = Instance.new("UICorner")
+    valueCorner.CornerRadius = UDim.new(0, 5)
+    valueCorner.Parent = valueBox
+    
+    return sliderFrame, slider, fill, button, valueBox, valueLabel
 end
 
-local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 0), 140)
-local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -24, 0, 40), UDim2.new(0, 12, 0, 45), "Toggle Keybind: G")
-local KeybindStatus = Instance.new("TextLabel")
-KeybindStatus.Size = UDim2.new(1, -24, 0, 28)
-KeybindStatus.Position = UDim2.new(0, 12, 0, 92)
-KeybindStatus.BackgroundTransparency = 1
-KeybindStatus.Text = "Click button above to change keybind"
-KeybindStatus.Font = Enum.Font.Gotham
-KeybindStatus.TextSize = 12
-KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
-KeybindStatus.TextXAlignment = Enum.TextXAlignment.Center
-KeybindStatus.Parent = UIConfigSection
+local HomeSection = CreateSection("🏠 Home", UDim2.new(0, 0, 0, 0), 260)
 
-local AntiAFKSection = CreateSection("🛡️ Anti-AFK System", UDim2.new(0, 0, 0, 155), 240)
-local JumpToggle = CreateButton(AntiAFKSection, UDim2.new(0, 220, 0, 36), UDim2.new(0, 12, 0, 45), "Auto Jump: OFF")
-local ClickToggle = CreateButton(AntiAFKSection, UDim2.new(0, 220, 0, 36), UDim2.new(1, -232, 0, 45), "Auto Click: OFF")
+local PlayerInfoFrame = Instance.new("Frame")
+PlayerInfoFrame.Size = UDim2.new(0, 140, 0, 200)
+PlayerInfoFrame.Position = UDim2.new(1, -150, 0, 40)
+PlayerInfoFrame.BackgroundTransparency = 1
+PlayerInfoFrame.Parent = HomeSection
+
+local PlayerImage = Instance.new("ImageLabel")
+PlayerImage.Size = UDim2.new(1, 0, 0, 140)
+PlayerImage.Position = UDim2.new(0, 0, 0, 0)
+PlayerImage.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+PlayerImage.BorderSizePixel = 0
+PlayerImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+PlayerImage.Parent = PlayerInfoFrame
+
+local PlayerImageCorner = Instance.new("UICorner")
+PlayerImageCorner.CornerRadius = UDim.new(0, 10)
+PlayerImageCorner.Parent = PlayerImage
+
+local PlayerName = Instance.new("TextLabel")
+PlayerName.Size = UDim2.new(1, 0, 0, 18)
+PlayerName.Position = UDim2.new(0, 0, 0, 145)
+PlayerName.BackgroundTransparency = 1
+PlayerName.Text = LocalPlayer.Name
+PlayerName.Font = Enum.Font.GothamBold
+PlayerName.TextSize = 13
+PlayerName.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlayerName.TextXAlignment = Enum.TextXAlignment.Center
+PlayerName.Parent = PlayerInfoFrame
+
+local FPSLabel = Instance.new("TextLabel")
+FPSLabel.Size = UDim2.new(1, 0, 0, 18)
+FPSLabel.Position = UDim2.new(0, 0, 0, 165)
+FPSLabel.BackgroundTransparency = 1
+FPSLabel.Text = "FPS: 60"
+FPSLabel.Font = Enum.Font.Gotham
+FPSLabel.TextSize = 12
+FPSLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+FPSLabel.TextXAlignment = Enum.TextXAlignment.Center
+FPSLabel.Parent = PlayerInfoFrame
+
+local GameInfoFrame = Instance.new("Frame")
+GameInfoFrame.Size = UDim2.new(0, 280, 0, 200)
+GameInfoFrame.Position = UDim2.new(0, 10, 0, 40)
+GameInfoFrame.BackgroundTransparency = 1
+GameInfoFrame.Parent = HomeSection
+
+local GameImage = Instance.new("ImageLabel")
+GameImage.Size = UDim2.new(1, 0, 0, 140)
+GameImage.Position = UDim2.new(0, 0, 0, 0)
+GameImage.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+GameImage.BorderSizePixel = 0
+GameImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+GameImage.Parent = GameInfoFrame
+
+local GameImageCorner = Instance.new("UICorner")
+GameImageCorner.CornerRadius = UDim.new(0, 10)
+GameImageCorner.Parent = GameImage
+
+local GameName = Instance.new("TextLabel")
+GameName.Size = UDim2.new(1, 0, 0, 30)
+GameName.Position = UDim2.new(0, 0, 0, 145)
+GameName.BackgroundTransparency = 1
+GameName.Text = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+GameName.Font = Enum.Font.GothamBold
+GameName.TextSize = 14
+GameName.TextColor3 = Color3.fromRGB(255, 255, 255)
+GameName.TextXAlignment = Enum.TextXAlignment.Center
+GameName.TextWrapped = true
+GameName.Parent = GameInfoFrame
+
+local GameId = Instance.new("TextLabel")
+GameId.Size = UDim2.new(1, 0, 0, 18)
+GameId.Position = UDim2.new(0, 0, 0, 177)
+GameId.BackgroundTransparency = 1
+GameId.Text = "ID: " .. game.PlaceId
+GameId.Font = Enum.Font.Gotham
+GameId.TextSize = 12
+GameId.TextColor3 = Color3.fromRGB(180, 180, 180)
+GameId.TextXAlignment = Enum.TextXAlignment.Center
+GameId.Parent = GameInfoFrame
+
+local AntiAFKSection = CreateSection("🛡️ Anti-AFK System", UDim2.new(0, 0, 0, 275), 240)
+local JumpToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(0, 10, 0, 40), "Auto Jump: OFF")
+local ClickToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(1, -210, 0, 40), "Auto Click: OFF")
 
 local ClickTypeLabel = Instance.new("TextLabel")
-ClickTypeLabel.Size = UDim2.new(1, -24, 0, 20)
-ClickTypeLabel.Position = UDim2.new(0, 12, 0, 88)
+ClickTypeLabel.Size = UDim2.new(1, -20, 0, 18)
+ClickTypeLabel.Position = UDim2.new(0, 10, 0, 78)
 ClickTypeLabel.BackgroundTransparency = 1
 ClickTypeLabel.Text = "Click Type:"
 ClickTypeLabel.Font = Enum.Font.Gotham
@@ -414,55 +502,33 @@ ClickTypeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 ClickTypeLabel.TextXAlignment = Enum.TextXAlignment.Left
 ClickTypeLabel.Parent = AntiAFKSection
 
-local ClickTypeCurrent = CreateButton(AntiAFKSection, UDim2.new(0, 140, 0, 28), UDim2.new(0, 12, 0, 112), "Current Location")
-local ClickTypeCenter = CreateButton(AntiAFKSection, UDim2.new(0, 140, 0, 28), UDim2.new(0.5, -70, 0, 112), "Screen Center")
-local ClickTypeRandom = CreateButton(AntiAFKSection, UDim2.new(0, 140, 0, 28), UDim2.new(1, -152, 0, 112), "Random Spot")
+local ClickTypeCurrent = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(0, 10, 0, 100), "Current")
+local ClickTypeCenter = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(0.5, -60, 0, 100), "Center")
+local ClickTypeRandom = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(1, -130, 0, 100), "Random")
 
-local JumpDelayLabel = Instance.new("TextLabel")
-JumpDelayLabel.Size = UDim2.new(0, 220, 0, 20)
-JumpDelayLabel.Position = UDim2.new(0, 12, 0, 147)
-JumpDelayLabel.BackgroundTransparency = 1
-JumpDelayLabel.Text = "Jump Delay: 10.0s"
-JumpDelayLabel.Font = Enum.Font.Gotham
-JumpDelayLabel.TextSize = 12
-JumpDelayLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-JumpDelayLabel.TextXAlignment = Enum.TextXAlignment.Left
-JumpDelayLabel.Parent = AntiAFKSection
-
-local ClickDelayLabel = Instance.new("TextLabel")
-ClickDelayLabel.Size = UDim2.new(0, 220, 0, 20)
-ClickDelayLabel.Position = UDim2.new(1, -232, 0, 147)
-ClickDelayLabel.BackgroundTransparency = 1
-ClickDelayLabel.Text = "Click Delay: 3.0s"
-ClickDelayLabel.Font = Enum.Font.Gotham
-ClickDelayLabel.TextSize = 12
-ClickDelayLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-ClickDelayLabel.TextXAlignment = Enum.TextXAlignment.Left
-ClickDelayLabel.Parent = AntiAFKSection
-
-local JumpDelaySlider, JumpSliderFill, JumpSliderButton = CreateSlider(AntiAFKSection, UDim2.new(0, 220, 0, 8), UDim2.new(0, 12, 0, 171), UDim2.new(0.5, 0, 1, 0))
-local ClickDelaySlider, ClickSliderFill, ClickSliderButton = CreateSlider(AntiAFKSection, UDim2.new(0, 220, 0, 8), UDim2.new(1, -232, 0, 171), UDim2.new(0.2, 0, 1, 0))
+local JumpDelayFrame, JumpDelaySlider, JumpSliderFill, JumpSliderButton, JumpDelayBox, JumpDelayLabel = CreateSlider(AntiAFKSection, UDim2.new(0, 200, 0, 36), UDim2.new(0, 10, 0, 132), 5, 30, 10, "Jump Delay:")
+local ClickDelayFrame, ClickDelaySlider, ClickSliderFill, ClickSliderButton, ClickDelayBox, ClickDelayLabel = CreateSlider(AntiAFKSection, UDim2.new(0, 200, 0, 36), UDim2.new(1, -210, 0, 132), 1, 10, 3, "Click Delay:")
 
 local AntiAFKStatus = Instance.new("TextLabel")
-AntiAFKStatus.Size = UDim2.new(1, -24, 0, 32)
-AntiAFKStatus.Position = UDim2.new(0, 12, 0, 186)
+AntiAFKStatus.Size = UDim2.new(1, -20, 0, 28)
+AntiAFKStatus.Position = UDim2.new(0, 10, 0, 175)
 AntiAFKStatus.BackgroundTransparency = 1
 AntiAFKStatus.Text = "Status: All Inactive"
 AntiAFKStatus.Font = Enum.Font.Gotham
-AntiAFKStatus.TextSize = 13
+AntiAFKStatus.TextSize = 12
 AntiAFKStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AntiAFKStatus.TextXAlignment = Enum.TextXAlignment.Center
 AntiAFKStatus.Parent = AntiAFKSection
 
-local AutoSpamSection = CreateSection("⌨️ Auto Key Spam", UDim2.new(0, 0, 0, 410), 180)
+local AutoSpamSection = CreateSection("⌨️ Auto Key Spam", UDim2.new(0, 0, 0, 530), 160)
 local SpamInput = Instance.new("TextBox")
-SpamInput.Size = UDim2.new(1, -24, 0, 40)
-SpamInput.Position = UDim2.new(0, 12, 0, 45)
+SpamInput.Size = UDim2.new(1, -20, 0, 36)
+SpamInput.Position = UDim2.new(0, 10, 0, 40)
 SpamInput.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
 SpamInput.Text = "Q"
 SpamInput.PlaceholderText = "Enter key (A-Z, 0-9, F1-F12)"
 SpamInput.Font = Enum.Font.Gotham
-SpamInput.TextSize = 14
+SpamInput.TextSize = 13
 SpamInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpamInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
 SpamInput.BorderSizePixel = 0
@@ -470,44 +536,33 @@ SpamInput.ClearTextOnFocus = false
 SpamInput.Parent = AutoSpamSection
 
 local InputCorner = Instance.new("UICorner")
-InputCorner.CornerRadius = UDim.new(0, 10)
+InputCorner.CornerRadius = UDim.new(0, 8)
 InputCorner.Parent = SpamInput
 
-local SpamDelayLabel = Instance.new("TextLabel")
-SpamDelayLabel.Size = UDim2.new(0, 120, 0, 20)
-SpamDelayLabel.Position = UDim2.new(0, 12, 0, 92)
-SpamDelayLabel.BackgroundTransparency = 1
-SpamDelayLabel.Text = "Delay: 0.1s"
-SpamDelayLabel.Font = Enum.Font.Gotham
-SpamDelayLabel.TextSize = 12
-SpamDelayLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-SpamDelayLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpamDelayLabel.Parent = AutoSpamSection
+local SpamDelayFrame, SpamDelaySlider, SpamSliderFill, SpamSliderButton, SpamDelayBox, SpamDelayLabel = CreateSlider(AutoSpamSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 82), 0.05, 5, 0.1, "Delay:")
 
-local SpamDelaySlider, SpamSliderFill, SpamSliderButton = CreateSlider(AutoSpamSection, UDim2.new(1, -24, 0, 8), UDim2.new(0, 12, 0, 116), UDim2.new(0.01, 0, 1, 0))
-
-local AutoSpamToggle = CreateButton(AutoSpamSection, UDim2.new(0, 100, 0, 36), UDim2.new(0, 12, 0, 132), "OFF")
+local AutoSpamToggle = CreateButton(AutoSpamSection, UDim2.new(0, 90, 0, 32), UDim2.new(0, 10, 0, 124), "OFF")
 local AutoSpamStatus = Instance.new("TextLabel")
-AutoSpamStatus.Size = UDim2.new(1, -124, 0, 36)
-AutoSpamStatus.Position = UDim2.new(0, 118, 0, 132)
+AutoSpamStatus.Size = UDim2.new(1, -110, 0, 32)
+AutoSpamStatus.Position = UDim2.new(0, 106, 0, 124)
 AutoSpamStatus.BackgroundTransparency = 1
 AutoSpamStatus.Text = "Status: Inactive"
 AutoSpamStatus.Font = Enum.Font.Gotham
-AutoSpamStatus.TextSize = 13
+AutoSpamStatus.TextSize = 12
 AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AutoSpamStatus.TextXAlignment = Enum.TextXAlignment.Left
 AutoSpamStatus.Parent = AutoSpamSection
 
-local PerformanceSection = CreateSection("🚀 FPS Boost (5 Levels)", UDim2.new(0, 0, 0, 605), 260)
-local Level1Button = CreateButton(PerformanceSection, UDim2.new(0, 140, 0, 36), UDim2.new(0, 12, 0, 45), "Level 1 Light")
-local Level2Button = CreateButton(PerformanceSection, UDim2.new(0, 140, 0, 36), UDim2.new(0.5, -70, 0, 45), "Level 2 Hard")
-local Level3Button = CreateButton(PerformanceSection, UDim2.new(0, 140, 0, 36), UDim2.new(1, -152, 0, 45), "Level 3 High")
-local Level4Button = CreateButton(PerformanceSection, UDim2.new(0, 140, 0, 36), UDim2.new(0, 12, 0, 88), "Level 4 Potato")
-local Level5Button = CreateButton(PerformanceSection, UDim2.new(0, 140, 0, 36), UDim2.new(0.5, -70, 0, 88), "Level 5 MAX")
+local PerformanceSection = CreateSection("🚀 FPS Boost (5 Levels)", UDim2.new(0, 0, 0, 705), 460)
+local Level1Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0, 10, 0, 40), "Level 1 Light")
+local Level2Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0.5, -65, 0, 40), "Level 2 Hard")
+local Level3Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(1, -140, 0, 40), "Level 3 High")
+local Level4Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0, 10, 0, 78), "Level 4 Potato")
+local Level5Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0.5, -65, 0, 78), "Level 5 MAX")
 
 local DescLabel = Instance.new("TextLabel")
-DescLabel.Size = UDim2.new(0, 140, 0, 36)
-DescLabel.Position = UDim2.new(1, -152, 0, 88)
+DescLabel.Size = UDim2.new(0, 130, 0, 32)
+DescLabel.Position = UDim2.new(1, -140, 0, 78)
 DescLabel.BackgroundTransparency = 1
 DescLabel.Text = "⚠️ Experimental"
 DescLabel.Font = Enum.Font.GothamBold
@@ -515,128 +570,151 @@ DescLabel.TextSize = 11
 DescLabel.TextColor3 = Color3.fromRGB(255, 180, 80)
 DescLabel.Parent = PerformanceSection
 
-local RevertButton = CreateButton(PerformanceSection, UDim2.new(1, -24, 0, 40), UDim2.new(0, 12, 0, 131), "Revert All Changes")
+local RevertButton = CreateButton(PerformanceSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 116), "Revert All Changes")
+
+local FPSUnlockFrame = Instance.new("Frame")
+FPSUnlockFrame.Size = UDim2.new(1, -20, 0, 90)
+FPSUnlockFrame.Position = UDim2.new(0, 10, 0, 158)
+FPSUnlockFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+FPSUnlockFrame.BorderSizePixel = 0
+FPSUnlockFrame.Parent = PerformanceSection
+
+local FPSUnlockCorner = Instance.new("UICorner")
+FPSUnlockCorner.CornerRadius = UDim.new(0, 8)
+FPSUnlockCorner.Parent = FPSUnlockFrame
+
+local FPSUnlockToggle = CreateButton(FPSUnlockFrame, UDim2.new(0, 110, 0, 28), UDim2.new(0, 10, 0, 10), "FPS Unlock: OFF")
+local FPSUnlockStatus = Instance.new("TextLabel")
+FPSUnlockStatus.Size = UDim2.new(1, -130, 0, 28)
+FPSUnlockStatus.Position = UDim2.new(0, 126, 0, 10)
+FPSUnlockStatus.BackgroundTransparency = 1
+FPSUnlockStatus.Text = "Target: 60 FPS"
+FPSUnlockStatus.Font = Enum.Font.Gotham
+FPSUnlockStatus.TextSize = 12
+FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+FPSUnlockStatus.TextXAlignment = Enum.TextXAlignment.Left
+FPSUnlockStatus.Parent = FPSUnlockFrame
+
+local FPSValueFrame, FPSSlider, FPSFill, FPSButton, FPSValueBox, FPSValueLabel = CreateSlider(FPSUnlockFrame, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 44), 15, 360, 60, "Target FPS:")
+
 local PerformanceStatus = Instance.new("TextLabel")
-PerformanceStatus.Size = UDim2.new(1, -24, 0, 60)
-PerformanceStatus.Position = UDim2.new(0, 12, 0, 178)
+PerformanceStatus.Size = UDim2.new(1, -20, 0, 60)
+PerformanceStatus.Position = UDim2.new(0, 10, 0, 255)
 PerformanceStatus.BackgroundTransparency = 1
 PerformanceStatus.Text = "Current: None Applied\n\nLevels 1-3: Safe | Levels 4-5: May cause issues"
 PerformanceStatus.Font = Enum.Font.Gotham
-PerformanceStatus.TextSize = 12
+PerformanceStatus.TextSize = 11
 PerformanceStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 PerformanceStatus.TextXAlignment = Enum.TextXAlignment.Center
 PerformanceStatus.TextWrapped = true
 PerformanceStatus.Parent = PerformanceSection
 
-local ShadersSection = CreateSection("🌈 Shaders (5 Types)", UDim2.new(0, 0, 0, 880), 260)
-local Shader1Button = CreateButton(ShadersSection, UDim2.new(0, 140, 0, 36), UDim2.new(0, 12, 0, 45), "Vibrant")
-local Shader2Button = CreateButton(ShadersSection, UDim2.new(0, 140, 0, 36), UDim2.new(0.5, -70, 0, 45), "Cartoon")
-local Shader3Button = CreateButton(ShadersSection, UDim2.new(0, 140, 0, 36), UDim2.new(1, -152, 0, 45), "Cold")
-local Shader4Button = CreateButton(ShadersSection, UDim2.new(0, 140, 0, 36), UDim2.new(0, 12, 0, 88), "Warm")
-local Shader5Button = CreateButton(ShadersSection, UDim2.new(0, 140, 0, 36), UDim2.new(0.5, -70, 0, 88), "Noir")
-
-local ShaderRevertButton = CreateButton(ShadersSection, UDim2.new(1, -24, 0, 40), UDim2.new(0, 12, 0, 131), "Revert Shaders")
-local ShadersStatus = Instance.new("TextLabel")
-ShadersStatus.Size = UDim2.new(1, -24, 0, 60)
-ShadersStatus.Position = UDim2.new(0, 12, 0, 178)
-ShadersStatus.BackgroundTransparency = 1
-ShadersStatus.Text = "Current: None Applied\n\nApply different visual effects to the game"
-ShadersStatus.Font = Enum.Font.Gotham
-ShadersStatus.TextSize = 12
-ShadersStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
-ShadersStatus.TextXAlignment = Enum.TextXAlignment.Center
-ShadersStatus.TextWrapped = true
-ShadersStatus.Parent = ShadersSection
-
-local ThemesSection = CreateSection("🎨 Themes", UDim2.new(0, 0, 0, 1155), 275)
-local ThemeButtonsFrame = Instance.new("Frame")
-ThemeButtonsFrame.Size = UDim2.new(1, -24, 0, 160)
-ThemeButtonsFrame.Position = UDim2.new(0, 12, 0, 45)
-ThemeButtonsFrame.BackgroundTransparency = 1
-ThemeButtonsFrame.Parent = ThemesSection
-
-local ThemeButtons = {}
-
-local function UpdateThemeColors()
-    local tweenInfo = TweenInfo.new(0.3)
-    
-    MainFrame.BackgroundColor3 = CurrentTheme.Background
-    TopBar.BackgroundColor3 = CurrentTheme.TopBar
-    TopBarGlow.BackgroundColor3 = CurrentTheme.Accent
-    MainGlow.ImageColor3 = CurrentTheme.Accent
-    ReopenButton.BackgroundColor3 = CurrentTheme.Accent
-    ReopenPulse.BackgroundColor3 = CurrentTheme.Accent
-    
-    UIConfigSection.BackgroundColor3 = CurrentTheme.Section
-    UIConfigSection:FindFirstChildOfClass("Frame").BackgroundColor3 = CurrentTheme.Accent
-    AntiAFKSection.BackgroundColor3 = CurrentTheme.Section
-    AntiAFKSection:FindFirstChildOfClass("Frame").BackgroundColor3 = CurrentTheme.Accent
-    AutoSpamSection.BackgroundColor3 = CurrentTheme.Section
-    AutoSpamSection:FindFirstChildOfClass("Frame").BackgroundColor3 = CurrentTheme.Accent
-    PerformanceSection.BackgroundColor3 = CurrentTheme.Section
-    PerformanceSection:FindFirstChildOfClass("Frame").BackgroundColor3 = CurrentTheme.Accent
-    ShadersSection.BackgroundColor3 = CurrentTheme.Section
-    ShadersSection:FindFirstChildOfClass("Frame").BackgroundColor3 = CurrentTheme.Accent
-    ThemesSection.BackgroundColor3 = CurrentTheme.Section
-    ThemesSection:FindFirstChildOfClass("Frame").BackgroundColor3 = CurrentTheme.Accent
-    
-    JumpSliderFill.BackgroundColor3 = CurrentTheme.Accent
-    ClickSliderFill.BackgroundColor3 = CurrentTheme.Accent
-    SpamSliderFill.BackgroundColor3 = CurrentTheme.Accent
-    ScrollFrame.ScrollBarImageColor3 = CurrentTheme.Accent
-    
-    for i, btn in pairs(ThemeButtons) do
-        if Themes[i] == CurrentTheme then
-            btn.BackgroundColor3 = CurrentTheme.Accent
-        else
-            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
-        end
-    end
-end
-
-for i, theme in ipairs(Themes) do
-    local row = math.floor((i - 1) / 2)
-    local col = (i - 1) % 2
-    
-    local ThemeButton = CreateButton(ThemeButtonsFrame, UDim2.new(0, 220, 0, 36), UDim2.new(0, col * 230, 0, row * 42), theme.Name)
-    ThemeButton.BackgroundColor3 = i == 1 and theme.Accent or Color3.fromRGB(45, 45, 52)
-    
-    ThemeButton.MouseButton1Click:Connect(function()
-        CurrentTheme = theme
-        UpdateThemeColors()
-        CreateNotification("🎨 Theme Changed", "Applied: " .. theme.Name, 2)
-    end)
-    
-    ThemeButtons[i] = ThemeButton
-end
+local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1180), 120)
+local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Toggle Keybind: G")
+local KeybindStatus = Instance.new("TextLabel")
+KeybindStatus.Size = UDim2.new(1, -20, 0, 24)
+KeybindStatus.Position = UDim2.new(0, 10, 0, 82)
+KeybindStatus.BackgroundTransparency = 1
+KeybindStatus.Text = "Click button above to change keybind"
+KeybindStatus.Font = Enum.Font.Gotham
+KeybindStatus.TextSize = 11
+KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+KeybindStatus.TextXAlignment = Enum.TextXAlignment.Center
+KeybindStatus.Parent = UIConfigSection
 
 local function UpdateJumpSlider(percentage)
     TweenService:Create(JumpSliderFill, TweenInfo.new(0.2), {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
     JumpDelay = 5 + (percentage * 25)
-    JumpDelayLabel.Text = string.format("Jump Delay: %.1fs", JumpDelay)
+    JumpDelayBox.Text = string.format("%.1f", JumpDelay)
+    JumpDelayLabel.Text = "Jump Delay: " .. string.format("%.1f", JumpDelay) .. "s"
 end
 
 local function UpdateClickSlider(percentage)
     TweenService:Create(ClickSliderFill, TweenInfo.new(0.2), {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
     ClickDelay = 1 + (percentage * 9)
-    ClickDelayLabel.Text = string.format("Click Delay: %.1fs", ClickDelay)
+    ClickDelayBox.Text = string.format("%.1f", ClickDelay)
+    ClickDelayLabel.Text = "Click Delay: " .. string.format("%.1f", ClickDelay) .. "s"
 end
 
 local function UpdateSpamSlider(percentage)
     TweenService:Create(SpamSliderFill, TweenInfo.new(0.2), {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
     SpamDelay = 0.05 + (percentage * 4.95)
-    SpamDelayLabel.Text = string.format("Delay: %.2fs", SpamDelay)
+    SpamDelayBox.Text = string.format("%.2f", SpamDelay)
+    SpamDelayLabel.Text = "Delay: " .. string.format("%.2f", SpamDelay) .. "s"
 end
 
-local jumpDragging, clickDragging, spamDragging = false, false, false
+local function UpdateFPSSlider(percentage)
+    TweenService:Create(FPSFill, TweenInfo.new(0.2), {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
+    TargetFPS = math.floor(15 + (percentage * 345))
+    FPSValueBox.Text = tostring(TargetFPS)
+    FPSValueLabel.Text = "Target FPS: " .. TargetFPS
+    FPSUnlockStatus.Text = "Target: " .. TargetFPS .. " FPS"
+    
+    if FPSUnlockEnabled then
+        if setfpscap then
+            setfpscap(TargetFPS)
+        end
+    end
+end
+
+JumpDelayBox.FocusLost:Connect(function(enterPressed)
+    local value = tonumber(JumpDelayBox.Text)
+    if value then
+        value = math.clamp(value, 5, 30)
+        JumpDelayBox.Text = string.format("%.1f", value)
+        JumpDelay = value
+        UpdateJumpSlider((value - 5) / 25)
+    else
+        JumpDelayBox.Text = string.format("%.1f", JumpDelay)
+    end
+end)
+
+ClickDelayBox.FocusLost:Connect(function(enterPressed)
+    local value = tonumber(ClickDelayBox.Text)
+    if value then
+        value = math.clamp(value, 1, 10)
+        ClickDelayBox.Text = string.format("%.1f", value)
+        ClickDelay = value
+        UpdateClickSlider((value - 1) / 9)
+    else
+        ClickDelayBox.Text = string.format("%.1f", ClickDelay)
+    end
+end)
+
+SpamDelayBox.FocusLost:Connect(function(enterPressed)
+    local value = tonumber(SpamDelayBox.Text)
+    if value then
+        value = math.clamp(value, 0.05, 5)
+        SpamDelayBox.Text = string.format("%.2f", value)
+        SpamDelay = value
+        UpdateSpamSlider((value - 0.05) / 4.95)
+    else
+        SpamDelayBox.Text = string.format("%.2f", SpamDelay)
+    end
+end)
+
+FPSValueBox.FocusLost:Connect(function(enterPressed)
+    local value = tonumber(FPSValueBox.Text)
+    if value then
+        value = math.clamp(value, 15, 360)
+        FPSValueBox.Text = tostring(value)
+        TargetFPS = value
+        UpdateFPSSlider((value - 15) / 345)
+    else
+        FPSValueBox.Text = tostring(TargetFPS)
+    end
+end)
+
+local jumpDragging, clickDragging, spamDragging, fpsDragging = false, false, false, false
 
 JumpSliderButton.MouseButton1Down:Connect(function() jumpDragging = true end)
 ClickSliderButton.MouseButton1Down:Connect(function() clickDragging = true end)
 SpamSliderButton.MouseButton1Down:Connect(function() spamDragging = true end)
+FPSButton.MouseButton1Down:Connect(function() fpsDragging = true end)
 
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        jumpDragging, clickDragging, spamDragging = false, false, false
+        jumpDragging, clickDragging, spamDragging, fpsDragging = false, false, false, false
     end
 end)
 
@@ -657,6 +735,11 @@ UserInputService.InputChanged:Connect(function(input)
         if spamDragging then
             local percentage = math.clamp((mouseX - SpamDelaySlider.AbsolutePosition.X) / SpamDelaySlider.AbsoluteSize.X, 0, 1)
             UpdateSpamSlider(percentage)
+        end
+        
+        if fpsDragging then
+            local percentage = math.clamp((mouseX - FPSSlider.AbsolutePosition.X) / FPSSlider.AbsoluteSize.X, 0, 1)
+            UpdateFPSSlider(percentage)
         end
     end
 end)
@@ -679,14 +762,40 @@ end
 
 local function UpdateClickTypeButtons()
     TweenService:Create(ClickTypeCurrent, TweenInfo.new(0.2), {
-        BackgroundColor3 = (CurrentClickType == "Current") and CurrentTheme.Accent or Color3.fromRGB(45, 45, 52)
+        BackgroundColor3 = (CurrentClickType == "Current") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
     }):Play()
     TweenService:Create(ClickTypeCenter, TweenInfo.new(0.2), {
-        BackgroundColor3 = (CurrentClickType == "Center") and CurrentTheme.Accent or Color3.fromRGB(45, 45, 52)
+        BackgroundColor3 = (CurrentClickType == "Center") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
     }):Play()
     TweenService:Create(ClickTypeRandom, TweenInfo.new(0.2), {
-        BackgroundColor3 = (CurrentClickType == "Random") and CurrentTheme.Accent or Color3.fromRGB(45, 45, 52)
+        BackgroundColor3 = (CurrentClickType == "Random") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
     }):Play()
+end
+
+local function ToggleFPSUnlock()
+    FPSUnlockEnabled = not FPSUnlockEnabled
+    
+    if FPSUnlockEnabled then
+        TweenService:Create(FPSUnlockToggle, TweenInfo.new(0.3), {
+            BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        }):Play()
+        FPSUnlockToggle.Text = "FPS Unlock: ON"
+        FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        if setfpscap then
+            setfpscap(TargetFPS)
+        end
+        CreateNotification("🚀 FPS Unlock", "Enabled: " .. TargetFPS .. " FPS", 2)
+    else
+        TweenService:Create(FPSUnlockToggle, TweenInfo.new(0.3), {
+            BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        }):Play()
+        FPSUnlockToggle.Text = "FPS Unlock: OFF"
+        FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+        if setfpscap then
+            setfpscap(360)
+        end
+        CreateNotification("🛑 FPS Unlock", "Disabled", 2)
+    end
 end
 
 ClickTypeCurrent.MouseButton1Click:Connect(function()
@@ -705,6 +814,10 @@ ClickTypeRandom.MouseButton1Click:Connect(function()
     CurrentClickType = "Random"
     UpdateClickTypeButtons()
     CreateNotification("🖱️ Click Type", "Set to: Random Screen Spot", 2)
+end)
+
+FPSUnlockToggle.MouseButton1Click:Connect(function()
+    ToggleFPSUnlock()
 end)
 
 KeybindButton.MouseButton1Click:Connect(function()
@@ -840,6 +953,63 @@ AutoSpamToggle.MouseButton1Click:Connect(function()
     end
 end)
 
+local function ApplyPerformanceToAllObjects()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            if not OriginalSettings.Materials[obj] then
+                OriginalSettings.Materials[obj] = obj.Material
+                OriginalSettings.Reflectances[obj] = obj.Reflectance
+            end
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Reflectance = 0
+        end
+        
+        if obj:IsA("Decal") or obj:IsA("Texture") then
+            if not OriginalSettings.Decals[obj] then
+                OriginalSettings.Decals[obj] = obj.Transparency
+            end
+            obj.Transparency = 1
+        end
+        
+        if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
+            if not OriginalSettings.Transparencies[obj] then
+                OriginalSettings.Transparencies[obj] = obj.Enabled
+            end
+            obj.Enabled = false
+        end
+        
+        if obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+            if not OriginalSettings.Transparencies[obj] then
+                OriginalSettings.Transparencies[obj] = obj.Enabled
+            end
+            obj.Enabled = false
+        end
+        
+        if obj:IsA("BasePart") and obj.Transparency < 1 then
+            if not OriginalSettings.CastShadows[obj] then
+                OriginalSettings.CastShadows[obj] = obj.CastShadow
+            end
+            obj.CastShadow = false
+        end
+        
+        if obj:IsA("MeshPart") then
+            if not OriginalSettings.RenderFidelity[obj] then
+                OriginalSettings.RenderFidelity[obj] = obj.RenderFidelity
+            end
+            pcall(function()
+                obj.RenderFidelity = Enum.RenderFidelity.Performance
+            end)
+        end
+        
+        if obj:IsA("SurfaceGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceLight") or obj:IsA("SpotLight") or obj:IsA("PointLight") then
+            if not OriginalSettings.Transparencies[obj] then
+                OriginalSettings.Transparencies[obj] = obj.Enabled
+            end
+            obj.Enabled = false
+        end
+    end
+end
+
 local function ApplyLevel1()
     local Lighting = game:GetService("Lighting")
     OriginalSettings.Lighting.GlobalShadows = Lighting.GlobalShadows
@@ -864,17 +1034,7 @@ end
 
 local function ApplyLevel2()
     ApplyLevel1()
-    
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            if not OriginalSettings.Materials[obj] then
-                OriginalSettings.Materials[obj] = obj.Material
-                OriginalSettings.Reflectances[obj] = obj.Reflectance
-            end
-            obj.Material = Enum.Material.SmoothPlastic
-            obj.Reflectance = 0
-        end
-    end
+    ApplyPerformanceToAllObjects()
     
     CurrentPerformanceLevel = 2
     PerformanceStatus.Text = "Current: Level 2 (Hard)\n\nReduced graphics quality"
@@ -905,20 +1065,6 @@ local function ApplyLevel3()
         end
     end
     
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
-            if not OriginalSettings.Transparencies[obj] then
-                OriginalSettings.Transparencies[obj] = obj.Enabled
-            end
-            obj.Enabled = false
-        elseif obj:IsA("BasePart") and obj.Transparency < 1 then
-            if not OriginalSettings.CastShadows[obj] then
-                OriginalSettings.CastShadows[obj] = obj.CastShadow
-            end
-            obj.CastShadow = false
-        end
-    end
-    
     CurrentPerformanceLevel = 3
     PerformanceStatus.Text = "Current: Level 3 (High)\n\nMaximum visual reduction"
     PerformanceStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
@@ -932,35 +1078,6 @@ local function ApplyLevel4()
         settings().Rendering.QualityLevel = 1
         game:GetService("GraphicsQualityLevel").QualityLevel = 1
     end)
-    
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("MeshPart") then
-            if not OriginalSettings.RenderFidelity[obj] then
-                OriginalSettings.RenderFidelity[obj] = obj.RenderFidelity
-            end
-            pcall(function()
-                obj.RenderFidelity = Enum.RenderFidelity.Performance
-            end)
-        end
-        
-        if obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
-            if not OriginalSettings.Transparencies[obj] then
-                OriginalSettings.Transparencies[obj] = obj.Enabled
-            end
-            obj.Enabled = false
-        end
-    end
-    
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            pcall(function()
-                if not OriginalSettings.CastShadows[obj] then
-                    OriginalSettings.CastShadows[obj] = obj.CastShadow
-                end
-                obj.CastShadow = false
-            end)
-        end
-    end
     
     local Lighting = game:GetService("Lighting")
     if not OriginalSettings.Lighting.ShadowSoftness then
@@ -992,13 +1109,6 @@ local function ApplyLevel5()
                 obj.LeftSurface = Enum.SurfaceType.Smooth
                 obj.RightSurface = Enum.SurfaceType.Smooth
             end)
-        end
-        
-        if obj:IsA("SurfaceGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceLight") or obj:IsA("SpotLight") or obj:IsA("PointLight") then
-            if not OriginalSettings.Transparencies[obj] then
-                OriginalSettings.Transparencies[obj] = obj.Enabled
-            end
-            obj.Enabled = false
         end
     end
     
@@ -1110,7 +1220,7 @@ local function UpdatePerformanceButtons()
     local buttons = {Level1Button, Level2Button, Level3Button, Level4Button, Level5Button}
     for i, btn in ipairs(buttons) do
         TweenService:Create(btn, TweenInfo.new(0.3), {
-            BackgroundColor3 = (i == CurrentPerformanceLevel) and CurrentTheme.Accent or Color3.fromRGB(45, 45, 52)
+            BackgroundColor3 = (i == CurrentPerformanceLevel) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
         }):Play()
     end
 end
@@ -1175,266 +1285,6 @@ RevertButton.MouseButton1Click:Connect(function()
     UpdatePerformanceButtons()
 end)
 
-local function ApplyShader1()
-    local Lighting = game:GetService("Lighting")
-    
-    if not OriginalShaders.ColorCorrection then
-        OriginalShaders.ColorCorrection = Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
-        OriginalShaders.Bloom = Lighting:FindFirstChildOfClass("BloomEffect")
-        OriginalShaders.Blur = Lighting:FindFirstChildOfClass("BlurEffect")
-    end
-    
-    for _, effect in pairs(Lighting:GetChildren()) do
-        if effect:IsA("ColorCorrectionEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") then
-            effect:Destroy()
-        end
-    end
-    
-    local colorCorrection = Instance.new("ColorCorrectionEffect")
-    colorCorrection.Contrast = 0.3
-    colorCorrection.Saturation = 0.4
-    colorCorrection.Brightness = 0.2
-    colorCorrection.TintColor = Color3.fromRGB(255, 240, 220)
-    colorCorrection.Parent = Lighting
-    
-    local bloom = Instance.new("BloomEffect")
-    bloom.Intensity = 0.8
-    bloom.Size = 32
-    bloom.Threshold = 0.7
-    bloom.Parent = Lighting
-    
-    local blur = Instance.new("BlurEffect")
-    blur.Size = 2
-    blur.Parent = Lighting
-    
-    CurrentShader = 1
-    ShadersStatus.Text = "Current: Vibrant\n\nEnhanced colors, brightness and bloom"
-    CreateNotification("🌈 Shader Applied", "Vibrant colors with bloom", 2)
-end
-
-local function ApplyShader2()
-    local Lighting = game:GetService("Lighting")
-    
-    if not OriginalShaders.ColorCorrection then
-        OriginalShaders.ColorCorrection = Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
-        OriginalShaders.Bloom = Lighting:FindFirstChildOfClass("BloomEffect")
-    end
-    
-    for _, effect in pairs(Lighting:GetChildren()) do
-        if effect:IsA("ColorCorrectionEffect") or effect:IsA("BloomEffect") then
-            effect:Destroy()
-        end
-    end
-    
-    local colorCorrection = Instance.new("ColorCorrectionEffect")
-    colorCorrection.Contrast = 0.6
-    colorCorrection.Saturation = -0.2
-    colorCorrection.Brightness = 0.3
-    colorCorrection.TintColor = Color3.fromRGB(220, 220, 200)
-    colorCorrection.Parent = Lighting
-    
-    CurrentShader = 2
-    ShadersStatus.Text = "Current: Cartoon\n\nHigh contrast, desaturated colors"
-    CreateNotification("🌈 Shader Applied", "Cartoon style activated", 2)
-end
-
-local function ApplyShader3()
-    local Lighting = game:GetService("Lighting")
-    
-    if not OriginalShaders.ColorCorrection then
-        OriginalShaders.ColorCorrection = Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
-        OriginalShaders.Atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
-    end
-    
-    for _, effect in pairs(Lighting:GetChildren()) do
-        if effect:IsA("ColorCorrectionEffect") then
-            effect:Destroy()
-        end
-    end
-    
-    local colorCorrection = Instance.new("ColorCorrectionEffect")
-    colorCorrection.Contrast = 0.2
-    colorCorrection.Saturation = -0.4
-    colorCorrection.Brightness = 0.1
-    colorCorrection.TintColor = Color3.fromRGB(180, 200, 255)
-    colorCorrection.Parent = Lighting
-    
-    local atmosphere = Instance.new("Atmosphere")
-    atmosphere.Density = 0.3
-    atmosphere.Offset = 0.5
-    atmosphere.Color = Color3.fromRGB(200, 220, 255)
-    atmosphere.Decay = Color3.fromRGB(100, 120, 180)
-    atmosphere.Glare = 0
-    atmosphere.Haze = 0
-    atmosphere.Parent = Lighting
-    
-    CurrentShader = 3
-    ShadersStatus.Text = "Current: Cold\n\nCool blue tones with atmosphere"
-    CreateNotification("🌈 Shader Applied", "Cold filter with atmosphere", 2)
-end
-
-local function ApplyShader4()
-    local Lighting = game:GetService("Lighting")
-    
-    if not OriginalShaders.ColorCorrection then
-        OriginalShaders.ColorCorrection = Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
-        OriginalShaders.SunRays = Lighting:FindFirstChildOfClass("SunRaysEffect")
-    end
-    
-    for _, effect in pairs(Lighting:GetChildren()) do
-        if effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
-            effect:Destroy()
-        end
-    end
-    
-    local colorCorrection = Instance.new("ColorCorrectionEffect")
-    colorCorrection.Contrast = 0.25
-    colorCorrection.Saturation = 0.2
-    colorCorrection.Brightness = 0.15
-    colorCorrection.TintColor = Color3.fromRGB(255, 230, 200)
-    colorCorrection.Parent = Lighting
-    
-    local sunRays = Instance.new("SunRaysEffect")
-    sunRays.Intensity = 0.3
-    sunRays.Spread = 0.1
-    sunRays.Parent = Lighting
-    
-    CurrentShader = 4
-    ShadersStatus.Text = "Current: Warm\n\nWarm orange tones with sun rays"
-    CreateNotification("🌈 Shader Applied", "Warm filter with sun rays", 2)
-end
-
-local function ApplyShader5()
-    local Lighting = game:GetService("Lighting")
-    
-    if not OriginalShaders.ColorCorrection then
-        OriginalShaders.ColorCorrection = Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
-        OriginalShaders.Bloom = Lighting:FindFirstChildOfClass("BloomEffect")
-    end
-    
-    for _, effect in pairs(Lighting:GetChildren()) do
-        if effect:IsA("ColorCorrectionEffect") or effect:IsA("BloomEffect") then
-            effect:Destroy()
-        end
-    end
-    
-    local colorCorrection = Instance.new("ColorCorrectionEffect")
-    colorCorrection.Contrast = 0.5
-    colorCorrection.Saturation = -1.0
-    colorCorrection.Brightness = -0.1
-    colorCorrection.TintColor = Color3.fromRGB(128, 128, 128)
-    colorCorrection.Parent = Lighting
-    
-    local bloom = Instance.new("BloomEffect")
-    bloom.Intensity = 0.2
-    bloom.Size = 16
-    bloom.Threshold = 0.9
-    bloom.Parent = Lighting
-    
-    CurrentShader = 5
-    ShadersStatus.Text = "Current: Noir\n\nBlack and white cinematic with bloom"
-    CreateNotification("🌈 Shader Applied", "Noir filter activated", 2)
-end
-
-local function RevertShaders()
-    local Lighting = game:GetService("Lighting")
-    
-    for _, effect in pairs(Lighting:GetChildren()) do
-        if effect:IsA("ColorCorrectionEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or effect:IsA("Atmosphere") or effect:IsA("SunRaysEffect") then
-            effect:Destroy()
-        end
-    end
-    
-    if OriginalShaders.ColorCorrection then
-        OriginalShaders.ColorCorrection:Clone().Parent = Lighting
-    end
-    if OriginalShaders.Bloom then
-        OriginalShaders.Bloom:Clone().Parent = Lighting
-    end
-    if OriginalShaders.Blur then
-        OriginalShaders.Blur:Clone().Parent = Lighting
-    end
-    if OriginalShaders.Atmosphere then
-        OriginalShaders.Atmosphere:Clone().Parent = Lighting
-    end
-    if OriginalShaders.SunRays then
-        OriginalShaders.SunRays:Clone().Parent = Lighting
-    end
-    
-    CurrentShader = 0
-    ShadersStatus.Text = "Current: None Applied\n\nApply different visual effects to the game"
-    CreateNotification("🌈 Shaders Reverted", "All shaders removed", 2)
-end
-
-local function UpdateShaderButtons()
-    local buttons = {Shader1Button, Shader2Button, Shader3Button, Shader4Button, Shader5Button}
-    for i, btn in ipairs(buttons) do
-        TweenService:Create(btn, TweenInfo.new(0.3), {
-            BackgroundColor3 = (i == CurrentShader) and CurrentTheme.Accent or Color3.fromRGB(45, 45, 52)
-        }):Play()
-    end
-end
-
-Shader1Button.MouseButton1Click:Connect(function()
-    if CurrentShader == 1 then
-        RevertShaders()
-    else
-        RevertShaders()
-        task.wait(0.1)
-        ApplyShader1()
-    end
-    UpdateShaderButtons()
-end)
-
-Shader2Button.MouseButton1Click:Connect(function()
-    if CurrentShader == 2 then
-        RevertShaders()
-    else
-        RevertShaders()
-        task.wait(0.1)
-        ApplyShader2()
-    end
-    UpdateShaderButtons()
-end)
-
-Shader3Button.MouseButton1Click:Connect(function()
-    if CurrentShader == 3 then
-        RevertShaders()
-    else
-        RevertShaders()
-        task.wait(0.1)
-        ApplyShader3()
-    end
-    UpdateShaderButtons()
-end)
-
-Shader4Button.MouseButton1Click:Connect(function()
-    if CurrentShader == 4 then
-        RevertShaders()
-    else
-        RevertShaders()
-        task.wait(0.1)
-        ApplyShader4()
-    end
-    UpdateShaderButtons()
-end)
-
-Shader5Button.MouseButton1Click:Connect(function()
-    if CurrentShader == 5 then
-        RevertShaders()
-    else
-        RevertShaders()
-        task.wait(0.1)
-        ApplyShader5()
-    end
-    UpdateShaderButtons()
-end)
-
-ShaderRevertButton.MouseButton1Click:Connect(function()
-    RevertShaders()
-    UpdateShaderButtons()
-end)
-
 local function ToggleUI()
     MainFrame.Visible = not MainFrame.Visible
     ReopenButton.Visible = not MainFrame.Visible
@@ -1444,8 +1294,8 @@ local function ToggleUI()
         MainFrame.Size = UDim2.new(0, 0, 0, 0)
         MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
         TweenService:Create(MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 520, 0, 680),
-            Position = UDim2.new(0.5, -260, 0.5, -340)
+            Size = UDim2.new(0, 500, 0, 650),
+            Position = UDim2.new(0.5, -250, 0.5, -325)
         }):Play()
         TweenService:Create(ReopenButton, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
             Size = UDim2.new(0, 0, 0, 0)
@@ -1460,8 +1310,8 @@ local function ToggleUI()
         ReopenButton.Size = UDim2.new(0, 0, 0, 0)
         ReopenPulse.Visible = true
         TweenService:Create(ReopenButton, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 70, 0, 70),
-            Position = UDim2.new(0.5, -35, 0, 30)
+            Size = UDim2.new(0, 60, 0, 60),
+            Position = UDim2.new(0.5, -30, 0, 30)
         }):Play()
         CreateNotification("🔒 UI Hidden", "Click circle or press keybind to show", 2)
     end
@@ -1476,31 +1326,7 @@ CloseButton.MouseLeave:Connect(function()
 end)
 
 CloseButton.MouseButton1Click:Connect(function()
-    TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-        Size = UDim2.new(0, 0, 0, 0),
-        Position = UDim2.new(0.5, 0, 0.5, 0)
-    }):Play()
-    task.wait(0.45)
-    MainFrame.Visible = false
-    ReopenButton.Visible = true
-    ReopenButton.Size = UDim2.new(0, 0, 0, 0)
-    TweenService:Create(ReopenButton, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 70, 0, 70),
-        Position = UDim2.new(0.5, -35, 0, 30)
-    }):Play()
-    
-    while ReopenButton.Visible do
-        TweenService:Create(ReopenPulse, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(1.5, 0, 1.5, 0),
-            Position = UDim2.new(-0.25, 0, -0.25, 0),
-            BackgroundTransparency = 1
-        }):Play()
-        task.wait(1)
-        ReopenPulse.Size = UDim2.new(1, 0, 1, 0)
-        ReopenPulse.Position = UDim2.new(0, 0, 0, 0)
-        ReopenPulse.BackgroundTransparency = 0.7
-        task.wait(1)
-    end
+    ToggleUI()
 end)
 
 ReopenButton.MouseButton1Click:Connect(function()
@@ -1509,15 +1335,15 @@ end)
 
 ReopenButton.MouseEnter:Connect(function()
     TweenService:Create(ReopenButton, TweenInfo.new(0.3), {
-        Size = UDim2.new(0, 80, 0, 80),
-        Position = UDim2.new(0.5, -40, 0, 25)
+        Size = UDim2.new(0, 70, 0, 70),
+        Position = UDim2.new(0.5, -35, 0, 25)
     }):Play()
 end)
 
 ReopenButton.MouseLeave:Connect(function()
     TweenService:Create(ReopenButton, TweenInfo.new(0.3), {
-        Size = UDim2.new(0, 70, 0, 70),
-        Position = UDim2.new(0.5, -35, 0, 30)
+        Size = UDim2.new(0, 60, 0, 60),
+        Position = UDim2.new(0.5, -30, 0, 30)
     }):Play()
 end)
 
@@ -1527,18 +1353,48 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
+local lastTime = tick()
+local frameCount = 0
+local currentFPS = 60
+
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local currentTime = tick()
+    
+    if currentTime - lastTime >= 1 then
+        currentFPS = math.floor(frameCount / (currentTime - lastTime))
+        frameCount = 0
+        lastTime = currentTime
+        FPSLabel.Text = "FPS: " .. currentFPS
+    end
+end)
+
+task.spawn(function()
+    pcall(function()
+        local userId = LocalPlayer.UserId
+        PlayerImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. userId .. "&w=420&h=420"
+        
+        local gameInfo = MarketplaceService:GetProductInfo(game.PlaceId)
+        GameName.Text = gameInfo.Name
+        
+        if gameInfo.IconImageAssetId then
+            GameImage.Image = "rbxthumb://type=Asset&id=" .. gameInfo.IconImageAssetId .. "&w=420&h=420"
+        end
+    end)
+end)
+
 MainFrame.Visible = true
 ReopenButton.Visible = false
 
 UpdateJumpSlider(0.5)
 UpdateClickSlider(0.2)
 UpdateSpamSlider(0.01)
-UpdateThemeColors()
+UpdateFPSSlider(0.13)
 UpdateClickTypeButtons()
 
 TweenService:Create(MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 520, 0, 680),
-    Position = UDim2.new(0.5, -260, 0.5, -340)
+    Size = UDim2.new(0, 500, 0, 650),
+    Position = UDim2.new(0.5, -250, 0.5, -325)
 }):Play()
 
 CreateNotification("✨ Script Loaded", "Universal Utility loaded successfully!\nPress G to toggle UI", 4)
