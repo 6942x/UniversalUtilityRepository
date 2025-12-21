@@ -6,6 +6,7 @@ local CoreGui = game:GetService("CoreGui")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Lighting = game:GetService("Lighting")
+local TeleportService = game:GetService("TeleportService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -36,11 +37,59 @@ local Config = {
     AutoSpamEnabled = false,
     IsChangingKeybind = false,
     FPSUnlockEnabled = false,
+    AutoRejoinEnabled = false,
     TargetFPS = 60,
     JumpDelay = 10.0,
     ClickDelay = 3.0,
-    SpamDelay = 0.1
+    SpamDelay = 0.1,
+    SpamKey = "Q"
 }
+
+local function SaveConfig()
+    if writefile then
+        local configData = game:GetService("HttpService"):JSONEncode({
+            Keybind = Config.Keybind.Name,
+            PerformanceLevel = Config.PerformanceLevel,
+            ClickType = Config.ClickType,
+            JumpEnabled = Config.JumpEnabled,
+            ClickEnabled = Config.ClickEnabled,
+            AutoRejoinEnabled = Config.AutoRejoinEnabled,
+            FPSUnlockEnabled = Config.FPSUnlockEnabled,
+            AutoSpamEnabled = Config.AutoSpamEnabled,
+            TargetFPS = Config.TargetFPS,
+            JumpDelay = Config.JumpDelay,
+            ClickDelay = Config.ClickDelay,
+            SpamDelay = Config.SpamDelay,
+            SpamKey = Config.SpamKey
+        })
+        writefile("UniversalUtilityConfig.json", configData)
+    end
+end
+
+local function LoadConfig()
+    if readfile and isfile and isfile("UniversalUtilityConfig.json") then
+        local success, data = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(readfile("UniversalUtilityConfig.json"))
+        end)
+        if success and data then
+            Config.Keybind = Enum.KeyCode[data.Keybind] or Enum.KeyCode.G
+            Config.PerformanceLevel = data.PerformanceLevel or 0
+            Config.ClickType = data.ClickType or "Current"
+            Config.JumpEnabled = data.JumpEnabled or false
+            Config.ClickEnabled = data.ClickEnabled or false
+            Config.AutoRejoinEnabled = data.AutoRejoinEnabled or false
+            Config.FPSUnlockEnabled = data.FPSUnlockEnabled or false
+            Config.AutoSpamEnabled = data.AutoSpamEnabled or false
+            Config.TargetFPS = data.TargetFPS or 60
+            Config.JumpDelay = data.JumpDelay or 10.0
+            Config.ClickDelay = data.ClickDelay or 3.0
+            Config.SpamDelay = data.SpamDelay or 0.1
+            Config.SpamKey = data.SpamKey or "Q"
+            return true
+        end
+    end
+    return false
+end
 
 local NotificationStack = {}
 local OriginalSettings = {
@@ -264,10 +313,10 @@ ScrollFrame.BorderSizePixel = 0
 ScrollFrame.ScrollBarThickness = 4
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
 ScrollFrame.ScrollBarImageTransparency = 0.7
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1500)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1650)
 
 local ContentFrame = Instance.new("Frame", ScrollFrame)
-ContentFrame.Size = UDim2.new(1, 0, 0, 1500)
+ContentFrame.Size = UDim2.new(1, 0, 0, 1650)
 ContentFrame.BackgroundTransparency = 1
 
 local function CreateSection(name, position, height)
@@ -477,7 +526,7 @@ local SpamInput = Instance.new("TextBox", AutoSpamSection)
 SpamInput.Size = UDim2.new(1, -20, 0, 36)
 SpamInput.Position = UDim2.new(0, 10, 0, 40)
 SpamInput.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
-SpamInput.Text = "Q"
+SpamInput.Text = Config.SpamKey
 SpamInput.PlaceholderText = "Enter key (A-Z, 0-9, F1-F12)"
 SpamInput.Font = Enum.Font.Gotham
 SpamInput.TextSize = 13
@@ -544,7 +593,20 @@ PerformanceStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 PerformanceStatus.TextXAlignment = Enum.TextXAlignment.Center
 PerformanceStatus.TextWrapped = true
 
-local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1050), 120)
+local AutoRejoinSection = CreateSection("🔄 Auto Rejoin", UDim2.new(0, 0, 0, 1050), 130)
+local AutoRejoinToggle = CreateButton(AutoRejoinSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Auto Rejoin: OFF")
+local AutoRejoinStatus = Instance.new("TextLabel", AutoRejoinSection)
+AutoRejoinStatus.Size = UDim2.new(1, -20, 0, 50)
+AutoRejoinStatus.Position = UDim2.new(0, 10, 0, 74)
+AutoRejoinStatus.BackgroundTransparency = 1
+AutoRejoinStatus.Text = "Status: Disabled\n\nAutomatically rejoins when disconnected"
+AutoRejoinStatus.Font = Enum.Font.Gotham
+AutoRejoinStatus.TextSize = 11
+AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+AutoRejoinStatus.TextXAlignment = Enum.TextXAlignment.Center
+AutoRejoinStatus.TextWrapped = true
+
+local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1192), 120)
 local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Toggle Keybind: G")
 local KeybindStatus = Instance.new("TextLabel", UIConfigSection)
 KeybindStatus.Size = UDim2.new(1, -20, 0, 24)
@@ -555,6 +617,9 @@ KeybindStatus.Font = Enum.Font.Gotham
 KeybindStatus.TextSize = 11
 KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
 KeybindStatus.TextXAlignment = Enum.TextXAlignment.Center
+
+local UIToggleDebounce = false
+local UIToggleDebounceTime = 0.8
 
 local function UpdateSlider(fill, valueBox, labelElement, value, min, max, format)
     local percentage = (value - min) / (max - min)
@@ -568,16 +633,19 @@ end
 local function UpdateJumpSlider(percentage)
     Config.JumpDelay = 5 + (percentage * 25)
     UpdateSlider(JumpSliderFill, JumpDelayBox, JumpDelayLabel, Config.JumpDelay, 5, 30, "%.1f")
+    SaveConfig()
 end
 
 local function UpdateClickSlider(percentage)
     Config.ClickDelay = 1 + (percentage * 9)
     UpdateSlider(ClickSliderFill, ClickDelayBox, ClickDelayLabel, Config.ClickDelay, 1, 10, "%.1f")
+    SaveConfig()
 end
 
 local function UpdateSpamSlider(percentage)
     Config.SpamDelay = 0.05 + (percentage * 4.95)
     UpdateSlider(SpamSliderFill, SpamDelayBox, SpamDelayLabel, Config.SpamDelay, 0.05, 5, "%.2f")
+    SaveConfig()
 end
 
 local function UpdateFPSSlider(percentage)
@@ -587,6 +655,7 @@ local function UpdateFPSSlider(percentage)
     if Config.FPSUnlockEnabled and setfpscap then
         setfpscap(Config.TargetFPS)
     end
+    SaveConfig()
 end
 
 JumpDelayBox.FocusLost:Connect(function()
@@ -611,6 +680,11 @@ FPSValueBox.FocusLost:Connect(function()
     local value = math.clamp(tonumber(FPSValueBox.Text) or Config.TargetFPS, 15, 360)
     Config.TargetFPS = value
     UpdateFPSSlider((value - 15) / 345)
+end)
+
+SpamInput.FocusLost:Connect(function()
+    Config.SpamKey = SpamInput.Text:upper()
+    SaveConfig()
 end)
 
 local dragging = {jump = false, click = false, spam = false, fps = false}
@@ -641,6 +715,89 @@ UserInputService.InputChanged:Connect(function(input)
         end
     end
 end)
+
+local JumpThread, ClickThread, SpamThread
+
+local function StopJumpThread()
+    if JumpThread then
+        JumpThread = nil
+    end
+end
+
+local function StopClickThread()
+    if ClickThread then
+        ClickThread = nil
+    end
+end
+
+local function StopSpamThread()
+    if SpamThread then
+        SpamThread = nil
+    end
+end
+
+local function StartJumpThread()
+    StopJumpThread()
+    JumpThread = task.spawn(function()
+        while Config.JumpEnabled do
+            task.wait(Config.JumpDelay)
+            if Config.JumpEnabled and LocalPlayer.Character then
+                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then 
+                    humanoid.Jump = true
+                    task.wait(0.1)
+                    humanoid.Jump = false
+                end
+            end
+        end
+    end)
+end
+
+local function StartClickThread()
+    StopClickThread()
+    ClickThread = task.spawn(function()
+        while Config.ClickEnabled do
+            task.wait(Config.ClickDelay)
+            if Config.ClickEnabled then
+                local x, y
+                if Config.ClickType == "Current" then
+                    local mousePos = UserInputService:GetMouseLocation()
+                    x, y = mousePos.X, mousePos.Y
+                elseif Config.ClickType == "Center" then
+                    local viewport = workspace.CurrentCamera.ViewportSize
+                    x, y = viewport.X/2, viewport.Y/2
+                else
+                    local viewport = workspace.CurrentCamera.ViewportSize
+                    x, y = math.random(100, viewport.X - 100), math.random(100, viewport.Y - 100)
+                end
+                VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
+                task.wait(0.05)
+                VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
+            end
+        end
+    end)
+end
+
+local function StartSpamThread()
+    StopSpamThread()
+    local keyText = SpamInput.Text:upper()
+    local keyCode = KeyCodeMap[keyText]
+    
+    if not keyCode then
+        return
+    end
+    
+    SpamThread = task.spawn(function()
+        while Config.AutoSpamEnabled do
+            task.wait(Config.SpamDelay)
+            if Config.AutoSpamEnabled then
+                VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+                task.wait(0.05)
+                VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+            end
+        end
+    end)
+end
 
 local function UpdateAntiAFKStatus()
     if Config.JumpEnabled and Config.ClickEnabled then
@@ -683,24 +840,73 @@ local function ToggleFPSUnlock()
     
     CreateNotification(Config.FPSUnlockEnabled and "🚀 FPS Unlock" or "🛑 FPS Unlock", 
         Config.FPSUnlockEnabled and ("Enabled: " .. Config.TargetFPS .. " FPS") or "Disabled", 2)
+    SaveConfig()
 end
+
+local teleporting = false
+local function SetupAutoRejoin()
+    if Config.AutoRejoinEnabled then
+        local PromptGui = CoreGui:WaitForChild("RobloxPromptGui")
+        local PromptOverlay = PromptGui:WaitForChild("promptOverlay")
+        
+        PromptOverlay.ChildAdded:Connect(function(child)
+            if child.Name == "ErrorPrompt" and Config.AutoRejoinEnabled then
+                if not teleporting then
+                    teleporting = true
+                    task.spawn(function()
+                        while Config.AutoRejoinEnabled and teleporting do
+                            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+                            task.wait(2)
+                        end
+                    end)
+                end
+            end
+        end)
+    end
+end
+
+local function ToggleAutoRejoin()
+    Config.AutoRejoinEnabled = not Config.AutoRejoinEnabled
+    
+    TweenService:Create(AutoRejoinToggle, TweenPresets.Medium, {
+        BackgroundColor3 = Config.AutoRejoinEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    }):Play()
+    
+    AutoRejoinToggle.Text = "Auto Rejoin: " .. (Config.AutoRejoinEnabled and "ON" or "OFF")
+    AutoRejoinStatus.Text = "Status: " .. (Config.AutoRejoinEnabled and "Enabled" or "Disabled") .. "\n\nAutomatically rejoins when disconnected"
+    AutoRejoinStatus.TextColor3 = Config.AutoRejoinEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(180, 180, 180)
+    
+    if Config.AutoRejoinEnabled then
+        SetupAutoRejoin()
+        CreateNotification("🔄 Auto Rejoin", "Enabled - Will rejoin on disconnect", 2)
+    else
+        teleporting = false
+        CreateNotification("🛑 Auto Rejoin", "Disabled", 2)
+    end
+    SaveConfig()
+end
+
+AutoRejoinToggle.MouseButton1Click:Connect(ToggleAutoRejoin)
 
 ClickTypeCurrent.MouseButton1Click:Connect(function()
     Config.ClickType = "Current"
     UpdateClickTypeButtons()
     CreateNotification("🖱️ Click Type", "Set to: Current Mouse Location", 2)
+    SaveConfig()
 end)
 
 ClickTypeCenter.MouseButton1Click:Connect(function()
     Config.ClickType = "Center"
     UpdateClickTypeButtons()
     CreateNotification("🖱️ Click Type", "Set to: Screen Center", 2)
+    SaveConfig()
 end)
 
 ClickTypeRandom.MouseButton1Click:Connect(function()
     Config.ClickType = "Random"
     UpdateClickTypeButtons()
     CreateNotification("🖱️ Click Type", "Set to: Random Screen Spot", 2)
+    SaveConfig()
 end)
 
 FPSUnlockToggle.MouseButton1Click:Connect(ToggleFPSUnlock)
@@ -721,6 +927,7 @@ KeybindButton.MouseButton1Click:Connect(function()
             KeybindStatus.Text = "Keybind changed successfully!"
             KeybindStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
             CreateNotification("⌨️ Keybind Changed", "New keybind: " .. keyName, 2)
+            SaveConfig()
             task.wait(2)
             KeybindStatus.Text = "Click button above to change keybind"
             KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
@@ -731,66 +938,52 @@ KeybindButton.MouseButton1Click:Connect(function()
 end)
 
 JumpToggle.MouseButton1Click:Connect(function()
+    if UIToggleDebounce then return end
     Config.JumpEnabled = not Config.JumpEnabled
+    
     TweenService:Create(JumpToggle, TweenPresets.Medium, {
         BackgroundColor3 = Config.JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
     }):Play()
+    
     JumpToggle.Text = "Auto Jump: " .. (Config.JumpEnabled and "ON" or "OFF")
     
     if Config.JumpEnabled then
         CreateNotification("🦘 Jump Activated", "Auto Jump is now active", 2)
-        task.spawn(function()
-            while Config.JumpEnabled do
-                task.wait(Config.JumpDelay)
-                if Config.JumpEnabled and LocalPlayer.Character then
-                    local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then humanoid.Jump = true end
-                end
-            end
-        end)
+        StartJumpThread()
     else
         CreateNotification("🛑 Jump Deactivated", "Auto Jump has been disabled", 2)
+        StopJumpThread()
     end
+    
     UpdateAntiAFKStatus()
+    SaveConfig()
 end)
 
 ClickToggle.MouseButton1Click:Connect(function()
+    if UIToggleDebounce then return end
     Config.ClickEnabled = not Config.ClickEnabled
+    
     TweenService:Create(ClickToggle, TweenPresets.Medium, {
         BackgroundColor3 = Config.ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
     }):Play()
+    
     ClickToggle.Text = "Auto Click: " .. (Config.ClickEnabled and "ON" or "OFF")
     
     if Config.ClickEnabled then
         CreateNotification("🖱️ Click Activated", "Auto Click is now active", 2)
-        task.spawn(function()
-            while Config.ClickEnabled do
-                task.wait(Config.ClickDelay)
-                if Config.ClickEnabled then
-                    local x, y
-                    if Config.ClickType == "Current" then
-                        local mousePos = UserInputService:GetMouseLocation()
-                        x, y = mousePos.X, mousePos.Y
-                    elseif Config.ClickType == "Center" then
-                        local viewport = workspace.CurrentCamera.ViewportSize
-                        x, y = viewport.X/2, viewport.Y/2
-                    else
-                        local viewport = workspace.CurrentCamera.ViewportSize
-                        x, y = math.random(100, viewport.X - 100), math.random(100, viewport.Y - 100)
-                    end
-                    VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
-                    task.wait(0.05)
-                    VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
-                end
-            end
-        end)
+        StartClickThread()
     else
         CreateNotification("🛑 Click Deactivated", "Auto Click has been disabled", 2)
+        StopClickThread()
     end
+    
     UpdateAntiAFKStatus()
+    SaveConfig()
 end)
 
 AutoSpamToggle.MouseButton1Click:Connect(function()
+    if UIToggleDebounce then return end
+    
     Config.AutoSpamEnabled = not Config.AutoSpamEnabled
     
     if Config.AutoSpamEnabled then
@@ -809,29 +1002,23 @@ AutoSpamToggle.MouseButton1Click:Connect(function()
             return
         end
         
+        Config.SpamKey = keyText
         TweenService:Create(AutoSpamToggle, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(50, 220, 100)}):Play()
         AutoSpamToggle.Text = "ON"
         AutoSpamStatus.Text = "Status: Spamming " .. keyText
         AutoSpamStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
         CreateNotification("⌨️ Spam Activated", "Spamming key: " .. keyText, 2)
         
-        task.spawn(function()
-            while Config.AutoSpamEnabled do
-                task.wait(Config.SpamDelay)
-                if Config.AutoSpamEnabled then
-                    VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
-                    task.wait(0.05)
-                    VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
-                end
-            end
-        end)
+        StartSpamThread()
     else
         TweenService:Create(AutoSpamToggle, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
         AutoSpamToggle.Text = "OFF"
         AutoSpamStatus.Text = "Status: Inactive"
         AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
         CreateNotification("🛑 Spam Deactivated", "Auto Key Spam has been disabled", 2)
+        StopSpamThread()
     end
+    SaveConfig()
 end)
 
 local function ProcessDescendants(callback)
@@ -863,6 +1050,7 @@ local function ApplyLevel1()
     PerformanceStatus.Text = "Current: Level 1 (Light)\n\nBasic performance improvements"
     PerformanceStatus.TextColor3 = Color3.fromRGB(100, 200, 255)
     CreateNotification("🚀 Level 1 Applied", "Light performance boost", 2)
+    SaveConfig()
 end
 
 local function ApplyLevel2()
@@ -903,6 +1091,7 @@ local function ApplyLevel2()
     PerformanceStatus.Text = "Current: Level 2 (Hard)\n\nReduced graphics quality"
     PerformanceStatus.TextColor3 = Color3.fromRGB(150, 220, 255)
     CreateNotification("🚀 Level 2 Applied", "Hard performance boost", 2)
+    SaveConfig()
 end
 
 local function ApplyLevel3()
@@ -931,6 +1120,7 @@ local function ApplyLevel3()
     PerformanceStatus.Text = "Current: Level 3 (High)\n\nMaximum visual reduction"
     PerformanceStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
     CreateNotification("🚀 Level 3 Applied", "High performance boost", 2)
+    SaveConfig()
 end
 
 local function ApplyLevel4()
@@ -949,6 +1139,7 @@ local function ApplyLevel4()
     PerformanceStatus.Text = "Current: Level 4 (Potato)\n\nExtreme performance for low-end PCs"
     PerformanceStatus.TextColor3 = Color3.fromRGB(255, 180, 80)
     CreateNotification("🚀 Level 4 Applied", "Potato mode activated", 2)
+    SaveConfig()
 end
 
 local function ApplyLevel5()
@@ -982,6 +1173,7 @@ local function ApplyLevel5()
     PerformanceStatus.Text = "Current: Level 5 (MAX Potato)\n\nAbsolute maximum performance"
     PerformanceStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
     CreateNotification("🚀 Level 5 Applied", "MAXIMUM Potato mode!", 2)
+    SaveConfig()
 end
 
 local function RevertAllChanges()
@@ -1033,6 +1225,7 @@ local function RevertAllChanges()
     PerformanceStatus.Text = "Current: None Applied\n\nLevels 1-3: Safe | Levels 4-5: May cause issues"
     PerformanceStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
     CreateNotification("↩️ Changes Reverted", "All performance changes reverted", 2)
+    SaveConfig()
 end
 
 local function UpdatePerformanceButtons()
@@ -1047,6 +1240,7 @@ end
 local levelFunctions = {ApplyLevel1, ApplyLevel2, ApplyLevel3, ApplyLevel4, ApplyLevel5}
 for i, button in ipairs({Level1Button, Level2Button, Level3Button, Level4Button, Level5Button}) do
     button.MouseButton1Click:Connect(function()
+        if UIToggleDebounce then return end
         if Config.PerformanceLevel == i then
             RevertAllChanges()
         else
@@ -1059,11 +1253,15 @@ for i, button in ipairs({Level1Button, Level2Button, Level3Button, Level4Button,
 end
 
 RevertButton.MouseButton1Click:Connect(function()
+    if UIToggleDebounce then return end
     RevertAllChanges()
     UpdatePerformanceButtons()
 end)
 
 local function ToggleUI()
+    if UIToggleDebounce then return end
+    UIToggleDebounce = true
+    
     MainFrame.Visible = not MainFrame.Visible
     ReopenButton.Visible = not MainFrame.Visible
     
@@ -1093,6 +1291,9 @@ local function ToggleUI()
         }):Play()
         CreateNotification("🔒 UI Hidden", "Click circle or press keybind to show", 2)
     end
+    
+    task.wait(UIToggleDebounceTime)
+    UIToggleDebounce = false
 end
 
 CloseButton.MouseEnter:Connect(function()
@@ -1103,8 +1304,15 @@ CloseButton.MouseLeave:Connect(function()
     TweenService:Create(CloseButton, TweenPresets.Fast, {BackgroundColor3 = Color3.fromRGB(45, 45, 52)}):Play()
 end)
 
-CloseButton.MouseButton1Click:Connect(ToggleUI)
-ReopenButton.MouseButton1Click:Connect(ToggleUI)
+CloseButton.MouseButton1Click:Connect(function()
+    if UIToggleDebounce then return end
+    ToggleUI()
+end)
+
+ReopenButton.MouseButton1Click:Connect(function()
+    if UIToggleDebounce then return end
+    ToggleUI()
+end)
 
 ReopenButton.MouseEnter:Connect(function()
     TweenService:Create(ReopenButton, TweenPresets.Medium, {
@@ -1152,18 +1360,93 @@ task.spawn(function()
     end)
 end)
 
+local configLoaded = LoadConfig()
+
+if configLoaded then
+    local keyName = KeyCodeNames[Config.Keybind] or Config.Keybind.Name
+    KeybindButton.Text = "Toggle Keybind: " .. keyName
+    SpamInput.Text = Config.SpamKey
+    
+    UpdateJumpSlider((Config.JumpDelay - 5) / 25)
+    UpdateClickSlider((Config.ClickDelay - 1) / 9)
+    UpdateSpamSlider((Config.SpamDelay - 0.05) / 4.95)
+    UpdateFPSSlider((Config.TargetFPS - 15) / 345)
+    UpdateClickTypeButtons()
+    UpdatePerformanceButtons()
+    
+    if Config.AutoRejoinEnabled then
+        AutoRejoinToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        AutoRejoinToggle.Text = "Auto Rejoin: ON"
+        AutoRejoinStatus.Text = "Status: Enabled\n\nAutomatically rejoins when disconnected"
+        AutoRejoinStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        SetupAutoRejoin()
+    end
+    
+    if Config.FPSUnlockEnabled then
+        FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        FPSUnlockToggle.Text = "FPS Unlock: ON"
+        FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
+        if setfpscap then
+            setfpscap(Config.TargetFPS)
+        end
+    end
+    
+    if Config.JumpEnabled then
+        JumpToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        JumpToggle.Text = "Auto Jump: ON"
+        StartJumpThread()
+    end
+    
+    if Config.ClickEnabled then
+        ClickToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        ClickToggle.Text = "Auto Click: ON"
+        StartClickThread()
+    end
+    
+    if Config.AutoSpamEnabled then
+        local keyCode = KeyCodeMap[Config.SpamKey]
+        if keyCode then
+            AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+            AutoSpamToggle.Text = "ON"
+            AutoSpamStatus.Text = "Status: Spamming " .. Config.SpamKey
+            AutoSpamStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+            StartSpamThread()
+        else
+            Config.AutoSpamEnabled = false
+            AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+            AutoSpamToggle.Text = "OFF"
+            AutoSpamStatus.Text = "Status: Inactive"
+        end
+    end
+    
+    if Config.PerformanceLevel > 0 then
+        local levelFunctions = {nil, ApplyLevel1, ApplyLevel2, ApplyLevel3, ApplyLevel4, ApplyLevel5}
+        local func = levelFunctions[Config.PerformanceLevel]
+        if func then
+            func()
+            UpdatePerformanceButtons()
+        end
+    end
+    
+    UpdateAntiAFKStatus()
+    
+    CreateNotification("✨ Config Loaded", "Previous settings restored successfully", 3)
+else
+    UpdateJumpSlider(0.2)
+    UpdateClickSlider(0.22)
+    UpdateSpamSlider(0.01)
+    UpdateFPSSlider(0.13)
+    UpdateClickTypeButtons()
+    UpdatePerformanceButtons()
+end
+
 MainFrame.Visible = true
 ReopenButton.Visible = false
-
-UpdateJumpSlider(0.2)
-UpdateClickSlider(0.22)
-UpdateSpamSlider(0.01)
-UpdateFPSSlider(0.13)
-UpdateClickTypeButtons()
 
 TweenService:Create(MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
     Size = UDim2.new(0, 500, 0, 650),
     Position = UDim2.new(0.5, -250, 0.5, -325)
 }):Play()
 
-CreateNotification("✨ Script Loaded", "Universal Utility loaded successfully!\nPress G to toggle UI", 4)
+CreateNotification("✨ Script Loaded", "Universal Utility loaded successfully!\nPress " .. (KeyCodeNames[Config.Keybind] or Config.Keybind.Name) .. " to toggle UI", 4)
