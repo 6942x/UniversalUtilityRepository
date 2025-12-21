@@ -261,7 +261,7 @@ ScrollFrame.Size = UDim2.new(1, -20, 1, 275)
 ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
-ScrollFrame.ScrollBarThickness = 6
+ScrollFrame.ScrollBarThickness = 4
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
 ScrollFrame.ScrollBarImageTransparency = 0.7
 ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1500)
@@ -356,11 +356,11 @@ local function CreateSlider(parent, size, position, minValue, maxValue, currentV
     
     local valueBox = Instance.new("TextBox", sliderFrame)
     valueBox.Size = UDim2.new(0, 50, 0, 24)
-    valueBox.Position = UDim2.new(1, -55, 0, 16)
+    valueBox.Position = UDim2.new(1, -50, 0, 26)
     valueBox.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     valueBox.Text = tostring(currentValue)
     valueBox.Font = Enum.Font.Gotham
-    valueBox.TextSize = 13
+    valueBox.TextScaled = true
     valueBox.TextColor3 = Color3.fromRGB(255, 255, 255)
     valueBox.ClearTextOnFocus = false
     
@@ -464,7 +464,7 @@ local ClickDelayFrame, ClickDelaySlider, ClickSliderFill, ClickSliderButton, Cli
 
 local AntiAFKStatus = Instance.new("TextLabel", AntiAFKSection)
 AntiAFKStatus.Size = UDim2.new(1, -20, 0, 28)
-AntiAFKStatus.Position = UDim2.new(0, 10, 0, 175)
+AntiAFKStatus.Position = UDim2.new(0, 10, 0, 190)
 AntiAFKStatus.BackgroundTransparency = 1
 AntiAFKStatus.Text = "Status: All Inactive"
 AntiAFKStatus.Font = Enum.Font.Gotham
@@ -472,7 +472,7 @@ AntiAFKStatus.TextSize = 12
 AntiAFKStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AntiAFKStatus.TextXAlignment = Enum.TextXAlignment.Center
 
-local AutoSpamSection = CreateSection("⌨️ Auto Key Spam", UDim2.new(0, 0, 0, 530), 170)
+local AutoSpamSection = CreateSection("⌨️ Auto Key Spam", UDim2.new(0, 0, 0, 523), 170)
 local SpamInput = Instance.new("TextBox", AutoSpamSection)
 SpamInput.Size = UDim2.new(1, -20, 0, 36)
 SpamInput.Position = UDim2.new(0, 10, 0, 40)
@@ -509,15 +509,6 @@ local Level3Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), 
 local Level4Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0, 10, 0, 78), "Level 4 Potato")
 local Level5Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0.5, -65, 0, 78), "Level 5 MAX")
 
-local DescLabel = Instance.new("TextLabel", PerformanceSection)
-DescLabel.Size = UDim2.new(0, 130, 0, 32)
-DescLabel.Position = UDim2.new(1, -140, 0, 78)
-DescLabel.BackgroundTransparency = 1
-DescLabel.Text = "⚠️ Experimental"
-DescLabel.Font = Enum.Font.GothamBold
-DescLabel.TextSize = 11
-DescLabel.TextColor3 = Color3.fromRGB(255, 180, 80)
-
 local RevertButton = CreateButton(PerformanceSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 116), "Revert All Changes")
 
 local FPSUnlockFrame = Instance.new("Frame", PerformanceSection)
@@ -540,7 +531,7 @@ FPSUnlockStatus.TextSize = 12
 FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 FPSUnlockStatus.TextXAlignment = Enum.TextXAlignment.Left
 
-local FPSValueFrame, FPSSlider, FPSFill, FPSButton, FPSValueBox, FPSValueLabel = CreateSlider(FPSUnlockFrame, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 44), 15, 360, 60, "Target FPS:")
+local FPSValueFrame, FPSSlider, FPSFill, FPSButton, FPSValueBox, FPSValueLabel = CreateSlider(FPSUnlockFrame, UDim2.new(1, -20, 0, 36), UDim2.new(0, 6, 0, 44), 15, 360, 60, "Target FPS:")
 
 local PerformanceStatus = Instance.new("TextLabel", PerformanceSection)
 PerformanceStatus.Size = UDim2.new(1, -20, 0, 60)
