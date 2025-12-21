@@ -5,6 +5,7 @@ local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local MarketplaceService = game:GetService("MarketplaceService")
+local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -26,37 +27,43 @@ end
 
 ProtectGui()
 
-local CurrentKeybind = Enum.KeyCode.G
-local CurrentPerformanceLevel = 0
-local CurrentClickType = "Current"
-
-local JumpEnabled = false
-local ClickEnabled = false
-local AutoSpamEnabled = false
-local IsChangingKeybind = false
-local FPSUnlockEnabled = false
-local TargetFPS = 60
-
-local JumpDelay = 10.0
-local ClickDelay = 3.0
-local SpamDelay = 0.1
+local Config = {
+    Keybind = Enum.KeyCode.G,
+    PerformanceLevel = 0,
+    ClickType = "Current",
+    JumpEnabled = false,
+    ClickEnabled = false,
+    AutoSpamEnabled = false,
+    IsChangingKeybind = false,
+    FPSUnlockEnabled = false,
+    TargetFPS = 60,
+    JumpDelay = 10.0,
+    ClickDelay = 3.0,
+    SpamDelay = 0.1
+}
 
 local NotificationStack = {}
-local NotificationSpacing = 85
-
 local OriginalSettings = {
     Materials = {}, Reflectances = {}, Transparencies = {}, Decals = {},
     Lighting = {}, CastShadows = {}, RenderFidelity = {}
 }
 
-local KeyCodeNames = {}
-for i = 65, 90 do KeyCodeNames[Enum.KeyCode[string.char(i)]] = string.char(i) end
-for i = 0, 9 do
-    local keyName = i == 0 and "Zero" or ({"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"})[i]
-    KeyCodeNames[Enum.KeyCode[keyName]] = tostring(i)
+local KeyCodeNames, KeyCodeMap = {}, {}
+for i = 65, 90 do
+    local char = string.char(i)
+    KeyCodeNames[Enum.KeyCode[char]] = char
+    KeyCodeMap[char] = Enum.KeyCode[char]
 end
-for i = 1, 12 do KeyCodeNames[Enum.KeyCode["F" .. i]] = "F" .. i end
-
+local numNames = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"}
+for i = 0, 9 do
+    local keyName = i == 0 and "Zero" or numNames[i]
+    KeyCodeNames[Enum.KeyCode[keyName]] = tostring(i)
+    KeyCodeMap[tostring(i)] = Enum.KeyCode[keyName]
+end
+for i = 1, 12 do
+    KeyCodeNames[Enum.KeyCode["F" .. i]] = "F" .. i
+    KeyCodeMap["F" .. i] = Enum.KeyCode["F" .. i]
+end
 local specialKeys = {
     LeftControl = "Left Ctrl", RightControl = "Right Ctrl",
     LeftShift = "Left Shift", RightShift = "Right Shift",
@@ -68,19 +75,18 @@ local specialKeys = {
 }
 for k, v in pairs(specialKeys) do KeyCodeNames[Enum.KeyCode[k]] = v end
 
-local KeyCodeMap = {}
-for i = 65, 90 do KeyCodeMap[string.char(i)] = Enum.KeyCode[string.char(i)] end
-for i = 0, 9 do
-    local keyName = i == 0 and "Zero" or ({"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"})[i]
-    KeyCodeMap[tostring(i)] = Enum.KeyCode[keyName]
-end
-for i = 1, 12 do KeyCodeMap["F" .. i] = Enum.KeyCode["F" .. i] end
+local TweenPresets = {
+    Fast = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Slow = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+    Back = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+}
 
 local function UpdateNotificationPositions()
     for i, notif in ipairs(NotificationStack) do
-        local targetY = 20 + ((i - 1) * NotificationSpacing)
-        TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Position = UDim2.new(1, -340, 0, targetY)
+        TweenService:Create(notif, TweenPresets.Medium, {
+            Position = UDim2.new(1, -340, 0, 20 + (i - 1) * 85)
         }):Play()
     end
 end
@@ -94,11 +100,10 @@ local function CreateNotification(title, message, duration)
     NotificationFrame.ClipsDescendants = true
     NotificationFrame.Parent = ScreenGui
     
-    local NotifCorner = Instance.new("UICorner")
+    local NotifCorner = Instance.new("UICorner", NotificationFrame)
     NotifCorner.CornerRadius = UDim.new(0, 16)
-    NotifCorner.Parent = NotificationFrame
     
-    local NotifGlow = Instance.new("ImageLabel")
+    local NotifGlow = Instance.new("ImageLabel", NotificationFrame)
     NotifGlow.Size = UDim2.new(1, 24, 1, 24)
     NotifGlow.Position = UDim2.new(0, -12, 0, -12)
     NotifGlow.BackgroundTransparency = 1
@@ -108,9 +113,8 @@ local function CreateNotification(title, message, duration)
     NotifGlow.ScaleType = Enum.ScaleType.Slice
     NotifGlow.SliceCenter = Rect.new(12, 12, 52, 52)
     NotifGlow.ZIndex = 0
-    NotifGlow.Parent = NotificationFrame
     
-    local NotifTitle = Instance.new("TextLabel")
+    local NotifTitle = Instance.new("TextLabel", NotificationFrame)
     NotifTitle.Size = UDim2.new(1, -24, 0, 28)
     NotifTitle.Position = UDim2.new(0, 12, 0, 10)
     NotifTitle.BackgroundTransparency = 1
@@ -119,9 +123,8 @@ local function CreateNotification(title, message, duration)
     NotifTitle.TextSize = 15
     NotifTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
     NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
-    NotifTitle.Parent = NotificationFrame
     
-    local NotifMessage = Instance.new("TextLabel")
+    local NotifMessage = Instance.new("TextLabel", NotificationFrame)
     NotifMessage.Size = UDim2.new(1, -24, 0, 38)
     NotifMessage.Position = UDim2.new(0, 12, 0, 38)
     NotifMessage.BackgroundTransparency = 1
@@ -132,7 +135,6 @@ local function CreateNotification(title, message, duration)
     NotifMessage.TextXAlignment = Enum.TextXAlignment.Left
     NotifMessage.TextYAlignment = Enum.TextYAlignment.Top
     NotifMessage.TextWrapped = true
-    NotifMessage.Parent = NotificationFrame
     
     table.insert(NotificationStack, NotificationFrame)
     
@@ -143,7 +145,7 @@ local function CreateNotification(title, message, duration)
     UpdateNotificationPositions()
     
     task.delay(duration or 3, function()
-        TweenService:Create(NotificationFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        TweenService:Create(NotificationFrame, TweenPresets.Slow, {
             Position = UDim2.new(1, 20, NotificationFrame.Position.Y.Scale, NotificationFrame.Position.Y.Offset),
             Size = UDim2.new(0, 320, 0, 0)
         }):Play()
@@ -162,7 +164,7 @@ local function CreateNotification(title, message, duration)
     end)
 end
 
-local ReopenButton = Instance.new("ImageButton")
+local ReopenButton = Instance.new("ImageButton", ScreenGui)
 ReopenButton.Name = "ReopenButton"
 ReopenButton.Size = UDim2.new(0, 0, 0, 0)
 ReopenButton.Position = UDim2.new(0.5, 0, 0, 30)
@@ -170,33 +172,28 @@ ReopenButton.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 ReopenButton.BorderSizePixel = 0
 ReopenButton.Visible = false
 ReopenButton.ZIndex = 10
-ReopenButton.Parent = ScreenGui
 
-local ReopenCorner = Instance.new("UICorner")
+local ReopenCorner = Instance.new("UICorner", ReopenButton)
 ReopenCorner.CornerRadius = UDim.new(1, 0)
-ReopenCorner.Parent = ReopenButton
 
-local ReopenIcon = Instance.new("TextLabel")
+local ReopenIcon = Instance.new("TextLabel", ReopenButton)
 ReopenIcon.Size = UDim2.new(1, 0, 1, 0)
 ReopenIcon.BackgroundTransparency = 1
 ReopenIcon.Text = "⚡"
 ReopenIcon.Font = Enum.Font.GothamBold
 ReopenIcon.TextSize = 24
 ReopenIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-ReopenIcon.Parent = ReopenButton
 
-local ReopenPulse = Instance.new("Frame")
+local ReopenPulse = Instance.new("Frame", ReopenButton)
 ReopenPulse.Size = UDim2.new(1, 0, 1, 0)
 ReopenPulse.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 ReopenPulse.BackgroundTransparency = 0.7
 ReopenPulse.BorderSizePixel = 0
-ReopenPulse.Parent = ReopenButton
 
-local PulseCorner = Instance.new("UICorner")
+local PulseCorner = Instance.new("UICorner", ReopenPulse)
 PulseCorner.CornerRadius = UDim.new(1, 0)
-PulseCorner.Parent = ReopenPulse
 
-local MainFrame = Instance.new("Frame")
+local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -205,13 +202,11 @@ MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
 
-local UICorner = Instance.new("UICorner")
+local UICorner = Instance.new("UICorner", MainFrame)
 UICorner.CornerRadius = UDim.new(0, 16)
-UICorner.Parent = MainFrame
 
-local MainGlow = Instance.new("ImageLabel")
+local MainGlow = Instance.new("ImageLabel", MainFrame)
 MainGlow.Size = UDim2.new(1, 40, 1, 40)
 MainGlow.Position = UDim2.new(0, -20, 0, -20)
 MainGlow.BackgroundTransparency = 1
@@ -221,29 +216,24 @@ MainGlow.ImageTransparency = 0.9
 MainGlow.ScaleType = Enum.ScaleType.Slice
 MainGlow.SliceCenter = Rect.new(12, 12, 52, 52)
 MainGlow.ZIndex = 0
-MainGlow.Parent = MainFrame
 
-local TopBar = Instance.new("Frame")
+local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Name = "TopBar"
 TopBar.Size = UDim2.new(1, 0, 0, 40)
 TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
 TopBar.BorderSizePixel = 0
-TopBar.Parent = MainFrame
 
-local TopBarCorner = Instance.new("UICorner")
+local TopBarCorner = Instance.new("UICorner", TopBar)
 TopBarCorner.CornerRadius = UDim.new(0, 16)
-TopBarCorner.Parent = TopBar
 
-local TopBarGlow = Instance.new("Frame")
+local TopBarGlow = Instance.new("Frame", TopBar)
 TopBarGlow.Size = UDim2.new(1, 0, 0, 3)
 TopBarGlow.Position = UDim2.new(0, 0, 1, 0)
 TopBarGlow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 TopBarGlow.BackgroundTransparency = 0.8
 TopBarGlow.BorderSizePixel = 0
-TopBarGlow.Parent = TopBar
 
-local Title = Instance.new("TextLabel")
-Title.Name = "Title"
+local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(1, -80, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
@@ -252,10 +242,8 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 18
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TopBar
 
-local CloseButton = Instance.new("ImageButton")
-CloseButton.Name = "CloseButton"
+local CloseButton = Instance.new("ImageButton", TopBar)
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
 CloseButton.Position = UDim2.new(1, -40, 0.5, -15)
 CloseButton.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
@@ -264,15 +252,12 @@ CloseButton.Image = "rbxassetid://3926305904"
 CloseButton.ImageRectOffset = Vector2.new(284, 4)
 CloseButton.ImageRectSize = Vector2.new(24, 24)
 CloseButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.Parent = TopBar
 
-local CloseButtonCorner = Instance.new("UICorner")
+local CloseButtonCorner = Instance.new("UICorner", CloseButton)
 CloseButtonCorner.CornerRadius = UDim.new(0, 8)
-CloseButtonCorner.Parent = CloseButton
 
-local ScrollFrame = Instance.new("ScrollingFrame")
-ScrollFrame.Name = "ScrollFrame"
-ScrollFrame.Size = UDim2.new(1, -20, 1, -60)
+local ScrollFrame = Instance.new("ScrollingFrame", MainFrame)
+ScrollFrame.Size = UDim2.new(1, -20, 1, 275)
 ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
@@ -280,35 +265,29 @@ ScrollFrame.ScrollBarThickness = 6
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
 ScrollFrame.ScrollBarImageTransparency = 0.7
 ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1500)
-ScrollFrame.Parent = MainFrame
 
-local ContentFrame = Instance.new("Frame")
-ContentFrame.Name = "ContentFrame"
+local ContentFrame = Instance.new("Frame", ScrollFrame)
 ContentFrame.Size = UDim2.new(1, 0, 0, 1500)
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Parent = ScrollFrame
 
 local function CreateSection(name, position, height)
-    local section = Instance.new("Frame")
+    local section = Instance.new("Frame", ContentFrame)
     section.Size = UDim2.new(1, 0, 0, height)
     section.Position = position
     section.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
     section.BorderSizePixel = 0
-    section.Parent = ContentFrame
     
-    local corner = Instance.new("UICorner")
+    local corner = Instance.new("UICorner", section)
     corner.CornerRadius = UDim.new(0, 10)
-    corner.Parent = section
     
-    local glow = Instance.new("Frame")
+    local glow = Instance.new("Frame", section)
     glow.Size = UDim2.new(1, 0, 0, 3)
     glow.Position = UDim2.new(0, 0, 1, -3)
     glow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
     glow.BackgroundTransparency = 0.6
     glow.BorderSizePixel = 0
-    glow.Parent = section
     
-    local title = Instance.new("TextLabel")
+    local title = Instance.new("TextLabel", section)
     title.Size = UDim2.new(1, -20, 0, 24)
     title.Position = UDim2.new(0, 10, 0, 8)
     title.BackgroundTransparency = 1
@@ -317,13 +296,12 @@ local function CreateSection(name, position, height)
     title.TextSize = 15
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = section
     
     return section
 end
 
 local function CreateButton(parent, size, position, text)
-    local button = Instance.new("TextButton")
+    local button = Instance.new("TextButton", parent)
     button.Size = size
     button.Position = position
     button.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
@@ -332,61 +310,51 @@ local function CreateButton(parent, size, position, text)
     button.TextSize = 13
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.BorderSizePixel = 0
-    button.Parent = parent
     
-    local corner = Instance.new("UICorner")
+    local corner = Instance.new("UICorner", button)
     corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = button
     
     return button
 end
 
 local function CreateSlider(parent, size, position, minValue, maxValue, currentValue, labelText)
-    local sliderFrame = Instance.new("Frame")
+    local sliderFrame = Instance.new("Frame", parent)
     sliderFrame.Size = UDim2.new(size.X.Scale, size.X.Offset, 0, 36)
     sliderFrame.Position = position
     sliderFrame.BackgroundTransparency = 1
-    sliderFrame.Parent = parent
     
-    local valueLabel = Instance.new("TextLabel")
+    local valueLabel = Instance.new("TextLabel", sliderFrame)
     valueLabel.Size = UDim2.new(1, 0, 0, 16)
-    valueLabel.Position = UDim2.new(0, 0, 0, 0)
     valueLabel.BackgroundTransparency = 1
     valueLabel.Text = labelText
     valueLabel.Font = Enum.Font.Gotham
     valueLabel.TextSize = 12
     valueLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     valueLabel.TextXAlignment = Enum.TextXAlignment.Left
-    valueLabel.Parent = sliderFrame
     
-    local slider = Instance.new("Frame")
+    local slider = Instance.new("Frame", sliderFrame)
     slider.Size = UDim2.new(1, 0, 0, 6)
     slider.Position = UDim2.new(0, 0, 0, 18)
     slider.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     slider.BorderSizePixel = 0
-    slider.Parent = sliderFrame
     
-    local sliderCorner = Instance.new("UICorner")
+    local sliderCorner = Instance.new("UICorner", slider)
     sliderCorner.CornerRadius = UDim.new(0, 3)
-    sliderCorner.Parent = slider
     
-    local fill = Instance.new("Frame")
+    local fill = Instance.new("Frame", slider)
     fill.Size = UDim2.new(0.5, 0, 1, 0)
     fill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
     fill.BorderSizePixel = 0
-    fill.Parent = slider
     
-    local fillCorner = Instance.new("UICorner")
+    local fillCorner = Instance.new("UICorner", fill)
     fillCorner.CornerRadius = UDim.new(0, 3)
-    fillCorner.Parent = fill
     
-    local button = Instance.new("TextButton")
+    local button = Instance.new("TextButton", slider)
     button.Size = UDim2.new(1, 0, 1, 0)
     button.BackgroundTransparency = 1
     button.Text = ""
-    button.Parent = slider
     
-    local valueBox = Instance.new("TextBox")
+    local valueBox = Instance.new("TextBox", sliderFrame)
     valueBox.Size = UDim2.new(0, 50, 0, 24)
     valueBox.Position = UDim2.new(1, -55, 0, 16)
     valueBox.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
@@ -395,36 +363,30 @@ local function CreateSlider(parent, size, position, minValue, maxValue, currentV
     valueBox.TextSize = 13
     valueBox.TextColor3 = Color3.fromRGB(255, 255, 255)
     valueBox.ClearTextOnFocus = false
-    valueBox.Parent = sliderFrame
     
-    local valueCorner = Instance.new("UICorner")
+    local valueCorner = Instance.new("UICorner", valueBox)
     valueCorner.CornerRadius = UDim.new(0, 5)
-    valueCorner.Parent = valueBox
     
     return sliderFrame, slider, fill, button, valueBox, valueLabel
 end
 
 local HomeSection = CreateSection("🏠 Home", UDim2.new(0, 0, 0, 0), 260)
 
-local PlayerInfoFrame = Instance.new("Frame")
+local PlayerInfoFrame = Instance.new("Frame", HomeSection)
 PlayerInfoFrame.Size = UDim2.new(0, 140, 0, 200)
 PlayerInfoFrame.Position = UDim2.new(1, -150, 0, 40)
 PlayerInfoFrame.BackgroundTransparency = 1
-PlayerInfoFrame.Parent = HomeSection
 
-local PlayerImage = Instance.new("ImageLabel")
+local PlayerImage = Instance.new("ImageLabel", PlayerInfoFrame)
 PlayerImage.Size = UDim2.new(1, 0, 0, 140)
-PlayerImage.Position = UDim2.new(0, 0, 0, 0)
 PlayerImage.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
 PlayerImage.BorderSizePixel = 0
 PlayerImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-PlayerImage.Parent = PlayerInfoFrame
 
-local PlayerImageCorner = Instance.new("UICorner")
+local PlayerImageCorner = Instance.new("UICorner", PlayerImage)
 PlayerImageCorner.CornerRadius = UDim.new(0, 10)
-PlayerImageCorner.Parent = PlayerImage
 
-local PlayerName = Instance.new("TextLabel")
+local PlayerName = Instance.new("TextLabel", PlayerInfoFrame)
 PlayerName.Size = UDim2.new(1, 0, 0, 18)
 PlayerName.Position = UDim2.new(0, 0, 0, 145)
 PlayerName.BackgroundTransparency = 1
@@ -433,9 +395,8 @@ PlayerName.Font = Enum.Font.GothamBold
 PlayerName.TextSize = 13
 PlayerName.TextColor3 = Color3.fromRGB(255, 255, 255)
 PlayerName.TextXAlignment = Enum.TextXAlignment.Center
-PlayerName.Parent = PlayerInfoFrame
 
-local FPSLabel = Instance.new("TextLabel")
+local FPSLabel = Instance.new("TextLabel", PlayerInfoFrame)
 FPSLabel.Size = UDim2.new(1, 0, 0, 18)
 FPSLabel.Position = UDim2.new(0, 0, 0, 165)
 FPSLabel.BackgroundTransparency = 1
@@ -444,39 +405,33 @@ FPSLabel.Font = Enum.Font.Gotham
 FPSLabel.TextSize = 12
 FPSLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 FPSLabel.TextXAlignment = Enum.TextXAlignment.Center
-FPSLabel.Parent = PlayerInfoFrame
 
-local GameInfoFrame = Instance.new("Frame")
+local GameInfoFrame = Instance.new("Frame", HomeSection)
 GameInfoFrame.Size = UDim2.new(0, 280, 0, 200)
 GameInfoFrame.Position = UDim2.new(0, 10, 0, 40)
 GameInfoFrame.BackgroundTransparency = 1
-GameInfoFrame.Parent = HomeSection
 
-local GameImage = Instance.new("ImageLabel")
+local GameImage = Instance.new("ImageLabel", GameInfoFrame)
 GameImage.Size = UDim2.new(1, 0, 0, 140)
-GameImage.Position = UDim2.new(0, 0, 0, 0)
 GameImage.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
 GameImage.BorderSizePixel = 0
 GameImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-GameImage.Parent = GameInfoFrame
 
-local GameImageCorner = Instance.new("UICorner")
+local GameImageCorner = Instance.new("UICorner", GameImage)
 GameImageCorner.CornerRadius = UDim.new(0, 10)
-GameImageCorner.Parent = GameImage
 
-local GameName = Instance.new("TextLabel")
+local GameName = Instance.new("TextLabel", GameInfoFrame)
 GameName.Size = UDim2.new(1, 0, 0, 30)
 GameName.Position = UDim2.new(0, 0, 0, 145)
 GameName.BackgroundTransparency = 1
-GameName.Text = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+GameName.Text = "Loading..."
 GameName.Font = Enum.Font.GothamBold
 GameName.TextSize = 14
 GameName.TextColor3 = Color3.fromRGB(255, 255, 255)
 GameName.TextXAlignment = Enum.TextXAlignment.Center
 GameName.TextWrapped = true
-GameName.Parent = GameInfoFrame
 
-local GameId = Instance.new("TextLabel")
+local GameId = Instance.new("TextLabel", GameInfoFrame)
 GameId.Size = UDim2.new(1, 0, 0, 18)
 GameId.Position = UDim2.new(0, 0, 0, 177)
 GameId.BackgroundTransparency = 1
@@ -485,13 +440,12 @@ GameId.Font = Enum.Font.Gotham
 GameId.TextSize = 12
 GameId.TextColor3 = Color3.fromRGB(180, 180, 180)
 GameId.TextXAlignment = Enum.TextXAlignment.Center
-GameId.Parent = GameInfoFrame
 
 local AntiAFKSection = CreateSection("🛡️ Anti-AFK System", UDim2.new(0, 0, 0, 275), 240)
 local JumpToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(0, 10, 0, 40), "Auto Jump: OFF")
 local ClickToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(1, -210, 0, 40), "Auto Click: OFF")
 
-local ClickTypeLabel = Instance.new("TextLabel")
+local ClickTypeLabel = Instance.new("TextLabel", AntiAFKSection)
 ClickTypeLabel.Size = UDim2.new(1, -20, 0, 18)
 ClickTypeLabel.Position = UDim2.new(0, 10, 0, 78)
 ClickTypeLabel.BackgroundTransparency = 1
@@ -500,7 +454,6 @@ ClickTypeLabel.Font = Enum.Font.Gotham
 ClickTypeLabel.TextSize = 12
 ClickTypeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 ClickTypeLabel.TextXAlignment = Enum.TextXAlignment.Left
-ClickTypeLabel.Parent = AntiAFKSection
 
 local ClickTypeCurrent = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(0, 10, 0, 100), "Current")
 local ClickTypeCenter = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(0.5, -60, 0, 100), "Center")
@@ -509,7 +462,7 @@ local ClickTypeRandom = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), U
 local JumpDelayFrame, JumpDelaySlider, JumpSliderFill, JumpSliderButton, JumpDelayBox, JumpDelayLabel = CreateSlider(AntiAFKSection, UDim2.new(0, 200, 0, 36), UDim2.new(0, 10, 0, 132), 5, 30, 10, "Jump Delay:")
 local ClickDelayFrame, ClickDelaySlider, ClickSliderFill, ClickSliderButton, ClickDelayBox, ClickDelayLabel = CreateSlider(AntiAFKSection, UDim2.new(0, 200, 0, 36), UDim2.new(1, -210, 0, 132), 1, 10, 3, "Click Delay:")
 
-local AntiAFKStatus = Instance.new("TextLabel")
+local AntiAFKStatus = Instance.new("TextLabel", AntiAFKSection)
 AntiAFKStatus.Size = UDim2.new(1, -20, 0, 28)
 AntiAFKStatus.Position = UDim2.new(0, 10, 0, 175)
 AntiAFKStatus.BackgroundTransparency = 1
@@ -518,10 +471,9 @@ AntiAFKStatus.Font = Enum.Font.Gotham
 AntiAFKStatus.TextSize = 12
 AntiAFKStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AntiAFKStatus.TextXAlignment = Enum.TextXAlignment.Center
-AntiAFKStatus.Parent = AntiAFKSection
 
-local AutoSpamSection = CreateSection("⌨️ Auto Key Spam", UDim2.new(0, 0, 0, 530), 160)
-local SpamInput = Instance.new("TextBox")
+local AutoSpamSection = CreateSection("⌨️ Auto Key Spam", UDim2.new(0, 0, 0, 530), 170)
+local SpamInput = Instance.new("TextBox", AutoSpamSection)
 SpamInput.Size = UDim2.new(1, -20, 0, 36)
 SpamInput.Position = UDim2.new(0, 10, 0, 40)
 SpamInput.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
@@ -533,16 +485,14 @@ SpamInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpamInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
 SpamInput.BorderSizePixel = 0
 SpamInput.ClearTextOnFocus = false
-SpamInput.Parent = AutoSpamSection
 
-local InputCorner = Instance.new("UICorner")
+local InputCorner = Instance.new("UICorner", SpamInput)
 InputCorner.CornerRadius = UDim.new(0, 8)
-InputCorner.Parent = SpamInput
 
 local SpamDelayFrame, SpamDelaySlider, SpamSliderFill, SpamSliderButton, SpamDelayBox, SpamDelayLabel = CreateSlider(AutoSpamSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 82), 0.05, 5, 0.1, "Delay:")
 
 local AutoSpamToggle = CreateButton(AutoSpamSection, UDim2.new(0, 90, 0, 32), UDim2.new(0, 10, 0, 124), "OFF")
-local AutoSpamStatus = Instance.new("TextLabel")
+local AutoSpamStatus = Instance.new("TextLabel", AutoSpamSection)
 AutoSpamStatus.Size = UDim2.new(1, -110, 0, 32)
 AutoSpamStatus.Position = UDim2.new(0, 106, 0, 124)
 AutoSpamStatus.BackgroundTransparency = 1
@@ -551,16 +501,15 @@ AutoSpamStatus.Font = Enum.Font.Gotham
 AutoSpamStatus.TextSize = 12
 AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AutoSpamStatus.TextXAlignment = Enum.TextXAlignment.Left
-AutoSpamStatus.Parent = AutoSpamSection
 
-local PerformanceSection = CreateSection("🚀 FPS Boost (5 Levels)", UDim2.new(0, 0, 0, 705), 460)
+local PerformanceSection = CreateSection("🚀 FPS Boost", UDim2.new(0, 0, 0, 705), 333)
 local Level1Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0, 10, 0, 40), "Level 1 Light")
 local Level2Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0.5, -65, 0, 40), "Level 2 Hard")
 local Level3Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(1, -140, 0, 40), "Level 3 High")
 local Level4Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0, 10, 0, 78), "Level 4 Potato")
 local Level5Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0.5, -65, 0, 78), "Level 5 MAX")
 
-local DescLabel = Instance.new("TextLabel")
+local DescLabel = Instance.new("TextLabel", PerformanceSection)
 DescLabel.Size = UDim2.new(0, 130, 0, 32)
 DescLabel.Position = UDim2.new(1, -140, 0, 78)
 DescLabel.BackgroundTransparency = 1
@@ -568,23 +517,20 @@ DescLabel.Text = "⚠️ Experimental"
 DescLabel.Font = Enum.Font.GothamBold
 DescLabel.TextSize = 11
 DescLabel.TextColor3 = Color3.fromRGB(255, 180, 80)
-DescLabel.Parent = PerformanceSection
 
 local RevertButton = CreateButton(PerformanceSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 116), "Revert All Changes")
 
-local FPSUnlockFrame = Instance.new("Frame")
+local FPSUnlockFrame = Instance.new("Frame", PerformanceSection)
 FPSUnlockFrame.Size = UDim2.new(1, -20, 0, 90)
 FPSUnlockFrame.Position = UDim2.new(0, 10, 0, 158)
 FPSUnlockFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
 FPSUnlockFrame.BorderSizePixel = 0
-FPSUnlockFrame.Parent = PerformanceSection
 
-local FPSUnlockCorner = Instance.new("UICorner")
+local FPSUnlockCorner = Instance.new("UICorner", FPSUnlockFrame)
 FPSUnlockCorner.CornerRadius = UDim.new(0, 8)
-FPSUnlockCorner.Parent = FPSUnlockFrame
 
 local FPSUnlockToggle = CreateButton(FPSUnlockFrame, UDim2.new(0, 110, 0, 28), UDim2.new(0, 10, 0, 10), "FPS Unlock: OFF")
-local FPSUnlockStatus = Instance.new("TextLabel")
+local FPSUnlockStatus = Instance.new("TextLabel", FPSUnlockFrame)
 FPSUnlockStatus.Size = UDim2.new(1, -130, 0, 28)
 FPSUnlockStatus.Position = UDim2.new(0, 126, 0, 10)
 FPSUnlockStatus.BackgroundTransparency = 1
@@ -593,11 +539,10 @@ FPSUnlockStatus.Font = Enum.Font.Gotham
 FPSUnlockStatus.TextSize = 12
 FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 FPSUnlockStatus.TextXAlignment = Enum.TextXAlignment.Left
-FPSUnlockStatus.Parent = FPSUnlockFrame
 
 local FPSValueFrame, FPSSlider, FPSFill, FPSButton, FPSValueBox, FPSValueLabel = CreateSlider(FPSUnlockFrame, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 44), 15, 360, 60, "Target FPS:")
 
-local PerformanceStatus = Instance.new("TextLabel")
+local PerformanceStatus = Instance.new("TextLabel", PerformanceSection)
 PerformanceStatus.Size = UDim2.new(1, -20, 0, 60)
 PerformanceStatus.Position = UDim2.new(0, 10, 0, 255)
 PerformanceStatus.BackgroundTransparency = 1
@@ -607,11 +552,10 @@ PerformanceStatus.TextSize = 11
 PerformanceStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 PerformanceStatus.TextXAlignment = Enum.TextXAlignment.Center
 PerformanceStatus.TextWrapped = true
-PerformanceStatus.Parent = PerformanceSection
 
-local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1180), 120)
+local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1050), 120)
 local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Toggle Keybind: G")
-local KeybindStatus = Instance.new("TextLabel")
+local KeybindStatus = Instance.new("TextLabel", UIConfigSection)
 KeybindStatus.Size = UDim2.new(1, -20, 0, 24)
 KeybindStatus.Position = UDim2.new(0, 10, 0, 82)
 KeybindStatus.BackgroundTransparency = 1
@@ -620,101 +564,74 @@ KeybindStatus.Font = Enum.Font.Gotham
 KeybindStatus.TextSize = 11
 KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
 KeybindStatus.TextXAlignment = Enum.TextXAlignment.Center
-KeybindStatus.Parent = UIConfigSection
+
+local function UpdateSlider(fill, valueBox, labelElement, value, min, max, format)
+    local percentage = (value - min) / (max - min)
+    TweenService:Create(fill, TweenPresets.Fast, {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
+    valueBox.Text = string.format(format, value)
+    if labelElement then
+        labelElement.Text = labelElement.Text:match("(.+):") .. ": " .. string.format(format, value) .. (labelElement.Text:match("s$") and "s" or "")
+    end
+end
 
 local function UpdateJumpSlider(percentage)
-    TweenService:Create(JumpSliderFill, TweenInfo.new(0.2), {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
-    JumpDelay = 5 + (percentage * 25)
-    JumpDelayBox.Text = string.format("%.1f", JumpDelay)
-    JumpDelayLabel.Text = "Jump Delay: " .. string.format("%.1f", JumpDelay) .. "s"
+    Config.JumpDelay = 5 + (percentage * 25)
+    UpdateSlider(JumpSliderFill, JumpDelayBox, JumpDelayLabel, Config.JumpDelay, 5, 30, "%.1f")
 end
 
 local function UpdateClickSlider(percentage)
-    TweenService:Create(ClickSliderFill, TweenInfo.new(0.2), {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
-    ClickDelay = 1 + (percentage * 9)
-    ClickDelayBox.Text = string.format("%.1f", ClickDelay)
-    ClickDelayLabel.Text = "Click Delay: " .. string.format("%.1f", ClickDelay) .. "s"
+    Config.ClickDelay = 1 + (percentage * 9)
+    UpdateSlider(ClickSliderFill, ClickDelayBox, ClickDelayLabel, Config.ClickDelay, 1, 10, "%.1f")
 end
 
 local function UpdateSpamSlider(percentage)
-    TweenService:Create(SpamSliderFill, TweenInfo.new(0.2), {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
-    SpamDelay = 0.05 + (percentage * 4.95)
-    SpamDelayBox.Text = string.format("%.2f", SpamDelay)
-    SpamDelayLabel.Text = "Delay: " .. string.format("%.2f", SpamDelay) .. "s"
+    Config.SpamDelay = 0.05 + (percentage * 4.95)
+    UpdateSlider(SpamSliderFill, SpamDelayBox, SpamDelayLabel, Config.SpamDelay, 0.05, 5, "%.2f")
 end
 
 local function UpdateFPSSlider(percentage)
-    TweenService:Create(FPSFill, TweenInfo.new(0.2), {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
-    TargetFPS = math.floor(15 + (percentage * 345))
-    FPSValueBox.Text = tostring(TargetFPS)
-    FPSValueLabel.Text = "Target FPS: " .. TargetFPS
-    FPSUnlockStatus.Text = "Target: " .. TargetFPS .. " FPS"
-    
-    if FPSUnlockEnabled then
-        if setfpscap then
-            setfpscap(TargetFPS)
-        end
+    Config.TargetFPS = math.floor(15 + (percentage * 345))
+    UpdateSlider(FPSFill, FPSValueBox, FPSValueLabel, Config.TargetFPS, 15, 360, "%d")
+    FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
+    if Config.FPSUnlockEnabled and setfpscap then
+        setfpscap(Config.TargetFPS)
     end
 end
 
-JumpDelayBox.FocusLost:Connect(function(enterPressed)
-    local value = tonumber(JumpDelayBox.Text)
-    if value then
-        value = math.clamp(value, 5, 30)
-        JumpDelayBox.Text = string.format("%.1f", value)
-        JumpDelay = value
-        UpdateJumpSlider((value - 5) / 25)
-    else
-        JumpDelayBox.Text = string.format("%.1f", JumpDelay)
-    end
+JumpDelayBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(JumpDelayBox.Text) or Config.JumpDelay, 5, 30)
+    Config.JumpDelay = value
+    UpdateJumpSlider((value - 5) / 25)
 end)
 
-ClickDelayBox.FocusLost:Connect(function(enterPressed)
-    local value = tonumber(ClickDelayBox.Text)
-    if value then
-        value = math.clamp(value, 1, 10)
-        ClickDelayBox.Text = string.format("%.1f", value)
-        ClickDelay = value
-        UpdateClickSlider((value - 1) / 9)
-    else
-        ClickDelayBox.Text = string.format("%.1f", ClickDelay)
-    end
+ClickDelayBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(ClickDelayBox.Text) or Config.ClickDelay, 1, 10)
+    Config.ClickDelay = value
+    UpdateClickSlider((value - 1) / 9)
 end)
 
-SpamDelayBox.FocusLost:Connect(function(enterPressed)
-    local value = tonumber(SpamDelayBox.Text)
-    if value then
-        value = math.clamp(value, 0.05, 5)
-        SpamDelayBox.Text = string.format("%.2f", value)
-        SpamDelay = value
-        UpdateSpamSlider((value - 0.05) / 4.95)
-    else
-        SpamDelayBox.Text = string.format("%.2f", SpamDelay)
-    end
+SpamDelayBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(SpamDelayBox.Text) or Config.SpamDelay, 0.05, 5)
+    Config.SpamDelay = value
+    UpdateSpamSlider((value - 0.05) / 4.95)
 end)
 
-FPSValueBox.FocusLost:Connect(function(enterPressed)
-    local value = tonumber(FPSValueBox.Text)
-    if value then
-        value = math.clamp(value, 15, 360)
-        FPSValueBox.Text = tostring(value)
-        TargetFPS = value
-        UpdateFPSSlider((value - 15) / 345)
-    else
-        FPSValueBox.Text = tostring(TargetFPS)
-    end
+FPSValueBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(FPSValueBox.Text) or Config.TargetFPS, 15, 360)
+    Config.TargetFPS = value
+    UpdateFPSSlider((value - 15) / 345)
 end)
 
-local jumpDragging, clickDragging, spamDragging, fpsDragging = false, false, false, false
+local dragging = {jump = false, click = false, spam = false, fps = false}
 
-JumpSliderButton.MouseButton1Down:Connect(function() jumpDragging = true end)
-ClickSliderButton.MouseButton1Down:Connect(function() clickDragging = true end)
-SpamSliderButton.MouseButton1Down:Connect(function() spamDragging = true end)
-FPSButton.MouseButton1Down:Connect(function() fpsDragging = true end)
+JumpSliderButton.MouseButton1Down:Connect(function() dragging.jump = true end)
+ClickSliderButton.MouseButton1Down:Connect(function() dragging.click = true end)
+SpamSliderButton.MouseButton1Down:Connect(function() dragging.spam = true end)
+FPSButton.MouseButton1Down:Connect(function() dragging.fps = true end)
 
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        jumpDragging, clickDragging, spamDragging, fpsDragging = false, false, false, false
+        dragging.jump, dragging.click, dragging.spam, dragging.fps = false, false, false, false
     end
 end)
 
@@ -722,36 +639,26 @@ UserInputService.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then
         local mouseX = UserInputService:GetMouseLocation().X
         
-        if jumpDragging then
-            local percentage = math.clamp((mouseX - JumpDelaySlider.AbsolutePosition.X) / JumpDelaySlider.AbsoluteSize.X, 0, 1)
-            UpdateJumpSlider(percentage)
-        end
-        
-        if clickDragging then
-            local percentage = math.clamp((mouseX - ClickDelaySlider.AbsolutePosition.X) / ClickDelaySlider.AbsoluteSize.X, 0, 1)
-            UpdateClickSlider(percentage)
-        end
-        
-        if spamDragging then
-            local percentage = math.clamp((mouseX - SpamDelaySlider.AbsolutePosition.X) / SpamDelaySlider.AbsoluteSize.X, 0, 1)
-            UpdateSpamSlider(percentage)
-        end
-        
-        if fpsDragging then
-            local percentage = math.clamp((mouseX - FPSSlider.AbsolutePosition.X) / FPSSlider.AbsoluteSize.X, 0, 1)
-            UpdateFPSSlider(percentage)
+        if dragging.jump then
+            UpdateJumpSlider(math.clamp((mouseX - JumpDelaySlider.AbsolutePosition.X) / JumpDelaySlider.AbsoluteSize.X, 0, 1))
+        elseif dragging.click then
+            UpdateClickSlider(math.clamp((mouseX - ClickDelaySlider.AbsolutePosition.X) / ClickDelaySlider.AbsoluteSize.X, 0, 1))
+        elseif dragging.spam then
+            UpdateSpamSlider(math.clamp((mouseX - SpamDelaySlider.AbsolutePosition.X) / SpamDelaySlider.AbsoluteSize.X, 0, 1))
+        elseif dragging.fps then
+            UpdateFPSSlider(math.clamp((mouseX - FPSSlider.AbsolutePosition.X) / FPSSlider.AbsoluteSize.X, 0, 1))
         end
     end
 end)
 
 local function UpdateAntiAFKStatus()
-    if JumpEnabled and ClickEnabled then
+    if Config.JumpEnabled and Config.ClickEnabled then
         AntiAFKStatus.Text = "Status: Jump & Click Active"
         AntiAFKStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
-    elseif JumpEnabled then
+    elseif Config.JumpEnabled then
         AntiAFKStatus.Text = "Status: Jump Active"
         AntiAFKStatus.TextColor3 = Color3.fromRGB(100, 200, 255)
-    elseif ClickEnabled then
+    elseif Config.ClickEnabled then
         AntiAFKStatus.Text = "Status: Click Active"
         AntiAFKStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
     else
@@ -761,68 +668,55 @@ local function UpdateAntiAFKStatus()
 end
 
 local function UpdateClickTypeButtons()
-    TweenService:Create(ClickTypeCurrent, TweenInfo.new(0.2), {
-        BackgroundColor3 = (CurrentClickType == "Current") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
-    }):Play()
-    TweenService:Create(ClickTypeCenter, TweenInfo.new(0.2), {
-        BackgroundColor3 = (CurrentClickType == "Center") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
-    }):Play()
-    TweenService:Create(ClickTypeRandom, TweenInfo.new(0.2), {
-        BackgroundColor3 = (CurrentClickType == "Random") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
-    }):Play()
-end
-
-local function ToggleFPSUnlock()
-    FPSUnlockEnabled = not FPSUnlockEnabled
-    
-    if FPSUnlockEnabled then
-        TweenService:Create(FPSUnlockToggle, TweenInfo.new(0.3), {
-            BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+    local buttons = {Current = ClickTypeCurrent, Center = ClickTypeCenter, Random = ClickTypeRandom}
+    for type, btn in pairs(buttons) do
+        TweenService:Create(btn, TweenPresets.Fast, {
+            BackgroundColor3 = (Config.ClickType == type) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
         }):Play()
-        FPSUnlockToggle.Text = "FPS Unlock: ON"
-        FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
-        if setfpscap then
-            setfpscap(TargetFPS)
-        end
-        CreateNotification("🚀 FPS Unlock", "Enabled: " .. TargetFPS .. " FPS", 2)
-    else
-        TweenService:Create(FPSUnlockToggle, TweenInfo.new(0.3), {
-            BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-        }):Play()
-        FPSUnlockToggle.Text = "FPS Unlock: OFF"
-        FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
-        if setfpscap then
-            setfpscap(360)
-        end
-        CreateNotification("🛑 FPS Unlock", "Disabled", 2)
     end
 end
 
+local function ToggleFPSUnlock()
+    Config.FPSUnlockEnabled = not Config.FPSUnlockEnabled
+    
+    TweenService:Create(FPSUnlockToggle, TweenPresets.Medium, {
+        BackgroundColor3 = Config.FPSUnlockEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    }):Play()
+    
+    FPSUnlockToggle.Text = "FPS Unlock: " .. (Config.FPSUnlockEnabled and "ON" or "OFF")
+    FPSUnlockStatus.TextColor3 = Config.FPSUnlockEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(180, 180, 180)
+    
+    if setfpscap then
+        setfpscap(Config.FPSUnlockEnabled and Config.TargetFPS or 360)
+    end
+    
+    CreateNotification(Config.FPSUnlockEnabled and "🚀 FPS Unlock" or "🛑 FPS Unlock", 
+        Config.FPSUnlockEnabled and ("Enabled: " .. Config.TargetFPS .. " FPS") or "Disabled", 2)
+end
+
 ClickTypeCurrent.MouseButton1Click:Connect(function()
-    CurrentClickType = "Current"
+    Config.ClickType = "Current"
     UpdateClickTypeButtons()
     CreateNotification("🖱️ Click Type", "Set to: Current Mouse Location", 2)
 end)
 
 ClickTypeCenter.MouseButton1Click:Connect(function()
-    CurrentClickType = "Center"
+    Config.ClickType = "Center"
     UpdateClickTypeButtons()
     CreateNotification("🖱️ Click Type", "Set to: Screen Center", 2)
 end)
 
 ClickTypeRandom.MouseButton1Click:Connect(function()
-    CurrentClickType = "Random"
+    Config.ClickType = "Random"
     UpdateClickTypeButtons()
     CreateNotification("🖱️ Click Type", "Set to: Random Screen Spot", 2)
 end)
 
-FPSUnlockToggle.MouseButton1Click:Connect(function()
-    ToggleFPSUnlock()
-end)
+FPSUnlockToggle.MouseButton1Click:Connect(ToggleFPSUnlock)
 
 KeybindButton.MouseButton1Click:Connect(function()
-    if IsChangingKeybind then return end
-    IsChangingKeybind = true
+    if Config.IsChangingKeybind then return end
+    Config.IsChangingKeybind = true
     KeybindButton.Text = "Press any key..."
     KeybindStatus.Text = "Waiting for input..."
     KeybindStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
@@ -830,7 +724,7 @@ KeybindButton.MouseButton1Click:Connect(function()
     local connection
     connection = UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Keyboard then
-            CurrentKeybind = input.KeyCode
+            Config.Keybind = input.KeyCode
             local keyName = KeyCodeNames[input.KeyCode] or input.KeyCode.Name
             KeybindButton.Text = "Toggle Keybind: " .. keyName
             KeybindStatus.Text = "Keybind changed successfully!"
@@ -839,25 +733,25 @@ KeybindButton.MouseButton1Click:Connect(function()
             task.wait(2)
             KeybindStatus.Text = "Click button above to change keybind"
             KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
-            IsChangingKeybind = false
+            Config.IsChangingKeybind = false
             connection:Disconnect()
         end
     end)
 end)
 
 JumpToggle.MouseButton1Click:Connect(function()
-    JumpEnabled = not JumpEnabled
-    TweenService:Create(JumpToggle, TweenInfo.new(0.3), {
-        BackgroundColor3 = JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    Config.JumpEnabled = not Config.JumpEnabled
+    TweenService:Create(JumpToggle, TweenPresets.Medium, {
+        BackgroundColor3 = Config.JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
     }):Play()
-    JumpToggle.Text = "Auto Jump: " .. (JumpEnabled and "ON" or "OFF")
+    JumpToggle.Text = "Auto Jump: " .. (Config.JumpEnabled and "ON" or "OFF")
     
-    if JumpEnabled then
+    if Config.JumpEnabled then
         CreateNotification("🦘 Jump Activated", "Auto Jump is now active", 2)
         task.spawn(function()
-            while JumpEnabled do
-                task.wait(JumpDelay)
-                if JumpEnabled and LocalPlayer.Character then
+            while Config.JumpEnabled do
+                task.wait(Config.JumpDelay)
+                if Config.JumpEnabled and LocalPlayer.Character then
                     local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
                     if humanoid then humanoid.Jump = true end
                 end
@@ -870,36 +764,32 @@ JumpToggle.MouseButton1Click:Connect(function()
 end)
 
 ClickToggle.MouseButton1Click:Connect(function()
-    ClickEnabled = not ClickEnabled
-    TweenService:Create(ClickToggle, TweenInfo.new(0.3), {
-        BackgroundColor3 = ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    Config.ClickEnabled = not Config.ClickEnabled
+    TweenService:Create(ClickToggle, TweenPresets.Medium, {
+        BackgroundColor3 = Config.ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
     }):Play()
-    ClickToggle.Text = "Auto Click: " .. (ClickEnabled and "ON" or "OFF")
+    ClickToggle.Text = "Auto Click: " .. (Config.ClickEnabled and "ON" or "OFF")
     
-    if ClickEnabled then
+    if Config.ClickEnabled then
         CreateNotification("🖱️ Click Activated", "Auto Click is now active", 2)
         task.spawn(function()
-            while ClickEnabled do
-                task.wait(ClickDelay)
-                if ClickEnabled then
-                    if CurrentClickType == "Current" then
+            while Config.ClickEnabled do
+                task.wait(Config.ClickDelay)
+                if Config.ClickEnabled then
+                    local x, y
+                    if Config.ClickType == "Current" then
                         local mousePos = UserInputService:GetMouseLocation()
-                        VirtualInputManager:SendMouseButtonEvent(mousePos.X, mousePos.Y, 0, true, game, 0)
-                        task.wait(0.05)
-                        VirtualInputManager:SendMouseButtonEvent(mousePos.X, mousePos.Y, 0, false, game, 0)
-                    elseif CurrentClickType == "Center" then
+                        x, y = mousePos.X, mousePos.Y
+                    elseif Config.ClickType == "Center" then
                         local viewport = workspace.CurrentCamera.ViewportSize
-                        VirtualInputManager:SendMouseButtonEvent(viewport.X/2, viewport.Y/2, 0, true, game, 0)
-                        task.wait(0.05)
-                        VirtualInputManager:SendMouseButtonEvent(viewport.X/2, viewport.Y/2, 0, false, game, 0)
-                    elseif CurrentClickType == "Random" then
+                        x, y = viewport.X/2, viewport.Y/2
+                    else
                         local viewport = workspace.CurrentCamera.ViewportSize
-                        local randomX = math.random(100, viewport.X - 100)
-                        local randomY = math.random(100, viewport.Y - 100)
-                        VirtualInputManager:SendMouseButtonEvent(randomX, randomY, 0, true, game, 0)
-                        task.wait(0.05)
-                        VirtualInputManager:SendMouseButtonEvent(randomX, randomY, 0, false, game, 0)
+                        x, y = math.random(100, viewport.X - 100), math.random(100, viewport.Y - 100)
                     end
+                    VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
+                    task.wait(0.05)
+                    VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
                 end
             end
         end)
@@ -910,34 +800,34 @@ ClickToggle.MouseButton1Click:Connect(function()
 end)
 
 AutoSpamToggle.MouseButton1Click:Connect(function()
-    AutoSpamEnabled = not AutoSpamEnabled
+    Config.AutoSpamEnabled = not Config.AutoSpamEnabled
     
-    if AutoSpamEnabled then
+    if Config.AutoSpamEnabled then
         local keyText = SpamInput.Text:upper()
         local keyCode = KeyCodeMap[keyText]
         
         if not keyCode then
-            AutoSpamEnabled = false
+            Config.AutoSpamEnabled = false
             CreateNotification("❌ Invalid Key", "Please enter a valid key (A-Z, 0-9, F1-F12)", 2)
             return
         end
         
         if keyCode == Enum.KeyCode.P or keyCode == Enum.KeyCode.G then
-            AutoSpamEnabled = false
+            Config.AutoSpamEnabled = false
             CreateNotification("❌ Restricted Key", "This key is reserved for other functions", 2)
             return
         end
         
-        TweenService:Create(AutoSpamToggle, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(50, 220, 100)}):Play()
+        TweenService:Create(AutoSpamToggle, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(50, 220, 100)}):Play()
         AutoSpamToggle.Text = "ON"
         AutoSpamStatus.Text = "Status: Spamming " .. keyText
         AutoSpamStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
         CreateNotification("⌨️ Spam Activated", "Spamming key: " .. keyText, 2)
         
         task.spawn(function()
-            while AutoSpamEnabled do
-                task.wait(SpamDelay)
-                if AutoSpamEnabled then
+            while Config.AutoSpamEnabled do
+                task.wait(Config.SpamDelay)
+                if Config.AutoSpamEnabled then
                     VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
                     task.wait(0.05)
                     VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
@@ -945,7 +835,7 @@ AutoSpamToggle.MouseButton1Click:Connect(function()
             end
         end)
     else
-        TweenService:Create(AutoSpamToggle, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+        TweenService:Create(AutoSpamToggle, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
         AutoSpamToggle.Text = "OFF"
         AutoSpamStatus.Text = "Status: Inactive"
         AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
@@ -953,80 +843,32 @@ AutoSpamToggle.MouseButton1Click:Connect(function()
     end
 end)
 
-local function ApplyPerformanceToAllObjects()
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            if not OriginalSettings.Materials[obj] then
-                OriginalSettings.Materials[obj] = obj.Material
-                OriginalSettings.Reflectances[obj] = obj.Reflectance
-            end
-            obj.Material = Enum.Material.SmoothPlastic
-            obj.Reflectance = 0
-        end
-        
-        if obj:IsA("Decal") or obj:IsA("Texture") then
-            if not OriginalSettings.Decals[obj] then
-                OriginalSettings.Decals[obj] = obj.Transparency
-            end
-            obj.Transparency = 1
-        end
-        
-        if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
-            if not OriginalSettings.Transparencies[obj] then
-                OriginalSettings.Transparencies[obj] = obj.Enabled
-            end
-            obj.Enabled = false
-        end
-        
-        if obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
-            if not OriginalSettings.Transparencies[obj] then
-                OriginalSettings.Transparencies[obj] = obj.Enabled
-            end
-            obj.Enabled = false
-        end
-        
-        if obj:IsA("BasePart") and obj.Transparency < 1 then
-            if not OriginalSettings.CastShadows[obj] then
-                OriginalSettings.CastShadows[obj] = obj.CastShadow
-            end
-            obj.CastShadow = false
-        end
-        
-        if obj:IsA("MeshPart") then
-            if not OriginalSettings.RenderFidelity[obj] then
-                OriginalSettings.RenderFidelity[obj] = obj.RenderFidelity
-            end
-            pcall(function()
-                obj.RenderFidelity = Enum.RenderFidelity.Performance
-            end)
-        end
-        
-        if obj:IsA("SurfaceGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceLight") or obj:IsA("SpotLight") or obj:IsA("PointLight") then
-            if not OriginalSettings.Transparencies[obj] then
-                OriginalSettings.Transparencies[obj] = obj.Enabled
-            end
-            obj.Enabled = false
-        end
+local function ProcessDescendants(callback)
+    local descendants = workspace:GetDescendants()
+    for i = 1, #descendants do
+        callback(descendants[i])
+        if i % 100 == 0 then task.wait() end
     end
 end
 
 local function ApplyLevel1()
-    local Lighting = game:GetService("Lighting")
-    OriginalSettings.Lighting.GlobalShadows = Lighting.GlobalShadows
-    OriginalSettings.Lighting.FogEnd = Lighting.FogEnd
+    if not OriginalSettings.Lighting.GlobalShadows then
+        OriginalSettings.Lighting.GlobalShadows = Lighting.GlobalShadows
+        OriginalSettings.Lighting.FogEnd = Lighting.FogEnd
+    end
     Lighting.GlobalShadows = false
     Lighting.FogEnd = 9e9
     
-    for _, obj in pairs(workspace:GetDescendants()) do
+    ProcessDescendants(function(obj)
         if obj:IsA("Decal") or obj:IsA("Texture") then
             if not OriginalSettings.Decals[obj] then
                 OriginalSettings.Decals[obj] = obj.Transparency
             end
             obj.Transparency = 1
         end
-    end
+    end)
     
-    CurrentPerformanceLevel = 1
+    Config.PerformanceLevel = 1
     PerformanceStatus.Text = "Current: Level 1 (Light)\n\nBasic performance improvements"
     PerformanceStatus.TextColor3 = Color3.fromRGB(100, 200, 255)
     CreateNotification("🚀 Level 1 Applied", "Light performance boost", 2)
@@ -1034,9 +876,39 @@ end
 
 local function ApplyLevel2()
     ApplyLevel1()
-    ApplyPerformanceToAllObjects()
     
-    CurrentPerformanceLevel = 2
+    ProcessDescendants(function(obj)
+        if obj:IsA("BasePart") then
+            if not OriginalSettings.Materials[obj] then
+                OriginalSettings.Materials[obj] = obj.Material
+                OriginalSettings.Reflectances[obj] = obj.Reflectance
+            end
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Reflectance = 0
+        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+            if not OriginalSettings.Transparencies[obj] then
+                OriginalSettings.Transparencies[obj] = obj.Enabled
+            end
+            obj.Enabled = false
+        elseif obj:IsA("BasePart") and obj.Transparency < 1 then
+            if not OriginalSettings.CastShadows[obj] then
+                OriginalSettings.CastShadows[obj] = obj.CastShadow
+            end
+            obj.CastShadow = false
+        elseif obj:IsA("MeshPart") then
+            if not OriginalSettings.RenderFidelity[obj] then
+                OriginalSettings.RenderFidelity[obj] = obj.RenderFidelity
+            end
+            pcall(function() obj.RenderFidelity = Enum.RenderFidelity.Performance end)
+        elseif obj:IsA("SurfaceGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceLight") or obj:IsA("SpotLight") or obj:IsA("PointLight") then
+            if not OriginalSettings.Transparencies[obj] then
+                OriginalSettings.Transparencies[obj] = obj.Enabled
+            end
+            obj.Enabled = false
+        end
+    end)
+    
+    Config.PerformanceLevel = 2
     PerformanceStatus.Text = "Current: Level 2 (Hard)\n\nReduced graphics quality"
     PerformanceStatus.TextColor3 = Color3.fromRGB(150, 220, 255)
     CreateNotification("🚀 Level 2 Applied", "Hard performance boost", 2)
@@ -1044,7 +916,6 @@ end
 
 local function ApplyLevel3()
     ApplyLevel2()
-    local Lighting = game:GetService("Lighting")
     
     if not OriginalSettings.Lighting.Brightness then
         OriginalSettings.Lighting.Brightness = Lighting.Brightness
@@ -1065,7 +936,7 @@ local function ApplyLevel3()
         end
     end
     
-    CurrentPerformanceLevel = 3
+    Config.PerformanceLevel = 3
     PerformanceStatus.Text = "Current: Level 3 (High)\n\nMaximum visual reduction"
     PerformanceStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
     CreateNotification("🚀 Level 3 Applied", "High performance boost", 2)
@@ -1076,16 +947,14 @@ local function ApplyLevel4()
     
     pcall(function()
         settings().Rendering.QualityLevel = 1
-        game:GetService("GraphicsQualityLevel").QualityLevel = 1
     end)
     
-    local Lighting = game:GetService("Lighting")
     if not OriginalSettings.Lighting.ShadowSoftness then
         OriginalSettings.Lighting.ShadowSoftness = Lighting.ShadowSoftness
     end
     Lighting.ShadowSoftness = 0
     
-    CurrentPerformanceLevel = 4
+    Config.PerformanceLevel = 4
     PerformanceStatus.Text = "Current: Level 4 (Potato)\n\nExtreme performance for low-end PCs"
     PerformanceStatus.TextColor3 = Color3.fromRGB(255, 180, 80)
     CreateNotification("🚀 Level 4 Applied", "Potato mode activated", 2)
@@ -1094,23 +963,15 @@ end
 local function ApplyLevel5()
     ApplyLevel4()
     
-    pcall(function()
-        settings().Rendering.QualityLevel = 1
-        game:GetService("GraphicsQualityLevel").QualityLevel = 1
-    end)
-    
-    for _, obj in pairs(workspace:GetDescendants()) do
+    ProcessDescendants(function(obj)
         if obj:IsA("BasePart") then
             pcall(function()
-                obj.TopSurface = Enum.SurfaceType.Smooth
-                obj.BottomSurface = Enum.SurfaceType.Smooth
-                obj.FrontSurface = Enum.SurfaceType.Smooth
-                obj.BackSurface = Enum.SurfaceType.Smooth
-                obj.LeftSurface = Enum.SurfaceType.Smooth
-                obj.RightSurface = Enum.SurfaceType.Smooth
+                obj.TopSurface, obj.BottomSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
+                obj.FrontSurface, obj.BackSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
+                obj.LeftSurface, obj.RightSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
             end)
         end
-    end
+    end)
     
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
@@ -1126,91 +987,58 @@ local function ApplyLevel5()
         end
     end
     
-    CurrentPerformanceLevel = 5
+    Config.PerformanceLevel = 5
     PerformanceStatus.Text = "Current: Level 5 (MAX Potato)\n\nAbsolute maximum performance"
     PerformanceStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
     CreateNotification("🚀 Level 5 Applied", "MAXIMUM Potato mode!", 2)
 end
 
 local function RevertAllChanges()
-    local Lighting = game:GetService("Lighting")
-    
-    if OriginalSettings.Lighting.GlobalShadows ~= nil then
-        Lighting.GlobalShadows = OriginalSettings.Lighting.GlobalShadows
-    end
-    if OriginalSettings.Lighting.FogEnd then
-        Lighting.FogEnd = OriginalSettings.Lighting.FogEnd
-    end
-    if OriginalSettings.Lighting.Brightness then
-        Lighting.Brightness = OriginalSettings.Lighting.Brightness
-    end
-    if OriginalSettings.Lighting.OutdoorAmbient then
-        Lighting.OutdoorAmbient = OriginalSettings.Lighting.OutdoorAmbient
-    end
-    if OriginalSettings.Lighting.Ambient then
-        Lighting.Ambient = OriginalSettings.Lighting.Ambient
-    end
-    if OriginalSettings.Lighting.ShadowSoftness then
-        Lighting.ShadowSoftness = OriginalSettings.Lighting.ShadowSoftness
-    end
+    if OriginalSettings.Lighting.GlobalShadows ~= nil then Lighting.GlobalShadows = OriginalSettings.Lighting.GlobalShadows end
+    if OriginalSettings.Lighting.FogEnd then Lighting.FogEnd = OriginalSettings.Lighting.FogEnd end
+    if OriginalSettings.Lighting.Brightness then Lighting.Brightness = OriginalSettings.Lighting.Brightness end
+    if OriginalSettings.Lighting.OutdoorAmbient then Lighting.OutdoorAmbient = OriginalSettings.Lighting.OutdoorAmbient end
+    if OriginalSettings.Lighting.Ambient then Lighting.Ambient = OriginalSettings.Lighting.Ambient end
+    if OriginalSettings.Lighting.ShadowSoftness then Lighting.ShadowSoftness = OriginalSettings.Lighting.ShadowSoftness end
     
     for obj, value in pairs(OriginalSettings.Lighting) do
         if typeof(obj) ~= "string" and typeof(obj) ~= "boolean" and typeof(obj) ~= "number" and typeof(obj) ~= "Color3" then
-            pcall(function()
-                if obj and obj.Parent then
-                    obj.Enabled = value
-                end
-            end)
+            pcall(function() if obj and obj.Parent then obj.Enabled = value end end)
         end
     end
     
     for obj, material in pairs(OriginalSettings.Materials) do
-        if obj and obj.Parent then
-            pcall(function() obj.Material = material end)
-        end
+        if obj and obj.Parent then pcall(function() obj.Material = material end) end
     end
     
     for obj, reflectance in pairs(OriginalSettings.Reflectances) do
-        if obj and obj.Parent then
-            pcall(function() obj.Reflectance = reflectance end)
-        end
+        if obj and obj.Parent then pcall(function() obj.Reflectance = reflectance end) end
     end
     
     for obj, transparency in pairs(OriginalSettings.Decals) do
-        if obj and obj.Parent then
-            pcall(function() obj.Transparency = transparency end)
-        end
+        if obj and obj.Parent then pcall(function() obj.Transparency = transparency end) end
     end
     
     for obj, value in pairs(OriginalSettings.Transparencies) do
-        if obj and obj.Parent then
-            pcall(function() obj.Enabled = value end)
-        end
+        if obj and obj.Parent then pcall(function() obj.Enabled = value end) end
     end
     
     for obj, value in pairs(OriginalSettings.CastShadows) do
-        if obj and obj.Parent then
-            pcall(function() obj.CastShadow = value end)
-        end
+        if obj and obj.Parent then pcall(function() obj.CastShadow = value end) end
     end
     
     for obj, value in pairs(OriginalSettings.RenderFidelity) do
-        if obj and obj.Parent then
-            pcall(function() obj.RenderFidelity = value end)
-        end
+        if obj and obj.Parent then pcall(function() obj.RenderFidelity = value end) end
     end
     
-    pcall(function()
-        settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
-        game:GetService("GraphicsQualityLevel").QualityLevel = Enum.QualityLevel.Automatic
-    end)
+    pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic end)
     
     OriginalSettings = {
         Materials = {}, Reflectances = {}, Transparencies = {}, Decals = {},
         Lighting = {}, CastShadows = {}, RenderFidelity = {}
     }
     
-    CurrentPerformanceLevel = 0
+    Config.PerformanceLevel = 0
     PerformanceStatus.Text = "Current: None Applied\n\nLevels 1-3: Safe | Levels 4-5: May cause issues"
     PerformanceStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
     CreateNotification("↩️ Changes Reverted", "All performance changes reverted", 2)
@@ -1219,66 +1047,25 @@ end
 local function UpdatePerformanceButtons()
     local buttons = {Level1Button, Level2Button, Level3Button, Level4Button, Level5Button}
     for i, btn in ipairs(buttons) do
-        TweenService:Create(btn, TweenInfo.new(0.3), {
-            BackgroundColor3 = (i == CurrentPerformanceLevel) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
+        TweenService:Create(btn, TweenPresets.Medium, {
+            BackgroundColor3 = (i == Config.PerformanceLevel) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
         }):Play()
     end
 end
 
-Level1Button.MouseButton1Click:Connect(function()
-    if CurrentPerformanceLevel == 1 then
-        RevertAllChanges()
-    else
-        RevertAllChanges()
-        task.wait(0.1)
-        ApplyLevel1()
-    end
-    UpdatePerformanceButtons()
-end)
-
-Level2Button.MouseButton1Click:Connect(function()
-    if CurrentPerformanceLevel == 2 then
-        RevertAllChanges()
-    else
-        RevertAllChanges()
-        task.wait(0.1)
-        ApplyLevel2()
-    end
-    UpdatePerformanceButtons()
-end)
-
-Level3Button.MouseButton1Click:Connect(function()
-    if CurrentPerformanceLevel == 3 then
-        RevertAllChanges()
-    else
-        RevertAllChanges()
-        task.wait(0.1)
-        ApplyLevel3()
-    end
-    UpdatePerformanceButtons()
-end)
-
-Level4Button.MouseButton1Click:Connect(function()
-    if CurrentPerformanceLevel == 4 then
-        RevertAllChanges()
-    else
-        RevertAllChanges()
-        task.wait(0.1)
-        ApplyLevel4()
-    end
-    UpdatePerformanceButtons()
-end)
-
-Level5Button.MouseButton1Click:Connect(function()
-    if CurrentPerformanceLevel == 5 then
-        RevertAllChanges()
-    else
-        RevertAllChanges()
-        task.wait(0.1)
-        ApplyLevel5()
-    end
-    UpdatePerformanceButtons()
-end)
+local levelFunctions = {ApplyLevel1, ApplyLevel2, ApplyLevel3, ApplyLevel4, ApplyLevel5}
+for i, button in ipairs({Level1Button, Level2Button, Level3Button, Level4Button, Level5Button}) do
+    button.MouseButton1Click:Connect(function()
+        if Config.PerformanceLevel == i then
+            RevertAllChanges()
+        else
+            RevertAllChanges()
+            task.wait(0.1)
+            levelFunctions[i]()
+        end
+        UpdatePerformanceButtons()
+    end)
+end
 
 RevertButton.MouseButton1Click:Connect(function()
     RevertAllChanges()
@@ -1293,23 +1080,23 @@ local function ToggleUI()
         ReopenPulse.Visible = false
         MainFrame.Size = UDim2.new(0, 0, 0, 0)
         MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-        TweenService:Create(MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        TweenService:Create(MainFrame, TweenPresets.Back, {
             Size = UDim2.new(0, 500, 0, 650),
             Position = UDim2.new(0.5, -250, 0.5, -325)
         }):Play()
-        TweenService:Create(ReopenButton, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        TweenService:Create(ReopenButton, TweenPresets.BackIn, {
             Size = UDim2.new(0, 0, 0, 0)
         }):Play()
         CreateNotification("👁️ UI Visible", "Interface is now visible", 1.5)
     else
-        TweenService:Create(MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        TweenService:Create(MainFrame, TweenPresets.BackIn, {
             Size = UDim2.new(0, 0, 0, 0),
             Position = UDim2.new(0.5, 0, 0.5, 0)
         }):Play()
         task.wait(0.45)
         ReopenButton.Size = UDim2.new(0, 0, 0, 0)
         ReopenPulse.Visible = true
-        TweenService:Create(ReopenButton, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        TweenService:Create(ReopenButton, TweenPresets.Back, {
             Size = UDim2.new(0, 60, 0, 60),
             Position = UDim2.new(0.5, -30, 0, 30)
         }):Play()
@@ -1318,45 +1105,37 @@ local function ToggleUI()
 end
 
 CloseButton.MouseEnter:Connect(function()
-    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+    TweenService:Create(CloseButton, TweenPresets.Fast, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
 end)
 
 CloseButton.MouseLeave:Connect(function()
-    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 52)}):Play()
+    TweenService:Create(CloseButton, TweenPresets.Fast, {BackgroundColor3 = Color3.fromRGB(45, 45, 52)}):Play()
 end)
 
-CloseButton.MouseButton1Click:Connect(function()
-    ToggleUI()
-end)
-
-ReopenButton.MouseButton1Click:Connect(function()
-    ToggleUI()
-end)
+CloseButton.MouseButton1Click:Connect(ToggleUI)
+ReopenButton.MouseButton1Click:Connect(ToggleUI)
 
 ReopenButton.MouseEnter:Connect(function()
-    TweenService:Create(ReopenButton, TweenInfo.new(0.3), {
+    TweenService:Create(ReopenButton, TweenPresets.Medium, {
         Size = UDim2.new(0, 70, 0, 70),
         Position = UDim2.new(0.5, -35, 0, 25)
     }):Play()
 end)
 
 ReopenButton.MouseLeave:Connect(function()
-    TweenService:Create(ReopenButton, TweenInfo.new(0.3), {
+    TweenService:Create(ReopenButton, TweenPresets.Medium, {
         Size = UDim2.new(0, 60, 0, 60),
         Position = UDim2.new(0.5, -30, 0, 30)
     }):Play()
 end)
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == CurrentKeybind and not IsChangingKeybind then
+    if not gameProcessed and input.KeyCode == Config.Keybind and not Config.IsChangingKeybind then
         ToggleUI()
     end
 end)
 
-local lastTime = tick()
-local frameCount = 0
-local currentFPS = 60
-
+local lastTime, frameCount, currentFPS = tick(), 0, 60
 RunService.RenderStepped:Connect(function()
     frameCount = frameCount + 1
     local currentTime = tick()
@@ -1371,13 +1150,12 @@ end)
 
 task.spawn(function()
     pcall(function()
-        local userId = LocalPlayer.UserId
-        PlayerImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. userId .. "&w=420&h=420"
+        PlayerImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=420&h=420"
         
         local gameInfo = MarketplaceService:GetProductInfo(game.PlaceId)
         GameName.Text = gameInfo.Name
         
-        if gameInfo.IconImageAssetId then
+        if gameInfo.IconImageAssetId and gameInfo.IconImageAssetId ~= 0 then
             GameImage.Image = "rbxthumb://type=Asset&id=" .. gameInfo.IconImageAssetId .. "&w=420&h=420"
         end
     end)
@@ -1386,8 +1164,8 @@ end)
 MainFrame.Visible = true
 ReopenButton.Visible = false
 
-UpdateJumpSlider(0.5)
-UpdateClickSlider(0.2)
+UpdateJumpSlider(0.2)
+UpdateClickSlider(0.22)
 UpdateSpamSlider(0.01)
 UpdateFPSSlider(0.13)
 UpdateClickTypeButtons()
