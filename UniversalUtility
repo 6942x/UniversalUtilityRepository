@@ -448,6 +448,16 @@ FPSLabel.TextSize = 12
 FPSLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 FPSLabel.TextXAlignment = Enum.TextXAlignment.Center
 
+local PingLabel = Instance.new("TextLabel", PlayerInfoFrame)
+PingLabel.Size = UDim2.new(1, 0, 0, 18)
+PingLabel.Position = UDim2.new(0, 0, 0, 183)
+PingLabel.BackgroundTransparency = 1
+PingLabel.Text = "Ping: 0 ms"
+PingLabel.Font = Enum.Font.Gotham
+PingLabel.TextSize = 12
+PingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+PingLabel.TextXAlignment = Enum.TextXAlignment.Center
+
 local GameInfoFrame = Instance.new("Frame", HomeSection)
 GameInfoFrame.Size = UDim2.new(0, 280, 0, 200)
 GameInfoFrame.Position = UDim2.new(0, 10, 0, 40)
@@ -1190,6 +1200,21 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+RunService.RenderStepped:Connect(function()
+    local ping = LocalPlayer:GetNetworkPing() * 1000
+    local roundedPing = math.floor(ping)
+    
+    PingLabel.Text = "Ping: " .. roundedPing .. " ms"
+    
+    if roundedPing < 100 then
+        PingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    elseif roundedPing < 200 then
+        PingLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+    else
+        PingLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end)
+
 task.spawn(function()
     pcall(function()
         PlayerImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=420&h=420"
@@ -1202,6 +1227,8 @@ task.spawn(function()
         end
     end)
 end)
+
+local configLoaded = LoadConfig()
 
 local configLoaded = LoadConfig()
 
@@ -1222,6 +1249,11 @@ if configLoaded then
         AutoRejoinStatus.Text = "Status: Enabled\n\nAutomatically rejoins when disconnected"
         AutoRejoinStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
         SetupAutoRejoin()
+    else
+        AutoRejoinToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        AutoRejoinToggle.Text = "Auto Rejoin: OFF"
+        AutoRejoinStatus.Text = "Status: Disabled\n\nAutomatically rejoins when disconnected"
+        AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
     end
     
     if Config.FPSUnlockEnabled then
@@ -1232,18 +1264,29 @@ if configLoaded then
         if setfpscap then
             setfpscap(Config.TargetFPS)
         end
+    else
+        FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        FPSUnlockToggle.Text = "FPS Unlock: OFF"
+        FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+        FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
     end
     
     if Config.JumpEnabled then
         JumpToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
         JumpToggle.Text = "Auto Jump: ON"
         StartJumpThread()
+    else
+        JumpToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        JumpToggle.Text = "Auto Jump: OFF"
     end
     
     if Config.ClickEnabled then
         ClickToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
         ClickToggle.Text = "Auto Click: ON"
         StartClickThread()
+    else
+        ClickToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        ClickToggle.Text = "Auto Click: OFF"
     end
     
     if Config.AutoSpamEnabled then
@@ -1260,6 +1303,10 @@ if configLoaded then
             AutoSpamToggle.Text = "OFF"
             AutoSpamStatus.Text = "Status: Inactive"
         end
+    else
+        AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        AutoSpamToggle.Text = "OFF"
+        AutoSpamStatus.Text = "Status: Inactive"
     end
     
     UpdateAntiAFKStatus()
@@ -1271,6 +1318,24 @@ else
     UpdateSpamSlider(0.01)
     UpdateFPSSlider(0.13)
     UpdateClickTypeButtons()
+    
+    JumpToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    JumpToggle.Text = "Auto Jump: OFF"
+    
+    ClickToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    ClickToggle.Text = "Auto Click: OFF"
+    
+    AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    AutoSpamToggle.Text = "OFF"
+    AutoSpamStatus.Text = "Status: Inactive"
+    
+    FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    FPSUnlockToggle.Text = "FPS Unlock: OFF"
+    FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    
+    AutoRejoinToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    AutoRejoinToggle.Text = "Auto Rejoin: OFF"
+    AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 end
 
 MainFrame.Visible = true
