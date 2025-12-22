@@ -859,6 +859,7 @@ local function StartClickThread()
                     local viewport = workspace.CurrentCamera.ViewportSize
                     x, y = math.random(100, viewport.X - 100), math.random(100, viewport.Y - 100)
                 end
+                
                 VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
                 task.wait(0.05)
                 VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
