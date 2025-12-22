@@ -7,6 +7,7 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Lighting = game:GetService("Lighting")
 local TeleportService = game:GetService("TeleportService")
+local FPS_SUPPORTED = typeof(setfpscap) == "function"
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -660,10 +661,12 @@ end
 local function UpdateFPSSlider(percentage)
     Config.TargetFPS = math.floor(15 + (percentage * 345))
     UpdateSlider(FPSFill, FPSValueBox, FPSValueLabel, Config.TargetFPS, 15, 360, "%d")
-    FPSUnlockStatus.Text = "Targetting: " .. Config.TargetFPS .. " FPS"
-    if Config.FPSUnlockEnabled and setfpscap then
+
+    if Config.FPSUnlockEnabled and FPS_SUPPORTED then
         setfpscap(Config.TargetFPS)
+        FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
     end
+
     SaveConfig()
 end
 
@@ -833,19 +836,32 @@ local function UpdateClickTypeButtons()
 end
 
 local function ToggleFPSUnlock()
-    Config.FPSUnlockEnabled = not Config.FPSUnlockEnabled
-    
-    TweenService:Create(FPSUnlockToggle, TweenPresets.Medium, {
-        BackgroundColor3 = Config.FPSUnlockEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    }):Play()
-    
-    FPSUnlockToggle.Text = "FPS Unlock: " .. (Config.FPSUnlockEnabled and "ON" or "OFF")
-    FPSUnlockStatus.TextColor3 = Config.FPSUnlockEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(180, 180, 180)
-    
-    if setfpscap then
-        setfpscap(Config.FPSUnlockEnabled and Config.TargetFPS or 360)
+    if not FPS_SUPPORTED then
+        FPSUnlockStatus.Text = "FPS Unlock não suportado"
+        FPSUnlockStatus.TextColor3 = Color3.fromRGB(220, 50, 50)
+        return
     end
-    
+
+    Config.FPSUnlockEnabled = not Config.FPSUnlockEnabled
+
+    TweenService:Create(FPSUnlockToggle, TweenPresets.Medium, {
+        BackgroundColor3 = Config.FPSUnlockEnabled
+            and Color3.fromRGB(50, 220, 100)
+            or Color3.fromRGB(220, 50, 50)
+    }):Play()
+
+    FPSUnlockToggle.Text = "FPS Unlock: " .. (Config.FPSUnlockEnabled and "ON" or "OFF")
+
+    if Config.FPSUnlockEnabled then
+        setfpscap(Config.TargetFPS)
+        FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
+        FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+    else
+        setfpscap(60)
+        FPSUnlockStatus.Text = "FPS padrão (60)"
+        FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+
     SaveConfig()
 end
 
