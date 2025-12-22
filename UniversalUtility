@@ -30,7 +30,6 @@ ProtectGui()
 
 local Config = {
     Keybind = Enum.KeyCode.G,
-    PerformanceLevel = 0,
     ClickType = "Current",
     JumpEnabled = false,
     ClickEnabled = false,
@@ -49,7 +48,6 @@ local function SaveConfig()
     if writefile then
         local configData = game:GetService("HttpService"):JSONEncode({
             Keybind = Config.Keybind.Name,
-            PerformanceLevel = Config.PerformanceLevel,
             ClickType = Config.ClickType,
             JumpEnabled = Config.JumpEnabled,
             ClickEnabled = Config.ClickEnabled,
@@ -73,7 +71,6 @@ local function LoadConfig()
         end)
         if success and data then
             Config.Keybind = Enum.KeyCode[data.Keybind] or Enum.KeyCode.G
-            Config.PerformanceLevel = data.PerformanceLevel or 0
             Config.ClickType = data.ClickType or "Current"
             Config.JumpEnabled = data.JumpEnabled or false
             Config.ClickEnabled = data.ClickEnabled or false
@@ -92,10 +89,6 @@ local function LoadConfig()
 end
 
 local NotificationStack = {}
-local OriginalSettings = {
-    Materials = {}, Reflectances = {}, Transparencies = {}, Decals = {},
-    Lighting = {}, CastShadows = {}, RenderFidelity = {}
-}
 
 local KeyCodeNames, KeyCodeMap = {}, {}
 for i = 65, 90 do
@@ -306,17 +299,17 @@ local CloseButtonCorner = Instance.new("UICorner", CloseButton)
 CloseButtonCorner.CornerRadius = UDim.new(0, 8)
 
 local ScrollFrame = Instance.new("ScrollingFrame", MainFrame)
-ScrollFrame.Size = UDim2.new(1, -20, 1, 275)
+ScrollFrame.Size = UDim2.new(1, -20, 1, -10)
 ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
 ScrollFrame.ScrollBarThickness = 4
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
 ScrollFrame.ScrollBarImageTransparency = 0.7
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1650)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1400)
 
 local ContentFrame = Instance.new("Frame", ScrollFrame)
-ContentFrame.Size = UDim2.new(1, 0, 0, 1650)
+ContentFrame.Size = UDim2.new(1, 0, 0, 1400)
 ContentFrame.BackgroundTransparency = 1
 
 local function CreateSection(name, position, height)
@@ -551,28 +544,12 @@ AutoSpamStatus.TextSize = 12
 AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AutoSpamStatus.TextXAlignment = Enum.TextXAlignment.Left
 
-local PerformanceSection = CreateSection("🚀 FPS Boost", UDim2.new(0, 0, 0, 705), 333)
-local Level1Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0, 10, 0, 40), "Level 1 Light")
-local Level2Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0.5, -65, 0, 40), "Level 2 Hard")
-local Level3Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(1, -140, 0, 40), "Level 3 High")
-local Level4Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0, 10, 0, 78), "Level 4 Potato")
-local Level5Button = CreateButton(PerformanceSection, UDim2.new(0, 130, 0, 32), UDim2.new(0.5, -65, 0, 78), "Level 5 MAX")
+local FPSAnalyticsSection = CreateSection("📊 FPS Analytics", UDim2.new(0, 0, 0, 705), 370)
 
-local RevertButton = CreateButton(PerformanceSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 116), "Revert All Changes")
-
-local FPSUnlockFrame = Instance.new("Frame", PerformanceSection)
-FPSUnlockFrame.Size = UDim2.new(1, -20, 0, 90)
-FPSUnlockFrame.Position = UDim2.new(0, 10, 0, 158)
-FPSUnlockFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-FPSUnlockFrame.BorderSizePixel = 0
-
-local FPSUnlockCorner = Instance.new("UICorner", FPSUnlockFrame)
-FPSUnlockCorner.CornerRadius = UDim.new(0, 8)
-
-local FPSUnlockToggle = CreateButton(FPSUnlockFrame, UDim2.new(0, 110, 0, 28), UDim2.new(0, 10, 0, 10), "FPS Unlock: OFF")
-local FPSUnlockStatus = Instance.new("TextLabel", FPSUnlockFrame)
-FPSUnlockStatus.Size = UDim2.new(1, -130, 0, 28)
-FPSUnlockStatus.Position = UDim2.new(0, 126, 0, 10)
+local FPSUnlockToggle = CreateButton(FPSAnalyticsSection, UDim2.new(0, 140, 0, 32), UDim2.new(0, 10, 0, 40), "FPS Unlock: OFF")
+local FPSUnlockStatus = Instance.new("TextLabel", FPSAnalyticsSection)
+FPSUnlockStatus.Size = UDim2.new(1, -160, 0, 32)
+FPSUnlockStatus.Position = UDim2.new(0, 156, 0, 40)
 FPSUnlockStatus.BackgroundTransparency = 1
 FPSUnlockStatus.Text = "Target: 60 FPS"
 FPSUnlockStatus.Font = Enum.Font.Gotham
@@ -580,20 +557,124 @@ FPSUnlockStatus.TextSize = 12
 FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 FPSUnlockStatus.TextXAlignment = Enum.TextXAlignment.Left
 
-local FPSValueFrame, FPSSlider, FPSFill, FPSButton, FPSValueBox, FPSValueLabel = CreateSlider(FPSUnlockFrame, UDim2.new(1, -20, 0, 36), UDim2.new(0, 6, 0, 44), 15, 360, 60, "Target FPS:")
+local FPSValueFrame, FPSSlider, FPSFill, FPSButton, FPSValueBox, FPSValueLabel = CreateSlider(FPSAnalyticsSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 78), 15, 360, 60, "Target FPS:")
 
-local PerformanceStatus = Instance.new("TextLabel", PerformanceSection)
-PerformanceStatus.Size = UDim2.new(1, -20, 0, 60)
-PerformanceStatus.Position = UDim2.new(0, 10, 0, 255)
-PerformanceStatus.BackgroundTransparency = 1
-PerformanceStatus.Text = "Current: None Applied\n\nLevels 1-3: Safe | Levels 4-5: May cause issues"
-PerformanceStatus.Font = Enum.Font.Gotham
-PerformanceStatus.TextSize = 11
-PerformanceStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
-PerformanceStatus.TextXAlignment = Enum.TextXAlignment.Center
-PerformanceStatus.TextWrapped = true
+local FPSGraphFrame = Instance.new("Frame", FPSAnalyticsSection)
+FPSGraphFrame.Size = UDim2.new(1, -20, 0, 180)
+FPSGraphFrame.Position = UDim2.new(0, 10, 0, 160)
+FPSGraphFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+FPSGraphFrame.BorderSizePixel = 0
 
-local AutoRejoinSection = CreateSection("🔄 Auto Rejoin", UDim2.new(0, 0, 0, 1050), 130)
+local GraphCorner = Instance.new("UICorner", FPSGraphFrame)
+GraphCorner.CornerRadius = UDim.new(0, 8)
+
+local GraphTitle = Instance.new("TextLabel", FPSGraphFrame)
+GraphTitle.Size = UDim2.new(1, -20, 0, 20)
+GraphTitle.Position = UDim2.new(0, 10, 0, 5)
+GraphTitle.BackgroundTransparency = 1
+GraphTitle.Text = "Real-Time FPS Monitor"
+GraphTitle.Font = Enum.Font.GothamBold
+GraphTitle.TextSize = 13
+GraphTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+GraphTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local FPSStatsFrame = Instance.new("Frame", FPSAnalyticsSection)
+FPSStatsFrame.Size = UDim2.new(1, -20, 0, 40)
+FPSStatsFrame.Position = UDim2.new(0, 10, 0, 326)
+FPSStatsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+FPSStatsFrame.BorderSizePixel = 0
+
+local StatsCorner = Instance.new("UICorner", FPSStatsFrame)
+StatsCorner.CornerRadius = UDim.new(0, 8)
+
+local CurrentFPSLabel = Instance.new("TextLabel", FPSStatsFrame)
+CurrentFPSLabel.Size = UDim2.new(0.33, 0, 1, 0)
+CurrentFPSLabel.Position = UDim2.new(0, 0, 0, 0)
+CurrentFPSLabel.BackgroundTransparency = 1
+CurrentFPSLabel.Text = "Current: 60"
+CurrentFPSLabel.Font = Enum.Font.GothamBold
+CurrentFPSLabel.TextSize = 12
+CurrentFPSLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+CurrentFPSLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local AvgFPSLabel = Instance.new("TextLabel", FPSStatsFrame)
+AvgFPSLabel.Size = UDim2.new(0.33, 0, 1, 0)
+AvgFPSLabel.Position = UDim2.new(0.33, 0, 0, 0)
+AvgFPSLabel.BackgroundTransparency = 1
+AvgFPSLabel.Text = "Average: 60"
+AvgFPSLabel.Font = Enum.Font.GothamBold
+AvgFPSLabel.TextSize = 12
+AvgFPSLabel.TextColor3 = Color3.fromRGB(50, 220, 100)
+AvgFPSLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local MinMaxFPSLabel = Instance.new("TextLabel", FPSStatsFrame)
+MinMaxFPSLabel.Size = UDim2.new(0.34, 0, 1, 0)
+MinMaxFPSLabel.Position = UDim2.new(0.66, 0, 0, 0)
+MinMaxFPSLabel.BackgroundTransparency = 1
+MinMaxFPSLabel.Text = "Min: 60 | Max: 60"
+MinMaxFPSLabel.Font = Enum.Font.GothamBold
+MinMaxFPSLabel.TextSize = 12
+MinMaxFPSLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+MinMaxFPSLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local FPSHistory = {}
+local MAX_POINTS = 60
+local FPSGraphLines = {}
+
+for i = 1, MAX_POINTS do
+    table.insert(FPSHistory, 60)
+    local line = Instance.new("Frame", FPSGraphFrame)
+    line.Size = UDim2.new(0, 2, 0, 1)
+    line.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    line.BorderSizePixel = 0
+    line.AnchorPoint = Vector2.new(0, 1)
+    table.insert(FPSGraphLines, line)
+end
+
+local function UpdateFPSGraph(fps)
+    table.remove(FPSHistory, 1)
+    table.insert(FPSHistory, fps)
+    
+    local graphWidth = FPSGraphFrame.AbsoluteSize.X - 20
+    local graphHeight = FPSGraphFrame.AbsoluteSize.Y - 35
+    local spacing = graphWidth / MAX_POINTS
+    
+    local minFPS, maxFPS = math.huge, 0
+    local totalFPS = 0
+    
+    for _, fpsVal in ipairs(FPSHistory) do
+        minFPS = math.min(minFPS, fpsVal)
+        maxFPS = math.max(maxFPS, fpsVal)
+        totalFPS = totalFPS + fpsVal
+    end
+    
+    local avgFPS = math.floor(totalFPS / #FPSHistory)
+    
+    CurrentFPSLabel.Text = "Current: " .. fps
+    AvgFPSLabel.Text = "Average: " .. avgFPS
+    MinMaxFPSLabel.Text = string.format("Min: %d | Max: %d", minFPS, maxFPS)
+    
+    local fpsRange = math.max(maxFPS - minFPS, 10)
+    
+    for i, line in ipairs(FPSGraphLines) do
+        local fpsValue = FPSHistory[i]
+        local normalizedHeight = ((fpsValue - minFPS) / fpsRange) * graphHeight
+        
+        line.Size = UDim2.new(0, 2, 0, math.max(normalizedHeight, 1))
+        line.Position = UDim2.new(0, 10 + (i - 1) * spacing, 1, -5)
+        
+        local colorIntensity = fpsValue / 120
+        if fpsValue >= 60 then
+            line.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        elseif fpsValue >= 30 then
+            line.BackgroundColor3 = Color3.fromRGB(255, 200, 100)
+        else
+            line.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        end
+    end
+end
+
+local AutoRejoinSection = CreateSection("🔄 Auto Rejoin", UDim2.new(0, 0, 0, 1087), 130)
 local AutoRejoinToggle = CreateButton(AutoRejoinSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Auto Rejoin: OFF")
 local AutoRejoinStatus = Instance.new("TextLabel", AutoRejoinSection)
 AutoRejoinStatus.Size = UDim2.new(1, -20, 0, 50)
@@ -606,7 +687,7 @@ AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AutoRejoinStatus.TextXAlignment = Enum.TextXAlignment.Center
 AutoRejoinStatus.TextWrapped = true
 
-local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1192), 120)
+local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1229), 120)
 local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Toggle Keybind: G")
 local KeybindStatus = Instance.new("TextLabel", UIConfigSection)
 KeybindStatus.Size = UDim2.new(1, -20, 0, 24)
@@ -744,9 +825,7 @@ local function StartJumpThread()
             if Config.JumpEnabled and LocalPlayer.Character then
                 local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
                 if humanoid then 
-                    humanoid.Jump = true
-                    task.wait(0.1)
-                    humanoid.Jump = false
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                 end
             end
         end
@@ -1021,243 +1100,6 @@ AutoSpamToggle.MouseButton1Click:Connect(function()
     SaveConfig()
 end)
 
-local function ProcessDescendants(callback)
-    local descendants = workspace:GetDescendants()
-    for i = 1, #descendants do
-        callback(descendants[i])
-        if i % 100 == 0 then task.wait() end
-    end
-end
-
-local function ApplyLevel1()
-    if not OriginalSettings.Lighting.GlobalShadows then
-        OriginalSettings.Lighting.GlobalShadows = Lighting.GlobalShadows
-        OriginalSettings.Lighting.FogEnd = Lighting.FogEnd
-    end
-    Lighting.GlobalShadows = false
-    Lighting.FogEnd = 9e9
-    
-    ProcessDescendants(function(obj)
-        if obj:IsA("Decal") or obj:IsA("Texture") then
-            if not OriginalSettings.Decals[obj] then
-                OriginalSettings.Decals[obj] = obj.Transparency
-            end
-            obj.Transparency = 1
-        end
-    end)
-    
-    Config.PerformanceLevel = 1
-    PerformanceStatus.Text = "Current: Level 1 (Light)\n\nBasic performance improvements"
-    PerformanceStatus.TextColor3 = Color3.fromRGB(100, 200, 255)
-    CreateNotification("🚀 Level 1 Applied", "Light performance boost", 2)
-    SaveConfig()
-end
-
-local function ApplyLevel2()
-    ApplyLevel1()
-    
-    ProcessDescendants(function(obj)
-        if obj:IsA("BasePart") then
-            if not OriginalSettings.Materials[obj] then
-                OriginalSettings.Materials[obj] = obj.Material
-                OriginalSettings.Reflectances[obj] = obj.Reflectance
-            end
-            obj.Material = Enum.Material.SmoothPlastic
-            obj.Reflectance = 0
-        elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
-            if not OriginalSettings.Transparencies[obj] then
-                OriginalSettings.Transparencies[obj] = obj.Enabled
-            end
-            obj.Enabled = false
-        elseif obj:IsA("BasePart") and obj.Transparency < 1 then
-            if not OriginalSettings.CastShadows[obj] then
-                OriginalSettings.CastShadows[obj] = obj.CastShadow
-            end
-            obj.CastShadow = false
-        elseif obj:IsA("MeshPart") then
-            if not OriginalSettings.RenderFidelity[obj] then
-                OriginalSettings.RenderFidelity[obj] = obj.RenderFidelity
-            end
-            pcall(function() obj.RenderFidelity = Enum.RenderFidelity.Performance end)
-        elseif obj:IsA("SurfaceGui") or obj:IsA("BillboardGui") or obj:IsA("SurfaceLight") or obj:IsA("SpotLight") or obj:IsA("PointLight") then
-            if not OriginalSettings.Transparencies[obj] then
-                OriginalSettings.Transparencies[obj] = obj.Enabled
-            end
-            obj.Enabled = false
-        end
-    end)
-    
-    Config.PerformanceLevel = 2
-    PerformanceStatus.Text = "Current: Level 2 (Hard)\n\nReduced graphics quality"
-    PerformanceStatus.TextColor3 = Color3.fromRGB(150, 220, 255)
-    CreateNotification("🚀 Level 2 Applied", "Hard performance boost", 2)
-    SaveConfig()
-end
-
-local function ApplyLevel3()
-    ApplyLevel2()
-    
-    if not OriginalSettings.Lighting.Brightness then
-        OriginalSettings.Lighting.Brightness = Lighting.Brightness
-        OriginalSettings.Lighting.OutdoorAmbient = Lighting.OutdoorAmbient
-        OriginalSettings.Lighting.Ambient = Lighting.Ambient
-    end
-    
-    Lighting.Brightness = 2
-    Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-    Lighting.Ambient = Color3.fromRGB(128, 128, 128)
-    
-    for _, obj in pairs(Lighting:GetChildren()) do
-        if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("BlurEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") then
-            if not OriginalSettings.Lighting[obj] then
-                OriginalSettings.Lighting[obj] = obj.Enabled
-            end
-            obj.Enabled = false
-        end
-    end
-    
-    Config.PerformanceLevel = 3
-    PerformanceStatus.Text = "Current: Level 3 (High)\n\nMaximum visual reduction"
-    PerformanceStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
-    CreateNotification("🚀 Level 3 Applied", "High performance boost", 2)
-    SaveConfig()
-end
-
-local function ApplyLevel4()
-    ApplyLevel3()
-    
-    pcall(function()
-        settings().Rendering.QualityLevel = 1
-    end)
-    
-    if not OriginalSettings.Lighting.ShadowSoftness then
-        OriginalSettings.Lighting.ShadowSoftness = Lighting.ShadowSoftness
-    end
-    Lighting.ShadowSoftness = 0
-    
-    Config.PerformanceLevel = 4
-    PerformanceStatus.Text = "Current: Level 4 (Potato)\n\nExtreme performance for low-end PCs"
-    PerformanceStatus.TextColor3 = Color3.fromRGB(255, 180, 80)
-    CreateNotification("🚀 Level 4 Applied", "Potato mode activated", 2)
-    SaveConfig()
-end
-
-local function ApplyLevel5()
-    ApplyLevel4()
-    
-    ProcessDescendants(function(obj)
-        if obj:IsA("BasePart") then
-            pcall(function()
-                obj.TopSurface, obj.BottomSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
-                obj.FrontSurface, obj.BackSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
-                obj.LeftSurface, obj.RightSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
-            end)
-        end
-    end)
-    
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            for _, part in pairs(player.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    if not OriginalSettings.Materials[part] then
-                        OriginalSettings.Materials[part] = part.Material
-                    end
-                    part.Material = Enum.Material.SmoothPlastic
-                    part.Reflectance = 0
-                end
-            end
-        end
-    end
-    
-    Config.PerformanceLevel = 5
-    PerformanceStatus.Text = "Current: Level 5 (MAX Potato)\n\nAbsolute maximum performance"
-    PerformanceStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
-    CreateNotification("🚀 Level 5 Applied", "MAXIMUM Potato mode!", 2)
-    SaveConfig()
-end
-
-local function RevertAllChanges()
-    if OriginalSettings.Lighting.GlobalShadows ~= nil then Lighting.GlobalShadows = OriginalSettings.Lighting.GlobalShadows end
-    if OriginalSettings.Lighting.FogEnd then Lighting.FogEnd = OriginalSettings.Lighting.FogEnd end
-    if OriginalSettings.Lighting.Brightness then Lighting.Brightness = OriginalSettings.Lighting.Brightness end
-    if OriginalSettings.Lighting.OutdoorAmbient then Lighting.OutdoorAmbient = OriginalSettings.Lighting.OutdoorAmbient end
-    if OriginalSettings.Lighting.Ambient then Lighting.Ambient = OriginalSettings.Lighting.Ambient end
-    if OriginalSettings.Lighting.ShadowSoftness then Lighting.ShadowSoftness = OriginalSettings.Lighting.ShadowSoftness end
-    
-    for obj, value in pairs(OriginalSettings.Lighting) do
-        if typeof(obj) ~= "string" and typeof(obj) ~= "boolean" and typeof(obj) ~= "number" and typeof(obj) ~= "Color3" then
-            pcall(function() if obj and obj.Parent then obj.Enabled = value end end)
-        end
-    end
-    
-    for obj, material in pairs(OriginalSettings.Materials) do
-        if obj and obj.Parent then pcall(function() obj.Material = material end) end
-    end
-    
-    for obj, reflectance in pairs(OriginalSettings.Reflectances) do
-        if obj and obj.Parent then pcall(function() obj.Reflectance = reflectance end) end
-    end
-    
-    for obj, transparency in pairs(OriginalSettings.Decals) do
-        if obj and obj.Parent then pcall(function() obj.Transparency = transparency end) end
-    end
-    
-    for obj, value in pairs(OriginalSettings.Transparencies) do
-        if obj and obj.Parent then pcall(function() obj.Enabled = value end) end
-    end
-    
-    for obj, value in pairs(OriginalSettings.CastShadows) do
-        if obj and obj.Parent then pcall(function() obj.CastShadow = value end) end
-    end
-    
-    for obj, value in pairs(OriginalSettings.RenderFidelity) do
-        if obj and obj.Parent then pcall(function() obj.RenderFidelity = value end) end
-    end
-    
-    pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic end)
-    
-    OriginalSettings = {
-        Materials = {}, Reflectances = {}, Transparencies = {}, Decals = {},
-        Lighting = {}, CastShadows = {}, RenderFidelity = {}
-    }
-    
-    Config.PerformanceLevel = 0
-    PerformanceStatus.Text = "Current: None Applied\n\nLevels 1-3: Safe | Levels 4-5: May cause issues"
-    PerformanceStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
-    CreateNotification("↩️ Changes Reverted", "All performance changes reverted", 2)
-    SaveConfig()
-end
-
-local function UpdatePerformanceButtons()
-    local buttons = {Level1Button, Level2Button, Level3Button, Level4Button, Level5Button}
-    for i, btn in ipairs(buttons) do
-        TweenService:Create(btn, TweenPresets.Medium, {
-            BackgroundColor3 = (i == Config.PerformanceLevel) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
-        }):Play()
-    end
-end
-
-local levelFunctions = {ApplyLevel1, ApplyLevel2, ApplyLevel3, ApplyLevel4, ApplyLevel5}
-for i, button in ipairs({Level1Button, Level2Button, Level3Button, Level4Button, Level5Button}) do
-    button.MouseButton1Click:Connect(function()
-        if UIToggleDebounce then return end
-        if Config.PerformanceLevel == i then
-            RevertAllChanges()
-        else
-            RevertAllChanges()
-            task.wait(0.1)
-            levelFunctions[i]()
-        end
-        UpdatePerformanceButtons()
-    end)
-end
-
-RevertButton.MouseButton1Click:Connect(function()
-    if UIToggleDebounce then return end
-    RevertAllChanges()
-    UpdatePerformanceButtons()
-end)
-
 local function ToggleUI()
     if UIToggleDebounce then return end
     UIToggleDebounce = true
@@ -1344,6 +1186,7 @@ RunService.RenderStepped:Connect(function()
         frameCount = 0
         lastTime = currentTime
         FPSLabel.Text = "FPS: " .. currentFPS
+        UpdateFPSGraph(currentFPS)
     end
 end)
 
@@ -1372,7 +1215,6 @@ if configLoaded then
     UpdateSpamSlider((Config.SpamDelay - 0.05) / 4.95)
     UpdateFPSSlider((Config.TargetFPS - 15) / 345)
     UpdateClickTypeButtons()
-    UpdatePerformanceButtons()
     
     if Config.AutoRejoinEnabled then
         AutoRejoinToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
@@ -1420,15 +1262,6 @@ if configLoaded then
         end
     end
     
-    if Config.PerformanceLevel > 0 then
-        local levelFunctions = {nil, ApplyLevel1, ApplyLevel2, ApplyLevel3, ApplyLevel4, ApplyLevel5}
-        local func = levelFunctions[Config.PerformanceLevel]
-        if func then
-            func()
-            UpdatePerformanceButtons()
-        end
-    end
-    
     UpdateAntiAFKStatus()
     
     CreateNotification("✨ Config Loaded", "Previous settings restored successfully", 3)
@@ -1438,7 +1271,6 @@ else
     UpdateSpamSlider(0.01)
     UpdateFPSSlider(0.13)
     UpdateClickTypeButtons()
-    UpdatePerformanceButtons()
 end
 
 MainFrame.Visible = true
