@@ -732,7 +732,7 @@ end
 local function UpdateFPSSlider(percentage)
     Config.TargetFPS = math.floor(15 + (percentage * 345))
     UpdateSlider(FPSFill, FPSValueBox, FPSValueLabel, Config.TargetFPS, 15, 360, "%d")
-    FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
+    FPSUnlockStatus.Text = "Targetting: " .. Config.TargetFPS .. " FPS"
     if Config.FPSUnlockEnabled and setfpscap then
         setfpscap(Config.TargetFPS)
     end
