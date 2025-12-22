@@ -88,35 +88,6 @@ local function LoadConfig()
     return false
 end
 
-local NotificationStack = {}
-
-local KeyCodeNames, KeyCodeMap = {}, {}
-for i = 65, 90 do
-    local char = string.char(i)
-    KeyCodeNames[Enum.KeyCode[char]] = char
-    KeyCodeMap[char] = Enum.KeyCode[char]
-end
-local numNames = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"}
-for i = 0, 9 do
-    local keyName = i == 0 and "Zero" or numNames[i]
-    KeyCodeNames[Enum.KeyCode[keyName]] = tostring(i)
-    KeyCodeMap[tostring(i)] = Enum.KeyCode[keyName]
-end
-for i = 1, 12 do
-    KeyCodeNames[Enum.KeyCode["F" .. i]] = "F" .. i
-    KeyCodeMap["F" .. i] = Enum.KeyCode["F" .. i]
-end
-local specialKeys = {
-    LeftControl = "Left Ctrl", RightControl = "Right Ctrl",
-    LeftShift = "Left Shift", RightShift = "Right Shift",
-    LeftAlt = "Left Alt", RightAlt = "Right Alt",
-    Tab = "Tab", CapsLock = "Caps Lock", Space = "Space",
-    Return = "Enter", Backspace = "Backspace", Delete = "Delete",
-    Insert = "Insert", Home = "Home", End = "End",
-    PageUp = "Page Up", PageDown = "Page Down"
-}
-for k, v in pairs(specialKeys) do KeyCodeNames[Enum.KeyCode[k]] = v end
-
 local TweenPresets = {
     Fast = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
@@ -124,87 +95,6 @@ local TweenPresets = {
     Back = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
     BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
 }
-
-local function UpdateNotificationPositions()
-    for i, notif in ipairs(NotificationStack) do
-        TweenService:Create(notif, TweenPresets.Medium, {
-            Position = UDim2.new(1, -340, 0, 20 + (i - 1) * 85)
-        }):Play()
-    end
-end
-
-local function CreateNotification(title, message, duration)
-    local NotificationFrame = Instance.new("Frame")
-    NotificationFrame.Size = UDim2.new(0, 320, 0, 0)
-    NotificationFrame.Position = UDim2.new(1, -340, 0, 20)
-    NotificationFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-    NotificationFrame.BorderSizePixel = 0
-    NotificationFrame.ClipsDescendants = true
-    NotificationFrame.Parent = ScreenGui
-    
-    local NotifCorner = Instance.new("UICorner", NotificationFrame)
-    NotifCorner.CornerRadius = UDim.new(0, 16)
-    
-    local NotifGlow = Instance.new("ImageLabel", NotificationFrame)
-    NotifGlow.Size = UDim2.new(1, 24, 1, 24)
-    NotifGlow.Position = UDim2.new(0, -12, 0, -12)
-    NotifGlow.BackgroundTransparency = 1
-    NotifGlow.Image = "rbxasset://textures/ui/Keyboard/key_selection_9slice.png"
-    NotifGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
-    NotifGlow.ImageTransparency = 0.8
-    NotifGlow.ScaleType = Enum.ScaleType.Slice
-    NotifGlow.SliceCenter = Rect.new(12, 12, 52, 52)
-    NotifGlow.ZIndex = 0
-    
-    local NotifTitle = Instance.new("TextLabel", NotificationFrame)
-    NotifTitle.Size = UDim2.new(1, -24, 0, 28)
-    NotifTitle.Position = UDim2.new(0, 12, 0, 10)
-    NotifTitle.BackgroundTransparency = 1
-    NotifTitle.Text = title
-    NotifTitle.Font = Enum.Font.GothamBold
-    NotifTitle.TextSize = 15
-    NotifTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    NotifTitle.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local NotifMessage = Instance.new("TextLabel", NotificationFrame)
-    NotifMessage.Size = UDim2.new(1, -24, 0, 38)
-    NotifMessage.Position = UDim2.new(0, 12, 0, 38)
-    NotifMessage.BackgroundTransparency = 1
-    NotifMessage.Text = message
-    NotifMessage.Font = Enum.Font.Gotham
-    NotifMessage.TextSize = 13
-    NotifMessage.TextColor3 = Color3.fromRGB(200, 200, 200)
-    NotifMessage.TextXAlignment = Enum.TextXAlignment.Left
-    NotifMessage.TextYAlignment = Enum.TextYAlignment.Top
-    NotifMessage.TextWrapped = true
-    
-    table.insert(NotificationStack, NotificationFrame)
-    
-    TweenService:Create(NotificationFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 320, 0, 85)
-    }):Play()
-    
-    UpdateNotificationPositions()
-    
-    task.delay(duration or 3, function()
-        TweenService:Create(NotificationFrame, TweenPresets.Slow, {
-            Position = UDim2.new(1, 20, NotificationFrame.Position.Y.Scale, NotificationFrame.Position.Y.Offset),
-            Size = UDim2.new(0, 320, 0, 0)
-        }):Play()
-        
-        task.wait(0.4)
-        
-        for i, notif in ipairs(NotificationStack) do
-            if notif == NotificationFrame then
-                table.remove(NotificationStack, i)
-                break
-            end
-        end
-        
-        NotificationFrame:Destroy()
-        UpdateNotificationPositions()
-    end)
-end
 
 local ReopenButton = Instance.new("ImageButton", ScreenGui)
 ReopenButton.Name = "ReopenButton"
@@ -226,15 +116,6 @@ ReopenIcon.Font = Enum.Font.GothamBold
 ReopenIcon.TextSize = 24
 ReopenIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-local ReopenPulse = Instance.new("Frame", ReopenButton)
-ReopenPulse.Size = UDim2.new(1, 0, 1, 0)
-ReopenPulse.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-ReopenPulse.BackgroundTransparency = 0.7
-ReopenPulse.BorderSizePixel = 0
-
-local PulseCorner = Instance.new("UICorner", ReopenPulse)
-PulseCorner.CornerRadius = UDim.new(1, 0)
-
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
@@ -248,17 +129,6 @@ MainFrame.ClipsDescendants = true
 local UICorner = Instance.new("UICorner", MainFrame)
 UICorner.CornerRadius = UDim.new(0, 16)
 
-local MainGlow = Instance.new("ImageLabel", MainFrame)
-MainGlow.Size = UDim2.new(1, 40, 1, 40)
-MainGlow.Position = UDim2.new(0, -20, 0, -20)
-MainGlow.BackgroundTransparency = 1
-MainGlow.Image = "rbxasset://textures/ui/Keyboard/key_selection_9slice.png"
-MainGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
-MainGlow.ImageTransparency = 0.9
-MainGlow.ScaleType = Enum.ScaleType.Slice
-MainGlow.SliceCenter = Rect.new(12, 12, 52, 52)
-MainGlow.ZIndex = 0
-
 local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Name = "TopBar"
 TopBar.Size = UDim2.new(1, 0, 0, 40)
@@ -267,13 +137,6 @@ TopBar.BorderSizePixel = 0
 
 local TopBarCorner = Instance.new("UICorner", TopBar)
 TopBarCorner.CornerRadius = UDim.new(0, 16)
-
-local TopBarGlow = Instance.new("Frame", TopBar)
-TopBarGlow.Size = UDim2.new(1, 0, 0, 3)
-TopBarGlow.Position = UDim2.new(0, 0, 1, 0)
-TopBarGlow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-TopBarGlow.BackgroundTransparency = 0.8
-TopBarGlow.BorderSizePixel = 0
 
 local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(1, -80, 1, 0)
@@ -299,7 +162,7 @@ local CloseButtonCorner = Instance.new("UICorner", CloseButton)
 CloseButtonCorner.CornerRadius = UDim.new(0, 8)
 
 local ScrollFrame = Instance.new("ScrollingFrame", MainFrame)
-ScrollFrame.Size = UDim2.new(1, -20, 1, -10)
+ScrollFrame.Size = UDim2.new(1, -20, 1, 70)
 ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
@@ -321,13 +184,6 @@ local function CreateSection(name, position, height)
     
     local corner = Instance.new("UICorner", section)
     corner.CornerRadius = UDim.new(0, 10)
-    
-    local glow = Instance.new("Frame", section)
-    glow.Size = UDim2.new(1, 0, 0, 3)
-    glow.Position = UDim2.new(0, 0, 1, -3)
-    glow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-    glow.BackgroundTransparency = 0.6
-    glow.BorderSizePixel = 0
     
     local title = Instance.new("TextLabel", section)
     title.Size = UDim2.new(1, -20, 0, 24)
@@ -554,7 +410,7 @@ AutoSpamStatus.TextSize = 12
 AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AutoSpamStatus.TextXAlignment = Enum.TextXAlignment.Left
 
-local FPSAnalyticsSection = CreateSection("📊 FPS Analytics", UDim2.new(0, 0, 0, 705), 370)
+local FPSAnalyticsSection = CreateSection("📊 FPS & Ping Analytics", UDim2.new(0, 0, 0, 705), 300)
 
 local FPSUnlockToggle = CreateButton(FPSAnalyticsSection, UDim2.new(0, 140, 0, 32), UDim2.new(0, 10, 0, 40), "FPS Unlock: OFF")
 local FPSUnlockStatus = Instance.new("TextLabel", FPSAnalyticsSection)
@@ -569,28 +425,9 @@ FPSUnlockStatus.TextXAlignment = Enum.TextXAlignment.Left
 
 local FPSValueFrame, FPSSlider, FPSFill, FPSButton, FPSValueBox, FPSValueLabel = CreateSlider(FPSAnalyticsSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 78), 15, 360, 60, "Target FPS:")
 
-local FPSGraphFrame = Instance.new("Frame", FPSAnalyticsSection)
-FPSGraphFrame.Size = UDim2.new(1, -20, 0, 180)
-FPSGraphFrame.Position = UDim2.new(0, 10, 0, 160)
-FPSGraphFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-FPSGraphFrame.BorderSizePixel = 0
-
-local GraphCorner = Instance.new("UICorner", FPSGraphFrame)
-GraphCorner.CornerRadius = UDim.new(0, 8)
-
-local GraphTitle = Instance.new("TextLabel", FPSGraphFrame)
-GraphTitle.Size = UDim2.new(1, -20, 0, 20)
-GraphTitle.Position = UDim2.new(0, 10, 0, 5)
-GraphTitle.BackgroundTransparency = 1
-GraphTitle.Text = "Real-Time FPS Monitor"
-GraphTitle.Font = Enum.Font.GothamBold
-GraphTitle.TextSize = 13
-GraphTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-GraphTitle.TextXAlignment = Enum.TextXAlignment.Left
-
 local FPSStatsFrame = Instance.new("Frame", FPSAnalyticsSection)
 FPSStatsFrame.Size = UDim2.new(1, -20, 0, 40)
-FPSStatsFrame.Position = UDim2.new(0, 10, 0, 326)
+FPSStatsFrame.Position = UDim2.new(0, 10, 0, 150)
 FPSStatsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
 FPSStatsFrame.BorderSizePixel = 0
 
@@ -627,27 +464,86 @@ MinMaxFPSLabel.TextSize = 12
 MinMaxFPSLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
 MinMaxFPSLabel.TextXAlignment = Enum.TextXAlignment.Center
 
+local PingStatsFrame = Instance.new("Frame", FPSAnalyticsSection)
+PingStatsFrame.Size = UDim2.new(1, -20, 0, 40)
+PingStatsFrame.Position = UDim2.new(0, 10, 0, 200)
+PingStatsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+PingStatsFrame.BorderSizePixel = 0
+
+local PingStatsCorner = Instance.new("UICorner", PingStatsFrame)
+PingStatsCorner.CornerRadius = UDim.new(0, 8)
+
+local CurrentPingLabel = Instance.new("TextLabel", PingStatsFrame)
+CurrentPingLabel.Size = UDim2.new(0.33, 0, 1, 0)
+CurrentPingLabel.Position = UDim2.new(0, 0, 0, 0)
+CurrentPingLabel.BackgroundTransparency = 1
+CurrentPingLabel.Text = "Current: 0ms"
+CurrentPingLabel.Font = Enum.Font.GothamBold
+CurrentPingLabel.TextSize = 12
+CurrentPingLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+CurrentPingLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local AvgPingLabel = Instance.new("TextLabel", PingStatsFrame)
+AvgPingLabel.Size = UDim2.new(0.33, 0, 1, 0)
+AvgPingLabel.Position = UDim2.new(0.33, 0, 0, 0)
+AvgPingLabel.BackgroundTransparency = 1
+AvgPingLabel.Text = "Average: 0ms"
+AvgPingLabel.Font = Enum.Font.GothamBold
+AvgPingLabel.TextSize = 12
+AvgPingLabel.TextColor3 = Color3.fromRGB(50, 220, 100)
+AvgPingLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local MinMaxPingLabel = Instance.new("TextLabel", PingStatsFrame)
+MinMaxPingLabel.Size = UDim2.new(0.34, 0, 1, 0)
+MinMaxPingLabel.Position = UDim2.new(0.66, 0, 0, 0)
+MinMaxPingLabel.BackgroundTransparency = 1
+MinMaxPingLabel.Text = "Min: 0ms | Max: 0ms"
+MinMaxPingLabel.Font = Enum.Font.GothamBold
+MinMaxPingLabel.TextSize = 12
+MinMaxPingLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+MinMaxPingLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local NetworkStatusFrame = Instance.new("Frame", FPSAnalyticsSection)
+NetworkStatusFrame.Size = UDim2.new(1, -20, 0, 40)
+NetworkStatusFrame.Position = UDim2.new(0, 10, 0, 250)
+NetworkStatusFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+NetworkStatusFrame.BorderSizePixel = 0
+
+local NetworkStatusCorner = Instance.new("UICorner", NetworkStatusFrame)
+NetworkStatusCorner.CornerRadius = UDim.new(0, 8)
+
+local NetworkStatusLabel = Instance.new("TextLabel", NetworkStatusFrame)
+NetworkStatusLabel.Size = UDim2.new(0.5, 0, 1, 0)
+NetworkStatusLabel.Position = UDim2.new(0, 0, 0, 0)
+NetworkStatusLabel.BackgroundTransparency = 1
+NetworkStatusLabel.Text = "Network Status:"
+NetworkStatusLabel.Font = Enum.Font.GothamBold
+NetworkStatusLabel.TextSize = 12
+NetworkStatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+NetworkStatusLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local NetworkQualityLabel = Instance.new("TextLabel", NetworkStatusFrame)
+NetworkQualityLabel.Size = UDim2.new(0.5, 0, 1, 0)
+NetworkQualityLabel.Position = UDim2.new(0.5, 0, 0, 0)
+NetworkQualityLabel.BackgroundTransparency = 1
+NetworkQualityLabel.Text = "Excellent"
+NetworkQualityLabel.Font = Enum.Font.GothamBold
+NetworkQualityLabel.TextSize = 12
+NetworkQualityLabel.TextColor3 = Color3.fromRGB(50, 220, 100)
+NetworkQualityLabel.TextXAlignment = Enum.TextXAlignment.Center
+
 local FPSHistory = {}
+local PingHistory = {}
 local MAX_POINTS = 60
-local FPSGraphLines = {}
 
 for i = 1, MAX_POINTS do
     table.insert(FPSHistory, 60)
-    local line = Instance.new("Frame", FPSGraphFrame)
-    line.Size = UDim2.new(0, 2, 0, 1)
-    line.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-    line.BorderSizePixel = 0
-    line.AnchorPoint = Vector2.new(0, 1)
-    table.insert(FPSGraphLines, line)
+    table.insert(PingHistory, 0)
 end
 
-local function UpdateFPSGraph(fps)
+local function UpdateFPSStats(fps)
     table.remove(FPSHistory, 1)
     table.insert(FPSHistory, fps)
-    
-    local graphWidth = FPSGraphFrame.AbsoluteSize.X - 20
-    local graphHeight = FPSGraphFrame.AbsoluteSize.Y - 35
-    local spacing = graphWidth / MAX_POINTS
     
     local minFPS, maxFPS = math.huge, 0
     local totalFPS = 0
@@ -663,28 +559,50 @@ local function UpdateFPSGraph(fps)
     CurrentFPSLabel.Text = "Current: " .. fps
     AvgFPSLabel.Text = "Average: " .. avgFPS
     MinMaxFPSLabel.Text = string.format("Min: %d | Max: %d", minFPS, maxFPS)
-    
-    local fpsRange = math.max(maxFPS - minFPS, 10)
-    
-    for i, line in ipairs(FPSGraphLines) do
-        local fpsValue = FPSHistory[i]
-        local normalizedHeight = ((fpsValue - minFPS) / fpsRange) * graphHeight
-        
-        line.Size = UDim2.new(0, 2, 0, math.max(normalizedHeight, 1))
-        line.Position = UDim2.new(0, 10 + (i - 1) * spacing, 1, -5)
-        
-        local colorIntensity = fpsValue / 120
-        if fpsValue >= 60 then
-            line.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
-        elseif fpsValue >= 30 then
-            line.BackgroundColor3 = Color3.fromRGB(255, 200, 100)
-        else
-            line.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-        end
-    end
 end
 
-local AutoRejoinSection = CreateSection("🔄 Auto Rejoin", UDim2.new(0, 0, 0, 1087), 130)
+local function UpdatePingStats(ping)
+    table.remove(PingHistory, 1)
+    table.insert(PingHistory, ping)
+    
+    local minPing, maxPing = math.huge, 0
+    local totalPing = 0
+    
+    for _, pingVal in ipairs(PingHistory) do
+        minPing = math.min(minPing, pingVal)
+        maxPing = math.max(maxPing, pingVal)
+        totalPing = totalPing + pingVal
+    end
+    
+    local avgPing = math.floor(totalPing / #PingHistory)
+    
+    CurrentPingLabel.Text = "Current: " .. ping .. "ms"
+    AvgPingLabel.Text = "Average: " .. avgPing .. "ms"
+    MinMaxPingLabel.Text = string.format("Min: %dms | Max: %dms", minPing, maxPing)
+    
+    local qualityText, qualityColor
+    if ping < 50 then
+        qualityText = "Excellent"
+        qualityColor = Color3.fromRGB(50, 220, 100)
+    elseif ping < 100 then
+        qualityText = "Good"
+        qualityColor = Color3.fromRGB(100, 200, 255)
+    elseif ping < 200 then
+        qualityText = "Fair"
+        qualityColor = Color3.fromRGB(255, 200, 100)
+    elseif ping < 300 then
+        qualityText = "Poor"
+        qualityColor = Color3.fromRGB(255, 150, 50)
+    else
+        qualityText = "Very Poor"
+        qualityColor = Color3.fromRGB(220, 50, 50)
+    end
+    
+    NetworkQualityLabel.Text = qualityText
+    NetworkQualityLabel.TextColor3 = qualityColor
+end
+
+local AutoRejoinSection = CreateSection("🔄 Auto Rejoin", UDim2.new(0, 0, 0, 1015), 130)
 local AutoRejoinToggle = CreateButton(AutoRejoinSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Auto Rejoin: OFF")
 local AutoRejoinStatus = Instance.new("TextLabel", AutoRejoinSection)
 AutoRejoinStatus.Size = UDim2.new(1, -20, 0, 50)
@@ -697,7 +615,7 @@ AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AutoRejoinStatus.TextXAlignment = Enum.TextXAlignment.Center
 AutoRejoinStatus.TextWrapped = true
 
-local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1229), 120)
+local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1155), 120)
 local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Toggle Keybind: G")
 local KeybindStatus = Instance.new("TextLabel", UIConfigSection)
 KeybindStatus.Size = UDim2.new(1, -20, 0, 24)
@@ -928,8 +846,6 @@ local function ToggleFPSUnlock()
         setfpscap(Config.FPSUnlockEnabled and Config.TargetFPS or 360)
     end
     
-    CreateNotification(Config.FPSUnlockEnabled and "🚀 FPS Unlock" or "🛑 FPS Unlock", 
-        Config.FPSUnlockEnabled and ("Enabled: " .. Config.TargetFPS .. " FPS") or "Disabled", 2)
     SaveConfig()
 end
 
@@ -968,10 +884,8 @@ local function ToggleAutoRejoin()
     
     if Config.AutoRejoinEnabled then
         SetupAutoRejoin()
-        CreateNotification("🔄 Auto Rejoin", "Enabled - Will rejoin on disconnect", 2)
     else
         teleporting = false
-        CreateNotification("🛑 Auto Rejoin", "Disabled", 2)
     end
     SaveConfig()
 end
@@ -981,21 +895,18 @@ AutoRejoinToggle.MouseButton1Click:Connect(ToggleAutoRejoin)
 ClickTypeCurrent.MouseButton1Click:Connect(function()
     Config.ClickType = "Current"
     UpdateClickTypeButtons()
-    CreateNotification("🖱️ Click Type", "Set to: Current Mouse Location", 2)
     SaveConfig()
 end)
 
 ClickTypeCenter.MouseButton1Click:Connect(function()
     Config.ClickType = "Center"
     UpdateClickTypeButtons()
-    CreateNotification("🖱️ Click Type", "Set to: Screen Center", 2)
     SaveConfig()
 end)
 
 ClickTypeRandom.MouseButton1Click:Connect(function()
     Config.ClickType = "Random"
     UpdateClickTypeButtons()
-    CreateNotification("🖱️ Click Type", "Set to: Random Screen Spot", 2)
     SaveConfig()
 end)
 
@@ -1016,7 +927,6 @@ KeybindButton.MouseButton1Click:Connect(function()
             KeybindButton.Text = "Toggle Keybind: " .. keyName
             KeybindStatus.Text = "Keybind changed successfully!"
             KeybindStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
-            CreateNotification("⌨️ Keybind Changed", "New keybind: " .. keyName, 2)
             SaveConfig()
             task.wait(2)
             KeybindStatus.Text = "Click button above to change keybind"
@@ -1038,10 +948,8 @@ JumpToggle.MouseButton1Click:Connect(function()
     JumpToggle.Text = "Auto Jump: " .. (Config.JumpEnabled and "ON" or "OFF")
     
     if Config.JumpEnabled then
-        CreateNotification("🦘 Jump Activated", "Auto Jump is now active", 2)
         StartJumpThread()
     else
-        CreateNotification("🛑 Jump Deactivated", "Auto Jump has been disabled", 2)
         StopJumpThread()
     end
     
@@ -1060,10 +968,8 @@ ClickToggle.MouseButton1Click:Connect(function()
     ClickToggle.Text = "Auto Click: " .. (Config.ClickEnabled and "ON" or "OFF")
     
     if Config.ClickEnabled then
-        CreateNotification("🖱️ Click Activated", "Auto Click is now active", 2)
         StartClickThread()
     else
-        CreateNotification("🛑 Click Deactivated", "Auto Click has been disabled", 2)
         StopClickThread()
     end
     
@@ -1082,13 +988,11 @@ AutoSpamToggle.MouseButton1Click:Connect(function()
         
         if not keyCode then
             Config.AutoSpamEnabled = false
-            CreateNotification("❌ Invalid Key", "Please enter a valid key (A-Z, 0-9, F1-F12)", 2)
             return
         end
         
         if keyCode == Enum.KeyCode.P or keyCode == Enum.KeyCode.G then
             Config.AutoSpamEnabled = false
-            CreateNotification("❌ Restricted Key", "This key is reserved for other functions", 2)
             return
         end
         
@@ -1097,7 +1001,6 @@ AutoSpamToggle.MouseButton1Click:Connect(function()
         AutoSpamToggle.Text = "ON"
         AutoSpamStatus.Text = "Status: Spamming " .. keyText
         AutoSpamStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
-        CreateNotification("⌨️ Spam Activated", "Spamming key: " .. keyText, 2)
         
         StartSpamThread()
     else
@@ -1105,7 +1008,6 @@ AutoSpamToggle.MouseButton1Click:Connect(function()
         AutoSpamToggle.Text = "OFF"
         AutoSpamStatus.Text = "Status: Inactive"
         AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
-        CreateNotification("🛑 Spam Deactivated", "Auto Key Spam has been disabled", 2)
         StopSpamThread()
     end
     SaveConfig()
@@ -1119,7 +1021,6 @@ local function ToggleUI()
     ReopenButton.Visible = not MainFrame.Visible
     
     if MainFrame.Visible then
-        ReopenPulse.Visible = false
         MainFrame.Size = UDim2.new(0, 0, 0, 0)
         MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
         TweenService:Create(MainFrame, TweenPresets.Back, {
@@ -1129,7 +1030,6 @@ local function ToggleUI()
         TweenService:Create(ReopenButton, TweenPresets.BackIn, {
             Size = UDim2.new(0, 0, 0, 0)
         }):Play()
-        CreateNotification("👁️ UI Visible", "Interface is now visible", 1.5)
     else
         TweenService:Create(MainFrame, TweenPresets.BackIn, {
             Size = UDim2.new(0, 0, 0, 0),
@@ -1137,12 +1037,10 @@ local function ToggleUI()
         }):Play()
         task.wait(0.45)
         ReopenButton.Size = UDim2.new(0, 0, 0, 0)
-        ReopenPulse.Visible = true
         TweenService:Create(ReopenButton, TweenPresets.Back, {
             Size = UDim2.new(0, 60, 0, 60),
             Position = UDim2.new(0.5, -30, 0, 30)
         }):Play()
-        CreateNotification("🔒 UI Hidden", "Click circle or press keybind to show", 2)
     end
     
     task.wait(UIToggleDebounceTime)
@@ -1197,15 +1095,14 @@ RunService.RenderStepped:Connect(function()
         frameCount = 0
         lastTime = currentTime
         FPSLabel.Text = "FPS: " .. currentFPS
-        UpdateFPSGraph(currentFPS)
+        UpdateFPSStats(currentFPS)
     end
-end)
-
-RunService.RenderStepped:Connect(function()
+    
     local ping = LocalPlayer:GetNetworkPing() * 1000
     local roundedPing = math.floor(ping)
     
     PingLabel.Text = "Ping: " .. roundedPing .. " ms"
+    UpdatePingStats(roundedPing)
     
     if roundedPing < 100 then
         PingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
@@ -1229,7 +1126,32 @@ task.spawn(function()
     end)
 end)
 
-local configLoaded = LoadConfig()
+local KeyCodeNames, KeyCodeMap = {}, {}
+for i = 65, 90 do
+    local char = string.char(i)
+    KeyCodeNames[Enum.KeyCode[char]] = char
+    KeyCodeMap[char] = Enum.KeyCode[char]
+end
+local numNames = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"}
+for i = 0, 9 do
+    local keyName = i == 0 and "Zero" or numNames[i]
+    KeyCodeNames[Enum.KeyCode[keyName]] = tostring(i)
+    KeyCodeMap[tostring(i)] = Enum.KeyCode[keyName]
+end
+for i = 1, 12 do
+    KeyCodeNames[Enum.KeyCode["F" .. i]] = "F" .. i
+    KeyCodeMap["F" .. i] = Enum.KeyCode["F" .. i]
+end
+local specialKeys = {
+    LeftControl = "Left Ctrl", RightControl = "Right Ctrl",
+    LeftShift = "Left Shift", RightShift = "Right Shift",
+    LeftAlt = "Left Alt", RightAlt = "Right Alt",
+    Tab = "Tab", CapsLock = "Caps Lock", Space = "Space",
+    Return = "Enter", Backspace = "Backspace", Delete = "Delete",
+    Insert = "Insert", Home = "Home", End = "End",
+    PageUp = "Page Up", PageDown = "Page Down"
+}
+for k, v in pairs(specialKeys) do KeyCodeNames[Enum.KeyCode[k]] = v end
 
 local configLoaded = LoadConfig()
 
@@ -1311,8 +1233,6 @@ if configLoaded then
     end
     
     UpdateAntiAFKStatus()
-    
-    CreateNotification("✨ Config Loaded", "Previous settings restored successfully", 3)
 else
     UpdateJumpSlider(0.2)
     UpdateClickSlider(0.22)
@@ -1346,5 +1266,3 @@ TweenService:Create(MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.Ea
     Size = UDim2.new(0, 500, 0, 650),
     Position = UDim2.new(0.5, -250, 0.5, -325)
 }):Play()
-
-CreateNotification("✨ Script Loaded", "Universal Utility loaded successfully!\nPress " .. (KeyCodeNames[Config.Keybind] or Config.Keybind.Name) .. " to toggle UI", 4)
