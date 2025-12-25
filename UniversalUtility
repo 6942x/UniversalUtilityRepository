@@ -414,7 +414,7 @@ PlayerName.TextXAlignment = Enum.TextXAlignment.Center
 
 local FPSLabel = Instance.new("TextLabel", PlayerInfoFrame)
 FPSLabel.Size = UDim2.new(1, 0, 0, 18)
-FPSLabel.Position = UDim2.new(0, 0, 0, 165)
+FPSLabel.Position = UDim2.new(0, 0, 0, 158)
 FPSLabel.BackgroundTransparency = 1
 FPSLabel.Text = "FPS: 60"
 FPSLabel.Font = Enum.Font.Gotham
@@ -424,7 +424,7 @@ FPSLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 local PingLabel = Instance.new("TextLabel", PlayerInfoFrame)
 PingLabel.Size = UDim2.new(1, 0, 0, 18)
-PingLabel.Position = UDim2.new(0, 0, 0, 183)
+PingLabel.Position = UDim2.new(0, 0, 0, 170)
 PingLabel.BackgroundTransparency = 1
 PingLabel.Text = "Ping: 0 ms"
 PingLabel.Font = Enum.Font.Gotham
