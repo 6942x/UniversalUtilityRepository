@@ -414,7 +414,7 @@ PlayerName.TextXAlignment = Enum.TextXAlignment.Center
 
 local FPSLabel = Instance.new("TextLabel", PlayerInfoFrame)
 FPSLabel.Size = UDim2.new(1, 0, 0, 18)
-FPSLabel.Position = UDim2.new(0, 0, 0, 158)
+FPSLabel.Position = UDim2.new(0, 0, 0, 160)
 FPSLabel.BackgroundTransparency = 1
 FPSLabel.Text = "FPS: 60"
 FPSLabel.Font = Enum.Font.Gotham
@@ -424,13 +424,27 @@ FPSLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 local PingLabel = Instance.new("TextLabel", PlayerInfoFrame)
 PingLabel.Size = UDim2.new(1, 0, 0, 18)
-PingLabel.Position = UDim2.new(0, 0, 0, 170)
+PingLabel.Position = UDim2.new(0, 0, 0, 175)
 PingLabel.BackgroundTransparency = 1
 PingLabel.Text = "Ping: 0 ms"
 PingLabel.Font = Enum.Font.Gotham
 PingLabel.TextSize = 12
 PingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
 PingLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local executor = (identifyexecutor and identifyexecutor()) or 
+                 (getexecutorname and getexecutorname()) or 
+                 "Unknown Executor"
+
+local ExecutorLabel = Instance.new("TextLabel", PlayerInfoFrame)
+ExecutorLabel.Size = UDim2.new(1, 0, 0, 18)
+ExecutorLabel.Position = UDim2.new(0, 0, 0, 190)
+ExecutorLabel.BackgroundTransparency = 1
+ExecutorLabel.Text = "Executor: " .. executor
+ExecutorLabel.Font = Enum.Font.Gotham
+ExecutorLabel.TextSize = 12
+ExecutorLabel.TextColor3 = Color3.fromRGB(255, 0, 125)
+ExecutorLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 local GameInfoFrame = Instance.new("Frame", HomeSection)
 GameInfoFrame.Size = UDim2.new(0, 280, 0, 200)
@@ -459,13 +473,36 @@ GameName.TextWrapped = true
 
 local GameId = Instance.new("TextLabel", GameInfoFrame)
 GameId.Size = UDim2.new(1, 0, 0, 18)
-GameId.Position = UDim2.new(0, 0, 0, 166)
+GameId.Position = UDim2.new(0, 0, 0, 165)
 GameId.BackgroundTransparency = 1
 GameId.Text = "Game ID: " .. game.PlaceId
 GameId.Font = Enum.Font.Gotham
 GameId.TextSize = 12
 GameId.TextColor3 = Color3.fromRGB(180, 180, 180)
 GameId.TextXAlignment = Enum.TextXAlignment.Center
+
+local serverId = game.JobId
+local playerCount = #Players:GetPlayers()
+
+local PlayersInServerLabel = Instance.new("TextLabel", GameInfoFrame)
+PlayersInServerLabel.Size = UDim2.new(1, 0, 0, 18)
+PlayersInServerLabel.Position = UDim2.new(0, 0, 0, 180)
+PlayersInServerLabel.BackgroundTransparency = 1
+PlayersInServerLabel.Text = "Players in Server: " .. playerCount
+PlayersInServerLabel.Font = Enum.Font.Gotham
+PlayersInServerLabel.TextSize = 12
+PlayersInServerLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+PlayersInServerLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local ServerIdLabel = Instance.new("TextLabel", GameInfoFrame)
+ServerIdLabel.Size = UDim2.new(1, 0, 0, 18)
+ServerIdLabel.Position = UDim2.new(0, 0, 0, 195)
+ServerIdLabel.BackgroundTransparency = 1
+ServerIdLabel.Text = "Server ID: " .. serverId
+ServerIdLabel.Font = Enum.Font.Gotham
+ServerIdLabel.TextSize = 12
+ServerIdLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+ServerIdLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 local AntiAFKSection = CreateSection("🛡️ Anti-AFK", UDim2.new(0, 0, 0, 275), 240)
 
