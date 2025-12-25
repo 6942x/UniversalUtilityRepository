@@ -742,7 +742,7 @@ LoadStringBox.ClearTextOnFocus = false
 local LoadStringCorner = Instance.new("UICorner", LoadStringBox)
 LoadStringCorner.CornerRadius = UDim.new(0, 8)
 
-local ExecuteButton = CreateButton(LoadStringSection, UDim2.new(1, -20, 0, 36), UDim2.new(0.5, 0, 0, 144), "Execute your code")
+local ExecuteButton = CreateButton(LoadStringSection, UDim2.new(1, -20, 0, 36), UDim2.new(0.5, 0, 0, 144), "Execute your script")
 
 local LoadStringStatus = Instance.new("TextLabel", LoadStringSection)
 LoadStringStatus.Size = UDim2.new(1, -20, 0, 24)
