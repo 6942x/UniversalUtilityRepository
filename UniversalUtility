@@ -74,7 +74,8 @@ local Config = {
     JumpDelay = 10.0,
     ClickDelay = 3.0,
     SpamDelay = 0.1,
-    SpamKey = "Q"
+    SpamKey = "Q",
+    SavedCode = ""
 }
 
 local function SaveConfig()
@@ -91,7 +92,8 @@ local function SaveConfig()
             JumpDelay = Config.JumpDelay,
             ClickDelay = Config.ClickDelay,
             SpamDelay = Config.SpamDelay,
-            SpamKey = Config.SpamKey
+            SpamKey = Config.SpamKey,
+            SavedCode = Config.SavedCode
         })
         writefile("UniversalUtilityConfig.json", configData)
     end
@@ -115,6 +117,7 @@ local function LoadConfig()
             Config.ClickDelay = data.ClickDelay or 3.0
             Config.SpamDelay = data.SpamDelay or 0.1
             Config.SpamKey = data.SpamKey or "Q"
+            Config.SavedCode = data.SavedCode or ""
             return true
         end
     end
@@ -195,17 +198,17 @@ local CloseButtonCorner = Instance.new("UICorner", CloseButton)
 CloseButtonCorner.CornerRadius = UDim.new(0, 8)
 
 local ScrollFrame = Instance.new("ScrollingFrame", MainFrame)
-ScrollFrame.Size = UDim2.new(1, -20, 1, 70)
+ScrollFrame.Size = UDim2.new(1, -20, 1, 60)
 ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
 ScrollFrame.ScrollBarThickness = 4
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
 ScrollFrame.ScrollBarImageTransparency = 0.7
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1400)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1600)
 
 local ContentFrame = Instance.new("Frame", ScrollFrame)
-ContentFrame.Size = UDim2.new(1, 0, 0, 1400)
+ContentFrame.Size = UDim2.new(1, 0, 0, 1600)
 ContentFrame.BackgroundTransparency = 1
 
 local function CreateSection(name, position, height)
@@ -648,7 +651,62 @@ AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AutoRejoinStatus.TextXAlignment = Enum.TextXAlignment.Center
 AutoRejoinStatus.TextWrapped = true
 
-local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1155), 120)
+local LoadStringSection = CreateSection("💾 Code Loader (Works for mostly scripts - Depends on executor)", UDim2.new(0, 0, 0, 1155), 200)
+
+local LoadStringBox = Instance.new("TextBox", LoadStringSection)
+LoadStringBox.Size = UDim2.new(1, -20, 0, 80)
+LoadStringBox.Position = UDim2.new(0, 10, 0, 40)
+LoadStringBox.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+LoadStringBox.Text = Config.SavedCode
+LoadStringBox.PlaceholderText = "Paste your code here..."
+LoadStringBox.Font = Enum.Font.Gotham
+LoadStringBox.TextSize = 12
+LoadStringBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadStringBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+LoadStringBox.BorderSizePixel = 0
+LoadStringBox.TextWrapped = true
+LoadStringBox.MultiLine = true
+LoadStringBox.ClearTextOnFocus = false
+
+local LoadStringCorner = Instance.new("UICorner", LoadStringBox)
+LoadStringCorner.CornerRadius = UDim.new(0, 8)
+
+local ExecuteButton = CreateButton(LoadStringSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 126), "Execute your code")
+local LoadStringStatus = Instance.new("TextLabel", LoadStringSection)
+LoadStringStatus.Size = UDim2.new(1, -20, 0, 24)
+LoadStringStatus.Position = UDim2.new(0, 10, 0, 168)
+LoadStringStatus.BackgroundTransparency = 1
+LoadStringStatus.Text = "Status: Ready"
+LoadStringStatus.Font = Enum.Font.Gotham
+LoadStringStatus.TextSize = 11
+LoadStringStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+LoadStringStatus.TextXAlignment = Enum.TextXAlignment.Center
+
+local SaveCodeTimer = nil
+local SaveCodeDelay = 1.0
+
+local function SaveCodeAutomatically()
+    if SaveCodeTimer then
+        task.cancel(SaveCodeTimer)
+    end
+    
+    SaveCodeTimer = task.delay(SaveCodeDelay, function()
+        Config.SavedCode = LoadStringBox.Text
+        SaveConfig()
+        LoadStringStatus.Text = "Status: Code auto-saved"
+        LoadStringStatus.TextColor3 = Color3.fromRGB(100, 200, 255)
+        
+        task.wait(2)
+        LoadStringStatus.Text = "Status: Ready"
+        LoadStringStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end)
+end
+
+LoadStringBox:GetPropertyChangedSignal("Text"):Connect(function()
+    SaveCodeAutomatically()
+end)
+
+local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1365), 120)
 local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Toggle Keybind: G")
 local KeybindStatus = Instance.new("TextLabel", UIConfigSection)
 KeybindStatus.Size = UDim2.new(1, -20, 0, 24)
@@ -938,6 +996,45 @@ local function ToggleAutoRejoin()
     SaveConfig()
 end
 
+local function ExecuteLoadString()
+    local loadstringText = LoadStringBox.Text
+    
+    if loadstringText == "" or loadstringText == nil then
+        LoadStringStatus.Text = "Status: Empty loadstring"
+        LoadStringStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
+        return
+    end
+    
+    LoadStringStatus.Text = "Status: Executing..."
+    LoadStringStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
+    
+    TweenService:Create(ExecuteButton, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(255, 200, 100)}):Play()
+    
+    local success, errorMessage = pcall(function()
+        local func, err = loadstring(loadstringText)
+        if not func then
+            error(err)
+        end
+        func()
+    end)
+    
+    if success then
+        LoadStringStatus.Text = "Status: Executed successfully!"
+        LoadStringStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        TweenService:Create(ExecuteButton, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(50, 220, 100)}):Play()
+    else
+        LoadStringStatus.Text = "Status: Error - " .. tostring(errorMessage):sub(1, 50) .. "..."
+        LoadStringStatus.TextColor3 = Color3.fromRGB(220, 50, 50)
+        TweenService:Create(ExecuteButton, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+        warn("Loadstring Error: " .. tostring(errorMessage))
+    end
+    
+    task.wait(2)
+    LoadStringStatus.Text = "Status: Ready"
+    LoadStringStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    TweenService:Create(ExecuteButton, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(45, 45, 52)}):Play()
+end
+
 AutoRejoinToggle.MouseButton1Click:Connect(ToggleAutoRejoin)
 
 ClickTypeCurrent.MouseButton1Click:Connect(function()
@@ -960,7 +1057,9 @@ end)
 
 FPSUnlockToggle.MouseButton1Click:Connect(ToggleFPSUnlock)
 
-KeybindButton.MouseButton1Click:Connect(function()
+ExecuteButton.MouseButton1Click:Connect(ExecuteLoadString)
+
+local function ChangeKeybind()
     if Config.IsChangingKeybind then return end
     Config.IsChangingKeybind = true
     KeybindButton.Text = "Press any key..."
@@ -968,22 +1067,25 @@ KeybindButton.MouseButton1Click:Connect(function()
     KeybindStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
     
     local connection
-    connection = UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Keyboard then
+    connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.Keyboard and not gameProcessed then
             Config.Keybind = input.KeyCode
             local keyName = KeyCodeNames[input.KeyCode] or input.KeyCode.Name
             KeybindButton.Text = "Toggle Keybind: " .. keyName
             KeybindStatus.Text = "Keybind changed successfully!"
             KeybindStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
             SaveConfig()
-            task.wait(2)
+            
+            task.wait(1.5)
             KeybindStatus.Text = "Click button above to change keybind"
             KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
             Config.IsChangingKeybind = false
             connection:Disconnect()
         end
     end)
-end)
+end
+
+KeybindButton.MouseButton1Click:Connect(ChangeKeybind)
 
 JumpToggle.MouseButton1Click:Connect(function()
     if UIToggleDebounce then return end
@@ -1180,6 +1282,7 @@ if configLoaded then
     local keyName = KeyCodeNames[Config.Keybind] or Config.Keybind.Name
     KeybindButton.Text = "Toggle Keybind: " .. keyName
     SpamInput.Text = Config.SpamKey
+    LoadStringBox.Text = Config.SavedCode
     
     UpdateJumpSlider((Config.JumpDelay - 5) / 25)
     UpdateClickSlider((Config.ClickDelay - 1) / 9)
