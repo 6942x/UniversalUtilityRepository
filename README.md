@@ -40,32 +40,9 @@ Settings are saved locally and restored on load (executor dependent)
 
 
 << Project Structure >>
+This repository contains the full project structure for UniversalUtility, including the main entry point, core systems, UI framework, and all feature modules. All files and directories required for functionality are organized within this repository.
 
-UniversalUtility
-init.lua – Main entry point
-
-core
-Config.lua – Configuration management
-Utils.lua – Utility/helper functions
-ThreadManager.lua – Thread handling and cleanup
-Storage.lua – Data persistence (readfile/writefile)
-
-ui
-Interface.lua – Main UI creation
-Components.lua – Reusable UI components
-Sections.lua – Section layouts
-Animations.lua – Tween/animation presets
-
-features
-AntiAFK.lua – Anti-AFK system
-AutoSpam.lua – Key spam automation
-FPSManager.lua – FPS unlock and monitoring
-NetworkMonitor.lua – Ping and network tracking
-AutoRejoin.lua – Reconnection system
-Executor.lua – Script execution system
-
-
----- PERMISSION AND USAGE RIGHTS ----
+---- Permission and usage rights ----
 
 You are free to copy the entire codebase.
 You are free to modify it.
