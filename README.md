@@ -12,25 +12,32 @@ Modern UI ->
 Animated and draggable interface;
 Modular layout with reusable components;
 Configurable UI toggle key
+
 Anti-AFK ->
 Automatic jumping;
 Automatic clicking (current position, center, or random);
 Adjustable delays
+
 Auto Key Spam ->
 Custom key selection;
 Configurable spam interval;
 Safe key validation
+
 FPS and Network Monitoring ->
 FPS unlock (executor dependent);
 Live FPS tracking (current, average, minimum, maximum);
 Ping estimation with network quality rating
+
 Auto Rejoin ->
 Automatically rejoins the game after disconnects or kicks
+
 Executing scripts -->
 Built-in loadstring executor;
 Optional script auto-save
+
 Persistent Configuration ->
 Settings are saved locally and restored on load (executor dependent)
+
 
 << Project Structure >>
 
