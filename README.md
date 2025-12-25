@@ -35,7 +35,7 @@ Executing scripts -->
 Built-in loadstring executor;
 Optional script auto-save
 
-Persistent Configuration
+Persistent Configuration ->
 Settings are saved locally and restored on load (executor dependent)
 
 
