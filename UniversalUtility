@@ -467,7 +467,7 @@ GameId.TextSize = 12
 GameId.TextColor3 = Color3.fromRGB(180, 180, 180)
 GameId.TextXAlignment = Enum.TextXAlignment.Center
 
-local AntiAFKSection = CreateSection("🛡️ Anti-AFK System", UDim2.new(0, 0, 0, 275), 240)
+local AntiAFKSection = CreateSection("🛡️ Anti-AFK", UDim2.new(0, 0, 0, 275), 240)
 
 local JumpToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(0, 110, 0, 56), "Auto Jump: OFF")
 local ClickToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(1, -110, 0, 56), "Auto Click: OFF")
@@ -499,7 +499,7 @@ AntiAFKStatus.TextSize = 12
 AntiAFKStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AntiAFKStatus.TextXAlignment = Enum.TextXAlignment.Center
 
-local AutoSpamSection = CreateSection("⌨️ Auto Key Spam", UDim2.new(0, 0, 0, 523), 170)
+local AutoSpamSection = CreateSection("⌨️ Key Spam", UDim2.new(0, 0, 0, 523), 170)
 
 local SpamInput = Instance.new("TextBox", AutoSpamSection)
 SpamInput.Size = UDim2.new(1, -20, 0, 36)
@@ -722,7 +722,7 @@ AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
 AutoRejoinStatus.TextXAlignment = Enum.TextXAlignment.Center
 AutoRejoinStatus.TextWrapped = true
 
-local LoadStringSection = CreateSection("💾 Code Loader (Works for mostly scripts - Depends on executor)", UDim2.new(0, 0, 0, 1155), 200)
+local LoadStringSection = CreateSection("💾 Script Loader", UDim2.new(0, 0, 0, 1155), 200)
 
 local LoadStringBox = Instance.new("TextBox", LoadStringSection)
 LoadStringBox.Size = UDim2.new(1, -20, 0, 80)
@@ -776,7 +776,7 @@ end
 
 LoadStringBox:GetPropertyChangedSignal("Text"):Connect(SaveCodeAutomatically)
 
-local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1365), 120)
+local UIConfigSection = CreateSection("⚙️ Settings", UDim2.new(0, 0, 0, 1365), 120)
 
 local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0.5, 0, 0, 58), "Toggle Keybind: G")
 
