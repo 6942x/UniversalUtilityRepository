@@ -9,30 +9,30 @@ It includes systems for Anti-AFK, automation, FPS and network monitoring, auto r
 << Features >>
 
 Modern UI
-Animated and draggable interface
-Modular layout with reusable components
+Animated and draggable interface;
+Modular layout with reusable components;
 Configurable UI toggle key
 
 Anti-AFK
-Automatic jumping
-Automatic clicking (current position, center, or random)
+Automatic jumping;
+Automatic clicking (current position, center, or random);
 Adjustable delays
 
 Auto Key Spam
-Custom key selection
-Configurable spam interval
+Custom key selection;
+Configurable spam interval;
 Safe key validation
 
 FPS and Network Monitoring
-FPS unlock (executor dependent)
-Live FPS tracking (current, average, minimum, maximum)
+FPS unlock (executor dependent);
+Live FPS tracking (current, average, minimum, maximum);
 Ping estimation with network quality rating
 
 Auto Rejoin
 Automatically rejoins the game after disconnects or kicks
 
 Executor
-Built-in loadstring executor
+Built-in loadstring executor;
 Optional script auto-save
 
 Persistent Configuration
