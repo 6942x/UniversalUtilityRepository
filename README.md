@@ -40,6 +40,7 @@ Settings are saved locally and restored on load (executor dependent)
 
 
 << Project Structure >>
+
 This repository contains the full project structure for UniversalUtility, including the main entry point, core systems, UI framework, and all feature modules. All files and directories required for functionality are organized within this repository.
 
 ---- Permission and usage rights ----
