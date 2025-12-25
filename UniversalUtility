@@ -459,7 +459,7 @@ GameName.TextWrapped = true
 
 local GameId = Instance.new("TextLabel", GameInfoFrame)
 GameId.Size = UDim2.new(1, 0, 0, 18)
-GameId.Position = UDim2.new(0, 0, 0, 177)
+GameId.Position = UDim2.new(0, 0, 0, 166)
 GameId.BackgroundTransparency = 1
 GameId.Text = "Game ID: " .. game.PlaceId
 GameId.Font = Enum.Font.Gotham
@@ -713,7 +713,7 @@ local AutoRejoinToggle = CreateButton(AutoRejoinSection, UDim2.new(1, -20, 0, 36
 
 local AutoRejoinStatus = Instance.new("TextLabel", AutoRejoinSection)
 AutoRejoinStatus.Size = UDim2.new(1, -20, 0, 50)
-AutoRejoinStatus.Position = UDim2.new(0, 10, 0, 74)
+AutoRejoinStatus.Position = UDim2.new(0, 10, 0, 80)
 AutoRejoinStatus.BackgroundTransparency = 1
 AutoRejoinStatus.Text = "Status: Disabled\n\nAutomatically rejoins when disconnected"
 AutoRejoinStatus.Font = Enum.Font.Gotham
@@ -782,9 +782,9 @@ local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UD
 
 local KeybindStatus = Instance.new("TextLabel", UIConfigSection)
 KeybindStatus.Size = UDim2.new(1, -20, 0, 24)
-KeybindStatus.Position = UDim2.new(0, 10, 0, 82)
+KeybindStatus.Position = UDim2.new(0, 10, 0, 88)
 KeybindStatus.BackgroundTransparency = 1
-KeybindStatus.Text = "Click button above to change keybind"
+KeybindStatus.Text = "Click the button above to change your Toggle Keybind"
 KeybindStatus.Font = Enum.Font.Gotham
 KeybindStatus.TextSize = 11
 KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
