@@ -6,7 +6,7 @@ The project is designed to be clean, readable, and easy to expand.
 It includes systems for Anti-AFK, automation, FPS and network monitoring, auto rejoining, and script execution.
 
 
-<< Features >>
+<< FEATURES >>
 
 Modern UI ->
 Animated and draggable interface;
@@ -39,11 +39,11 @@ Persistent Configuration ->
 Settings are saved locally and restored on load (executor dependent)
 
 
-<< Project Structure >>
+<< PROJECT STRUCTURE >>
 
 This repository contains the full project structure for UniversalUtility, including the main entry point, core systems, UI framework, and all feature modules. All files and directories required for functionality are organized within this repository.
 
----- Permission and usage rights ----
+---- PERMISSION AND USAGE RIGHTS ----
 
 You are free to copy the entire codebase.
 You are free to modify it.
