@@ -1204,7 +1204,7 @@ local function ExecuteLoadString()
     if not SetDebounce("Execute", 0.5) then return end
     local loadstringText = LoadStringBox.Text
     if loadstringText == "" or loadstringText == nil then
-        LoadStringStatus.Text = "Status: Empty loadstring"
+        LoadStringStatus.Text = "Status: Empty script"
         LoadStringStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
         return
     end
