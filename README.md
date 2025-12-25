@@ -43,7 +43,7 @@ Settings are saved locally and restored on load (executor dependent)
 
 UniversalUtility/
 │
-├── init.lua                    # Main entry point (loadstring this)
+├── init.lua                    # Main entry point
 │
 ├── core/
 │   ├── Config.lua              # Configuration management
