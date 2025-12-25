@@ -41,29 +41,28 @@ Settings are saved locally and restored on load (executor dependent)
 
 << Project Structure >>
 
-UniversalUtility/
-│
-├── init.lua                    # Main entry point
-│
-├── core/
-│   ├── Config.lua              # Configuration management
-│   ├── Utils.lua               # Utility/helper functions
-│   ├── ThreadManager.lua       # Thread handling and cleanup
-│   └── Storage.lua             # Data persistence (readfile/writefile)
-│
-├── ui/
-│   ├── Interface.lua           # Main UI creation
-│   ├── Components.lua          # Reusable UI components
-│   ├── Sections.lua            # Section layouts
-│   └── Animations.lua          # Tween/animation presets
-│
-├── features/
-│   ├── AntiAFK.lua             # Anti-AFK system
-│   ├── AutoSpam.lua            # Key spam automation
-│   ├── FPSManager.lua          # FPS unlock & monitoring
-│   ├── NetworkMonitor.lua      # Ping & network tracking
-│   ├── AutoRejoin.lua          # Reconnection system
-│   └── Executor.lua            # Script execution system
+UniversalUtility
+init.lua – Main entry point
+
+core
+Config.lua – Configuration management
+Utils.lua – Utility/helper functions
+ThreadManager.lua – Thread handling and cleanup
+Storage.lua – Data persistence (readfile/writefile)
+
+ui
+Interface.lua – Main UI creation
+Components.lua – Reusable UI components
+Sections.lua – Section layouts
+Animations.lua – Tween/animation presets
+
+features
+AntiAFK.lua – Anti-AFK system
+AutoSpam.lua – Key spam automation
+FPSManager.lua – FPS unlock and monitoring
+NetworkMonitor.lua – Ping and network tracking
+AutoRejoin.lua – Reconnection system
+Executor.lua – Script execution system
 
 
 ---- PERMISSION AND USAGE RIGHTS ----
