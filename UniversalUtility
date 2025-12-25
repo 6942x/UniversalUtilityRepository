@@ -206,8 +206,8 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local CloseButton = Instance.new("ImageButton", TopBar)
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -40, 0.5, -15)
-CloseButton.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+CloseButton.Position = UDim2.new(1, -30, 0.5, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
 CloseButton.BorderSizePixel = 0
 CloseButton.Image = "rbxassetid://3926305904"
 CloseButton.ImageRectOffset = Vector2.new(284, 4)
@@ -222,7 +222,7 @@ ScrollFrame.Size = UDim2.new(1, -20, 1, 60)
 ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
-ScrollFrame.ScrollBarThickness = 4
+ScrollFrame.ScrollBarThickness = 3
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
 ScrollFrame.ScrollBarImageTransparency = 0.7
 ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1600)
@@ -258,6 +258,7 @@ local function CreateButton(parent, size, position, text)
     local button = Instance.new("TextButton", parent)
     button.Size = size
     button.Position = position
+    button.AnchorPoint = Vector2.new(0.5, 0.5)
     button.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     button.Text = text
     button.Font = Enum.Font.GothamBold
@@ -436,15 +437,15 @@ local GameId = Instance.new("TextLabel", GameInfoFrame)
 GameId.Size = UDim2.new(1, 0, 0, 18)
 GameId.Position = UDim2.new(0, 0, 0, 177)
 GameId.BackgroundTransparency = 1
-GameId.Text = "ID: " .. game.PlaceId
+GameId.Text = "Gmae ID: " .. game.PlaceId
 GameId.Font = Enum.Font.Gotham
 GameId.TextSize = 12
 GameId.TextColor3 = Color3.fromRGB(180, 180, 180)
 GameId.TextXAlignment = Enum.TextXAlignment.Center
 
 local AntiAFKSection = CreateSection("🛡️ Anti-AFK System", UDim2.new(0, 0, 0, 275), 240)
-local JumpToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(0, 10, 0, 40), "Auto Jump: OFF")
-local ClickToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(1, -210, 0, 40), "Auto Click: OFF")
+local JumpToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(0, 110, 0, 56), "Auto Jump: OFF")
+local ClickToggle = CreateButton(AntiAFKSection, UDim2.new(0, 200, 0, 32), UDim2.new(1, -110, 0, 56), "Auto Click: OFF")
 
 local ClickTypeLabel = Instance.new("TextLabel", AntiAFKSection)
 ClickTypeLabel.Size = UDim2.new(1, -20, 0, 18)
@@ -456,16 +457,16 @@ ClickTypeLabel.TextSize = 12
 ClickTypeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 ClickTypeLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-local ClickTypeCurrent = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(0, 10, 0, 100), "Current")
-local ClickTypeCenter = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(0.5, -60, 0, 100), "Center")
-local ClickTypeRandom = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(1, -130, 0, 100), "Random")
+local ClickTypeCurrent = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(0, 70, 0, 113), "Current")
+local ClickTypeCenter = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(0.5, 0, 0, 113), "Center")
+local ClickTypeRandom = CreateButton(AntiAFKSection, UDim2.new(0, 120, 0, 26), UDim2.new(1, -70, 0, 113), "Random")
 
 local JumpDelayFrame, JumpDelaySlider, JumpSliderFill, JumpSliderButton, JumpDelayBox, JumpDelayLabel = CreateSlider(AntiAFKSection, UDim2.new(0, 200, 0, 36), UDim2.new(0, 10, 0, 132), 5, 30, 10, "Jump Delay:")
 local ClickDelayFrame, ClickDelaySlider, ClickSliderFill, ClickSliderButton, ClickDelayBox, ClickDelayLabel = CreateSlider(AntiAFKSection, UDim2.new(0, 200, 0, 36), UDim2.new(1, -210, 0, 132), 1, 10, 3, "Click Delay:")
 
 local AntiAFKStatus = Instance.new("TextLabel", AntiAFKSection)
 AntiAFKStatus.Size = UDim2.new(1, -20, 0, 28)
-AntiAFKStatus.Position = UDim2.new(0, 10, 0, 190)
+AntiAFKStatus.Position = UDim2.new(0, 10, 0, 200)
 AntiAFKStatus.BackgroundTransparency = 1
 AntiAFKStatus.Text = "Status: All Inactive"
 AntiAFKStatus.Font = Enum.Font.Gotham
@@ -492,7 +493,7 @@ InputCorner.CornerRadius = UDim.new(0, 8)
 
 local SpamDelayFrame, SpamDelaySlider, SpamSliderFill, SpamSliderButton, SpamDelayBox, SpamDelayLabel = CreateSlider(AutoSpamSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 82), 0.05, 5, 0.1, "Delay:")
 
-local AutoSpamToggle = CreateButton(AutoSpamSection, UDim2.new(0, 90, 0, 32), UDim2.new(0, 10, 0, 124), "OFF")
+local AutoSpamToggle = CreateButton(AutoSpamSection, UDim2.new(0, 90, 0, 32), UDim2.new(0, 55, 0, 140), "OFF")
 local AutoSpamStatus = Instance.new("TextLabel", AutoSpamSection)
 AutoSpamStatus.Size = UDim2.new(1, -110, 0, 32)
 AutoSpamStatus.Position = UDim2.new(0, 106, 0, 124)
@@ -505,7 +506,7 @@ AutoSpamStatus.TextXAlignment = Enum.TextXAlignment.Left
 
 local FPSAnalyticsSection = CreateSection("📊 FPS & Ping Analytics", UDim2.new(0, 0, 0, 705), 300)
 
-local FPSUnlockToggle = CreateButton(FPSAnalyticsSection, UDim2.new(0, 140, 0, 32), UDim2.new(0, 10, 0, 40), "FPS Unlock: OFF")
+local FPSUnlockToggle = CreateButton(FPSAnalyticsSection, UDim2.new(0, 140, 0, 32), UDim2.new(0, 80, 0, 56), "FPS Unlock: OFF")
 local FPSUnlockStatus = Instance.new("TextLabel", FPSAnalyticsSection)
 FPSUnlockStatus.Size = UDim2.new(1, -160, 0, 32)
 FPSUnlockStatus.Position = UDim2.new(0, 156, 0, 40)
@@ -689,7 +690,7 @@ local function UpdatePingStats(ping)
 end
 
 local AutoRejoinSection = CreateSection("🔄 Auto Rejoin", UDim2.new(0, 0, 0, 1015), 130)
-local AutoRejoinToggle = CreateButton(AutoRejoinSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Auto Rejoin: OFF")
+local AutoRejoinToggle = CreateButton(AutoRejoinSection, UDim2.new(1, -20, 0, 36), UDim2.new(0.5, 0, 0, 58), "Auto Rejoin: OFF")
 local AutoRejoinStatus = Instance.new("TextLabel", AutoRejoinSection)
 AutoRejoinStatus.Size = UDim2.new(1, -20, 0, 50)
 AutoRejoinStatus.Position = UDim2.new(0, 10, 0, 74)
@@ -721,7 +722,7 @@ LoadStringBox.ClearTextOnFocus = false
 local LoadStringCorner = Instance.new("UICorner", LoadStringBox)
 LoadStringCorner.CornerRadius = UDim.new(0, 8)
 
-local ExecuteButton = CreateButton(LoadStringSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 126), "Execute your code")
+local ExecuteButton = CreateButton(LoadStringSection, UDim2.new(1, -20, 0, 36), UDim2.new(0.5, 0, 0, 144), "Execute your code")
 local LoadStringStatus = Instance.new("TextLabel", LoadStringSection)
 LoadStringStatus.Size = UDim2.new(1, -20, 0, 24)
 LoadStringStatus.Position = UDim2.new(0, 10, 0, 168)
@@ -757,7 +758,7 @@ end
 LoadStringBox:GetPropertyChangedSignal("Text"):Connect(SaveCodeAutomatically)
 
 local UIConfigSection = CreateSection("⚙️ UI Configuration", UDim2.new(0, 0, 0, 1365), 120)
-local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0, 10, 0, 40), "Toggle Keybind: G")
+local KeybindButton = CreateButton(UIConfigSection, UDim2.new(1, -20, 0, 36), UDim2.new(0.5, 0, 0, 58), "Toggle Keybind: G")
 local KeybindStatus = Instance.new("TextLabel", UIConfigSection)
 KeybindStatus.Size = UDim2.new(1, -20, 0, 24)
 KeybindStatus.Position = UDim2.new(0, 10, 0, 82)
@@ -802,7 +803,7 @@ local function UpdateFPSSlider(percentage)
 
     if Config.FPSUnlockEnabled and FPS_SUPPORTED then
         setfpscap(Config.TargetFPS)
-        FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
+        FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
     end
 
     SaveConfig()
@@ -983,14 +984,14 @@ local function ToggleFPSUnlock()
     FPSUnlockToggle.Text = "FPS Unlock: " .. (Config.FPSUnlockEnabled and "ON" or "OFF")
 
     if Config.FPSUnlockEnabled then
-        setfpscap(Config.TargetFPS)
-        FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
-        FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
-    else
-        setfpscap(60)
-        FPSUnlockStatus.Text = "Default FPS (60)"
-        FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
-    end
+    setfpscap(Config.TargetFPS)
+    FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
+    FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+else
+    setfpscap(60)
+    FPSUnlockStatus.Text = "Default FPS"
+    FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+end
 
     SaveConfig()
 end
@@ -1252,12 +1253,46 @@ local function ToggleUI()
     end
 end
 
+local closeButtonOriginalSize = UDim2.new(0, 30, 0, 30)
+local closeButtonOriginalPos = UDim2.new(1, -40, 0.5, -15)
+local closeButtonIsHovering = false
+
+CloseButton.AnchorPoint = Vector2.new(0.5, 0.5)
+
 CloseButton.MouseEnter:Connect(function()
-    TweenService:Create(CloseButton, TweenPresets.Fast, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+    closeButtonIsHovering = true
+    TweenService:Create(CloseButton, TweenPresets.Fast, {
+        Size = UDim2.new(0, 36, 0, 34),
+        BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+    }):Play()
 end)
 
 CloseButton.MouseLeave:Connect(function()
-    TweenService:Create(CloseButton, TweenPresets.Fast, {BackgroundColor3 = Color3.fromRGB(45, 45, 52)}):Play()
+    closeButtonIsHovering = false
+    TweenService:Create(CloseButton, TweenPresets.Fast, {
+        Size = closeButtonOriginalSize,
+        BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    }):Play()
+end)
+
+CloseButton.MouseButton1Down:Connect(function()
+    if closeButtonIsHovering then
+        TweenService:Create(CloseButton, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 26, 0, 27)
+        }):Play()
+    end
+end)
+
+CloseButton.MouseButton1Up:Connect(function()
+    if closeButtonIsHovering then
+        TweenService:Create(CloseButton, TweenPresets.Fast, {
+            Size = UDim2.new(0, 36, 0, 34)
+        }):Play()
+    else
+        TweenService:Create(CloseButton, TweenPresets.Fast, {
+            Size = closeButtonOriginalSize
+        }):Play()
+    end
 end)
 
 CloseButton.MouseButton1Click:Connect(ToggleUI)
@@ -1353,19 +1388,19 @@ if configLoaded then
         AutoRejoinStatus.Text = "Status: Disabled\n\nAutomatically rejoins when disconnected"
         AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
     end
-
+    
     if Config.FPSUnlockEnabled and FPS_SUPPORTED then
-        FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
-        FPSUnlockToggle.Text = "FPS Unlock: ON"
-        FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
-        FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
-        setfpscap(Config.TargetFPS)
-    else
-        FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-        FPSUnlockToggle.Text = "FPS Unlock: OFF"
-        FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
-        FPSUnlockStatus.Text = "Target: " .. Config.TargetFPS .. " FPS"
-    end
+    FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+    FPSUnlockToggle.Text = "FPS Unlock: ON"
+    FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+    FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
+    setfpscap(Config.TargetFPS)
+else
+    FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    FPSUnlockToggle.Text = "FPS Unlock: OFF"
+    FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    FPSUnlockStatus.Text = "Default FPS"
+end
     
     if Config.JumpEnabled then
         JumpToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
@@ -1427,8 +1462,9 @@ else
     AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
     
     FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-    FPSUnlockToggle.Text = "FPS Unlock: OFF"
-    FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+FPSUnlockToggle.Text = "FPS Unlock: OFF"
+FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+FPSUnlockStatus.Text = "Default FPS"
     
     AutoRejoinToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
     AutoRejoinToggle.Text = "Auto Rejoin: OFF"
