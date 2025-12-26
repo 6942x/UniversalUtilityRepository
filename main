@@ -12,21 +12,21 @@ local function loadModule(path)
     return result
 end
 
-local configModule    = loadModule("core/config.lua")
-local helpers         = loadModule("utils/helpers.lua")
-local antiafk         = loadModule("features/antiafk.lua")
-local autorejoin      = loadModule("features/autorejoin.lua")
-local keyspam         = loadModule("features/keyspam.lua")
-local performance     = loadModule("features/performance.lua")
-local scriptloader    = loadModule("features/scriptloader.lua")
+local configModule    = loadModule("core/config")
+local helpers         = loadModule("utils/helpers")
+local antiafk         = loadModule("features/antiafk")
+local autorejoin      = loadModule("features/autorejoin")
+local keyspam         = loadModule("features/keyspam")
+local performance     = loadModule("features/performance")
+local scriptloader    = loadModule("features/scriptloader")
 
-local framework       = loadModule("ui/framework.lua")
-local interactions    = loadModule("ui/interactions.lua")
-local tabsModule      = loadModule("ui/tabs.lua")
-local init            = loadModule("init/init.lua")
+local framework       = loadModule("ui/framework")
+local interactions    = loadModule("ui/interactions")
+local tabsModule      = loadModule("ui/tabs")
+local init            = loadModule("init/init")
 
 if not (configModule and helpers and framework and interactions and tabsModule and init) then
-    warn("Critical modules failed to load")
+    warn("Critical modules failed to load - aborting")
     return
 end
 
@@ -69,4 +69,4 @@ game:GetService("TweenService"):Create(mainFrame, TweenInfo.new(0.8, Enum.Easing
     Position = UDim2.new(0.5, -325, 0.5, -250)
 }):Play()
 
-print("Universal Utility loaded")
+print("Universal Utility loaded successfully")
