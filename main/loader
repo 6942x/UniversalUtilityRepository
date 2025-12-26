@@ -26,7 +26,7 @@ local function loadFeature(featureName, featurePath)
         print("✓ Sucessfully loaded: " .. featureName)
         return true
     else
-        warn("✗ Failed to load feature: " .. featureName .. " → " .. tostring(result))
+        warn("✗ Failed to load: " .. featureName .. " → " .. tostring(result))
         return false
     end
 end
@@ -42,7 +42,7 @@ for _, feature in ipairs(features) do
     if loadFeature(feature.name, feature.path) then
         loadedCount = loadedCount + 1
     else
-        warn("CRITICAL: Feature '" .. feature.name .. "' failed to load - stopping")
+        warn("CRITICAL: '" .. feature.name .. "' failed to load - stopping")
         break
     end
     task.wait(0.05)
