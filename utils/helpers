@@ -1,1 +1,92 @@
+local Debounces = _G.UniversalUtility.Debounces
+local ActiveThreads = _G.UniversalUtility.ActiveThreads
+local TweenService = _G.UniversalUtility.Services.TweenService
+local TweenPresets = _G.UniversalUtility.TweenPresets
 
+function _G.UniversalUtility.SetDebounce(key, duration)
+    if Debounces[key] then return false end
+    Debounces[key] = true
+    task.delay(duration or 0.3, function() Debounces[key] = false end)
+    return true
+end
+
+function _G.UniversalUtility.CleanupAllThreads()
+    for threadType, thread in pairs(ActiveThreads) do
+        if thread then
+            if coroutine.status(thread) ~= "dead" then
+                task.cancel(thread)
+            end
+            ActiveThreads[threadType] = nil
+        end
+    end
+end
+
+function _G.UniversalUtility.StopThread(threadType)
+    if ActiveThreads[threadType] then
+        local thread = ActiveThreads[threadType]
+        ActiveThreads[threadType] = nil
+        if coroutine.status(thread) ~= "dead" then
+            task.cancel(thread)
+        end
+    end
+end
+
+function _G.UniversalUtility.UpdateSlider(fill, valueBox, labelElement, value, min, max, format)
+    local percentage = (value - min) / (max - min)
+    TweenService:Create(fill, TweenPresets.Fast, {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
+    valueBox.Text = string.format(format, value)
+end
+
+function _G.UniversalUtility.UpdateJumpSlider(percentage)
+    local Config = _G.UniversalUtility.Config
+    Config.JumpDelay = 5 + (percentage * 25)
+    _G.UniversalUtility.UpdateSlider(
+        _G.UniversalUtility.UI.JumpSliderFill,
+        _G.UniversalUtility.UI.JumpDelayBox,
+        _G.UniversalUtility.UI.JumpDelayLabel,
+        Config.JumpDelay, 5, 30, "%.1f"
+    )
+    _G.UniversalUtility.SaveConfig()
+end
+
+function _G.UniversalUtility.UpdateClickSlider(percentage)
+    local Config = _G.UniversalUtility.Config
+    Config.ClickDelay = 1 + (percentage * 9)
+    _G.UniversalUtility.UpdateSlider(
+        _G.UniversalUtility.UI.ClickSliderFill,
+        _G.UniversalUtility.UI.ClickDelayBox,
+        _G.UniversalUtility.UI.ClickDelayLabel,
+        Config.ClickDelay, 1, 10, "%.1f"
+    )
+    _G.UniversalUtility.SaveConfig()
+end
+
+function _G.UniversalUtility.UpdateSpamSlider(percentage)
+    local Config = _G.UniversalUtility.Config
+    Config.SpamDelay = 0.05 + (percentage * 4.95)
+    _G.UniversalUtility.UpdateSlider(
+        _G.UniversalUtility.UI.SpamSliderFill,
+        _G.UniversalUtility.UI.SpamDelayBox,
+        _G.UniversalUtility.UI.SpamDelayLabel,
+        Config.SpamDelay, 0.05, 5, "%.2f"
+    )
+    _G.UniversalUtility.SaveConfig()
+end
+
+function _G.UniversalUtility.UpdateFPSSlider(percentage)
+    local Config = _G.UniversalUtility.Config
+    Config.TargetFPS = math.floor(15 + (percentage * 345))
+    _G.UniversalUtility.UpdateSlider(
+        _G.UniversalUtility.UI.FPSFill,
+        _G.UniversalUtility.UI.FPSValueBox,
+        _G.UniversalUtility.UI.FPSValueLabel,
+        Config.TargetFPS, 15, 360, "%d"
+    )
+    if Config.FPSUnlockEnabled and _G.UniversalUtility.FPS_SUPPORTED then
+        setfpscap(Config.TargetFPS)
+        _G.UniversalUtility.UI.FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
+    end
+    _G.UniversalUtility.SaveConfig()
+end
+
+print("✓ Utils/Helpers loaded")
