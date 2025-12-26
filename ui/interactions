@@ -1,1 +1,324 @@
+local Config = _G.UniversalUtility.Config
+local UserInputService = _G.UniversalUtility.Services.UserInputService
+local TweenService = _G.UniversalUtility.Services.TweenService
+local TweenPresets = _G.UniversalUtility.TweenPresets
+local TabButtons = _G.UniversalUtility.TabButtons
+local TabContents = _G.UniversalUtility.TabContents
+local KeyCodeNames = _G.UniversalUtility.KeyCodeNames
+local KeyCodeMap = _G.UniversalUtility.KeyCodeMap
+local UI = _G.UniversalUtility.UI
 
+function _G.UniversalUtility.SwitchTab(tabName)
+    if not _G.UniversalUtility.SetDebounce("Tab", 0.1) then return end
+    Config.CurrentTab = tabName
+    _G.UniversalUtility.SaveConfig()
+    
+    for name, content in pairs(TabContents) do
+        content.Visible = (name == tabName)
+    end
+    
+    for name, tabData in pairs(TabButtons) do
+        local isActive = (name == tabName)
+        TweenService:Create(tabData.Button, TweenPresets.Fast, {
+            BackgroundColor3 = isActive and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(35, 35, 42)
+        }):Play()
+        TweenService:Create(tabData.Icon, TweenPresets.Fast, {
+            TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
+        }):Play()
+        TweenService:Create(tabData.Label, TweenPresets.Fast, {
+            TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
+        }):Play()
+    end
+end
+
+function _G.UniversalUtility.ChangeKeybind()
+    if not _G.UniversalUtility.SetDebounce("Keybind", 0.5) or Config.IsChangingKeybind then return end
+    Config.IsChangingKeybind = true
+    UI.KeybindButton.Text = "Press any key..."
+    UI.KeybindStatus.Text = "Waiting for input..."
+    UI.KeybindStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
+    
+    local connection
+    connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if input.UserInputType == Enum.UserInputType.Keyboard and not gameProcessed then
+            Config.Keybind = input.KeyCode
+            local keyName = KeyCodeNames[input.KeyCode] or input.KeyCode.Name
+            UI.KeybindButton.Text = "Toggle Keybind: " .. keyName
+            UI.KeybindStatus.Text = "Keybind changed successfully!\n\nPress the keybind at any time to open/close this menu."
+            UI.KeybindStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+            _G.UniversalUtility.SaveConfig()
+            task.wait(1.5)
+            if UI.KeybindStatus.Text:match("successfully") then
+                UI.KeybindStatus.Text = "Click the button above to change your Toggle Keybind\n\nPress the keybind at any time to open/close this menu."
+                UI.KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+            end
+            Config.IsChangingKeybind = false
+            connection:Disconnect()
+        end
+    end)
+end
+
+function _G.UniversalUtility.ToggleUI()
+    if not _G.UniversalUtility.SetDebounce("UI", 0.8) then return end
+    if UI.MainFrame.Visible then
+        TweenService:Create(UI.MainFrame, TweenPresets.BackIn, {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0)
+        }):Play()
+        task.wait(0.45)
+        UI.MainFrame.Visible = false
+        UI.ReopenButton.Visible = true
+        UI.ReopenButton.Size = UDim2.new(0, 0, 0, 0)
+        UI.ReopenButton.Position = UDim2.new(0.5, 0, 0, 30)
+        TweenService:Create(UI.ReopenButton, TweenPresets.Back, {
+            Size = UDim2.new(0, 60, 0, 60),
+            Position = UDim2.new(0.5, -30, 0, 30)
+        }):Play()
+    else
+        TweenService:Create(UI.ReopenButton, TweenPresets.BackIn, {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0, 30)
+        }):Play()
+        task.wait(0.35)
+        UI.ReopenButton.Visible = false
+        UI.MainFrame.Visible = true
+        UI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
+        UI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+        TweenService:Create(UI.MainFrame, TweenPresets.Back, {
+            Size = UDim2.new(0, 650, 0, 500),
+            Position = UDim2.new(0.5, -325, 0.5, -250)
+        }):Play()
+    end
+end
+
+UI.CloseButton.MouseEnter:Connect(function()
+    TweenService:Create(UI.CloseButton, TweenPresets.Fast, {
+        BackgroundColor3 = Color3.fromRGB(240, 70, 70),
+        Size = UDim2.new(0, 32, 0, 32)
+    }):Play()
+end)
+
+UI.CloseButton.MouseLeave:Connect(function()
+    TweenService:Create(UI.CloseButton, TweenPresets.Fast, {
+        BackgroundColor3 = Color3.fromRGB(220, 50, 50),
+        Size = UDim2.new(0, 30, 0, 30)
+    }):Play()
+end)
+
+UI.CloseButton.MouseButton1Down:Connect(function()
+    TweenService:Create(UI.CloseButton, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 28, 0, 28)
+    }):Play()
+end)
+
+UI.CloseButton.MouseButton1Up:Connect(function()
+    TweenService:Create(UI.CloseButton, TweenPresets.Fast, {
+        Size = UDim2.new(0, 30, 0, 30)
+    }):Play()
+end)
+
+UI.ReopenButton.MouseEnter:Connect(function()
+    TweenService:Create(UI.ReopenButton, TweenPresets.Medium, {
+        Size = UDim2.new(0, 70, 0, 70),
+        Position = UDim2.new(0.5, -35, 0, 25)
+    }):Play()
+end)
+
+UI.ReopenButton.MouseLeave:Connect(function()
+    TweenService:Create(UI.ReopenButton, TweenPresets.Medium, {
+        Size = UDim2.new(0, 60, 0, 60),
+        Position = UDim2.new(0.5, -30, 0, 30)
+    }):Play()
+end)
+
+UI.CloseButton.MouseButton1Click:Connect(_G.UniversalUtility.ToggleUI)
+UI.ReopenButton.MouseButton1Click:Connect(_G.UniversalUtility.ToggleUI)
+UI.KeybindButton.MouseButton1Click:Connect(_G.UniversalUtility.ChangeKeybind)
+UI.AutoRejoinToggle.MouseButton1Click:Connect(_G.UniversalUtility.ToggleAutoRejoin)
+UI.FPSUnlockToggle.MouseButton1Click:Connect(_G.UniversalUtility.ToggleFPSUnlock)
+UI.ExecuteButton.MouseButton1Click:Connect(_G.UniversalUtility.ExecuteLoadString)
+
+for _, tab in ipairs({
+    {"Home", "🏠", UDim2.new(0, 5, 0, 5)},
+    {"Anti-AFK", "🛡️", UDim2.new(0, 5, 0, 68)},
+    {"KeySpam", "⌨️", UDim2.new(0, 5, 0, 131)},
+    {"Performance Status", "📊", UDim2.new(0, 5, 0, 194)},
+    {"Auto Rejoin", "🔄", UDim2.new(0, 5, 0, 257)},
+    {"Script Loader", "💾", UDim2.new(0, 5, 0, 320)},
+    {"Settings", "⚙️", UDim2.new(0, 5, 0, 383)}
+}) do
+    local name = tab[1]
+    TabButtons[name].Button.MouseButton1Click:Connect(function()
+        _G.UniversalUtility.SwitchTab(name)
+    end)
+end
+
+UI.ClickTypeCurrent.MouseButton1Click:Connect(function()
+    if not _G.UniversalUtility.SetDebounce("ClickType", 0.2) then return end
+    Config.ClickType = "Current"
+    _G.UniversalUtility.UpdateClickTypeButtons()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+UI.ClickTypeCenter.MouseButton1Click:Connect(function()
+    if not _G.UniversalUtility.SetDebounce("ClickType", 0.2) then return end
+    Config.ClickType = "Center"
+    _G.UniversalUtility.UpdateClickTypeButtons()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+UI.ClickTypeRandom.MouseButton1Click:Connect(function()
+    if not _G.UniversalUtility.SetDebounce("ClickType", 0.2) then return end
+    Config.ClickType = "Random"
+    _G.UniversalUtility.UpdateClickTypeButtons()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+UI.JumpToggle.MouseButton1Click:Connect(function()
+    if not _G.UniversalUtility.SetDebounce("Jump", 0.3) then return end
+    Config.JumpEnabled = not Config.JumpEnabled
+    TweenService:Create(UI.JumpToggle, TweenPresets.Medium, {
+        BackgroundColor3 = Config.JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    }):Play()
+    
+    UI.JumpToggle.Text = "Auto Jump: " .. (Config.JumpEnabled and "ON" or "OFF")
+    if Config.JumpEnabled then
+        task.wait(0.05)
+        _G.UniversalUtility.StartJumpThread()
+    else
+        _G.UniversalUtility.StopJumpThread()
+    end
+    _G.UniversalUtility.UpdateAntiAFKStatus()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+UI.ClickToggle.MouseButton1Click:Connect(function()
+    if not _G.UniversalUtility.SetDebounce("Click", 0.3) then return end
+    Config.ClickEnabled = not Config.ClickEnabled
+    TweenService:Create(UI.ClickToggle, TweenPresets.Medium, {
+        BackgroundColor3 = Config.ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    }):Play()
+    
+    UI.ClickToggle.Text = "Auto Click: " .. (Config.ClickEnabled and "ON" or "OFF")
+    if Config.ClickEnabled then
+        task.wait(0.05)
+        _G.UniversalUtility.StartClickThread()
+    else
+        _G.UniversalUtility.StopClickThread()
+    end
+    _G.UniversalUtility.UpdateAntiAFKStatus()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+UI.AutoSpamToggle.MouseButton1Click:Connect(function()
+    if not _G.UniversalUtility.SetDebounce("Spam", 0.3) then return end
+    Config.AutoSpamEnabled = not Config.AutoSpamEnabled
+    if Config.AutoSpamEnabled then
+        local keyText = UI.SpamInput.Text:upper()
+        local keyCode = KeyCodeMap[keyText]
+        if not keyCode then
+            Config.AutoSpamEnabled = false
+            UI.AutoSpamStatus.Text = "Status: Invalid key"
+            UI.AutoSpamStatus.TextColor3 = Color3.fromRGB(220, 50, 50)
+            return
+        end
+        
+        if keyCode == Enum.KeyCode.P or keyCode == Enum.KeyCode.G then
+            Config.AutoSpamEnabled = false
+            UI.AutoSpamStatus.Text = "Status: Key reserved"
+            UI.AutoSpamStatus.TextColor3 = Color3.fromRGB(220, 50, 50)
+            return
+        end
+        
+        Config.SpamKey = keyText
+        TweenService:Create(UI.AutoSpamToggle, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(50, 220, 100)}):Play()
+        UI.AutoSpamToggle.Text = "ON"
+        UI.AutoSpamStatus.Text = "Status: Spamming " .. keyText
+        UI.AutoSpamStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        task.wait(0.05)
+        _G.UniversalUtility.StartSpamThread()
+    else
+        TweenService:Create(UI.AutoSpamToggle, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+        UI.AutoSpamToggle.Text = "OFF"
+        UI.AutoSpamStatus.Text = "Status: Inactive"
+        UI.AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+        _G.UniversalUtility.StopSpamThread()
+    end
+    _G.UniversalUtility.SaveConfig()
+end)
+
+UI.JumpDelayBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(UI.JumpDelayBox.Text) or Config.JumpDelay, 5, 30)
+    Config.JumpDelay = value
+    _G.UniversalUtility.UpdateJumpSlider((value - 5) / 25)
+end)
+
+UI.ClickDelayBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(UI.ClickDelayBox.Text) or Config.ClickDelay, 1, 10)
+    Config.ClickDelay = value
+    _G.UniversalUtility.UpdateClickSlider((value - 1) / 9)
+end)
+
+UI.SpamDelayBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(UI.SpamDelayBox.Text) or Config.SpamDelay, 0.05, 5)
+    Config.SpamDelay = value
+    _G.UniversalUtility.UpdateSpamSlider((value - 0.05) / 4.95)
+end)
+
+UI.FPSValueBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(UI.FPSValueBox.Text) or Config.TargetFPS, 15, 360)
+    Config.TargetFPS = value
+    _G.UniversalUtility.UpdateFPSSlider((value - 15) / 345)
+end)
+
+UI.SpamInput.FocusLost:Connect(function()
+    Config.SpamKey = UI.SpamInput.Text:upper()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+local dragging = {jump = false, click = false, spam = false, fps = false}
+
+UI.JumpSliderButton.MouseButton1Down:Connect(function()
+    dragging.jump = true
+end)
+
+UI.ClickSliderButton.MouseButton1Down:Connect(function()
+    dragging.click = true
+end)
+
+UI.SpamSliderButton.MouseButton1Down:Connect(function()
+    dragging.spam = true
+end)
+
+UI.FPSButton.MouseButton1Down:Connect(function()
+    dragging.fps = true
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging.jump, dragging.click, dragging.spam, dragging.fps = false, false, false, false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mouseX = UserInputService:GetMouseLocation().X
+        if dragging.jump then
+            _G.UniversalUtility.UpdateJumpSlider(math.clamp((mouseX - UI.JumpDelaySlider.AbsolutePosition.X) / UI.JumpDelaySlider.AbsoluteSize.X, 0, 1))
+        elseif dragging.click then
+            _G.UniversalUtility.UpdateClickSlider(math.clamp((mouseX - UI.ClickDelaySlider.AbsolutePosition.X) / UI.ClickDelaySlider.AbsoluteSize.X, 0, 1))
+        elseif dragging.spam then
+            _G.UniversalUtility.UpdateSpamSlider(math.clamp((mouseX - UI.SpamDelaySlider.AbsolutePosition.X) / UI.SpamDelaySlider.AbsoluteSize.X, 0, 1))
+        elseif dragging.fps then
+            _G.UniversalUtility.UpdateFPSSlider(math.clamp((mouseX - UI.FPSSlider.AbsolutePosition.X) / UI.FPSSlider.AbsoluteSize.X, 0, 1))
+        end
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Config.Keybind and not Config.IsChangingKeybind then
+        _G.UniversalUtility.ToggleUI()
+    end
+end)
+
+print("✓ UI/Interactions loaded")
