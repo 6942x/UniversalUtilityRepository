@@ -1,1 +1,151 @@
+local Config = _G.UniversalUtility.Config
+local ScreenGui = _G.UniversalUtility.ScreenGui
+local LocalPlayer = _G.UniversalUtility.LocalPlayer
+local MarketplaceService = _G.UniversalUtility.Services.MarketplaceService
+local TweenService = _G.UniversalUtility.Services.TweenService
+local UI = _G.UniversalUtility.UI
+local KeyCodeNames = _G.UniversalUtility.KeyCodeNames
 
+ScreenGui.Destroying:Connect(_G.UniversalUtility.CleanupAllThreads)
+
+local configLoaded = _G.UniversalUtility.LoadConfig()
+
+if configLoaded then
+    local keyName = KeyCodeNames[Config.Keybind] or Config.Keybind.Name
+    UI.KeybindButton.Text = "Toggle Keybind: " .. keyName
+    UI.SpamInput.Text = Config.SpamKey
+    UI.LoadStringBox.Text = Config.SavedCode
+    
+    _G.UniversalUtility.UpdateJumpSlider((Config.JumpDelay - 5) / 25)
+    _G.UniversalUtility.UpdateClickSlider((Config.ClickDelay - 1) / 9)
+    _G.UniversalUtility.UpdateSpamSlider((Config.SpamDelay - 0.05) / 4.95)
+    _G.UniversalUtility.UpdateFPSSlider((Config.TargetFPS - 15) / 345)
+    _G.UniversalUtility.UpdateClickTypeButtons()
+    
+    if Config.AutoRejoinEnabled then
+        UI.AutoRejoinToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        UI.AutoRejoinToggle.Text = "Auto Rejoin: ON"
+        UI.AutoRejoinStatus.Text = "Status: Enabled\n\nAutomatically rejoins the game when you get disconnected.\nUseful for preventing AFK kicks."
+        UI.AutoRejoinStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        _G.UniversalUtility.SetupAutoRejoin()
+    else
+        UI.AutoRejoinToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        UI.AutoRejoinToggle.Text = "Auto Rejoin: OFF"
+        UI.AutoRejoinStatus.Text = "Status: Disabled\n\nAutomatically rejoins the game when you get disconnected.\nUseful for preventing AFK kicks."
+        UI.AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+    
+    if Config.FPSUnlockEnabled and _G.UniversalUtility.FPS_SUPPORTED then
+        UI.FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        UI.FPSUnlockToggle.Text = "FPS Unlock: ON"
+        UI.FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        UI.FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
+        setfpscap(Config.TargetFPS)
+    else
+        UI.FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        UI.FPSUnlockToggle.Text = "FPS Unlock: OFF"
+        UI.FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+        UI.FPSUnlockStatus.Text = "Default FPS"
+    end
+    
+    _G.UniversalUtility.StopJumpThread()
+    _G.UniversalUtility.StopClickThread()
+    _G.UniversalUtility.StopSpamThread()
+    
+    if Config.JumpEnabled then
+        task.wait(0.1)
+        UI.JumpToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        UI.JumpToggle.Text = "Auto Jump: ON"
+        _G.UniversalUtility.StartJumpThread()
+    else
+        UI.JumpToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        UI.JumpToggle.Text = "Auto Jump: OFF"
+    end
+    
+    if Config.ClickEnabled then
+        task.wait(0.1)
+        UI.ClickToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        UI.ClickToggle.Text = "Auto Click: ON"
+        _G.UniversalUtility.StartClickThread()
+    else
+        UI.ClickToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        UI.ClickToggle.Text = "Auto Click: OFF"
+    end
+    
+    if Config.AutoSpamEnabled then
+        local keyCode = _G.UniversalUtility.KeyCodeMap[Config.SpamKey]
+        if keyCode then
+            task.wait(0.1)
+            UI.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+            UI.AutoSpamToggle.Text = "ON"
+            UI.AutoSpamStatus.Text = "Status: Spamming " .. Config.SpamKey
+            UI.AutoSpamStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+            _G.UniversalUtility.StartSpamThread()
+        else
+            Config.AutoSpamEnabled = false
+            UI.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+            UI.AutoSpamToggle.Text = "OFF"
+            UI.AutoSpamStatus.Text = "Status: Inactive"
+            UI.AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+        end
+    else
+        UI.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        UI.AutoSpamToggle.Text = "OFF"
+        UI.AutoSpamStatus.Text = "Status: Inactive"
+        UI.AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+    
+    _G.UniversalUtility.UpdateAntiAFKStatus()
+else
+    _G.UniversalUtility.UpdateJumpSlider(0.2)
+    _G.UniversalUtility.UpdateClickSlider(0.22)
+    _G.UniversalUtility.UpdateSpamSlider(0.01)
+    _G.UniversalUtility.UpdateFPSSlider(0.13)
+    _G.UniversalUtility.UpdateClickTypeButtons()
+    
+    UI.JumpToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    UI.JumpToggle.Text = "Auto Jump: OFF"
+    
+    UI.ClickToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    UI.ClickToggle.Text = "Auto Click: OFF"
+    
+    UI.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    UI.AutoSpamToggle.Text = "OFF"
+    UI.AutoSpamStatus.Text = "Status: Inactive"
+    UI.AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    
+    UI.FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    UI.FPSUnlockToggle.Text = "FPS Unlock: OFF"
+    UI.FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    UI.FPSUnlockStatus.Text = "Default FPS"
+    
+    UI.AutoRejoinToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    UI.AutoRejoinToggle.Text = "Auto Rejoin: OFF"
+    UI.AutoRejoinStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+end
+
+task.spawn(function()
+    pcall(function()
+        UI.PlayerImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=420&h=420"
+        local gameInfo = MarketplaceService:GetProductInfo(game.PlaceId)
+        UI.GameName.Text = gameInfo.Name
+        if gameInfo.IconImageAssetId and gameInfo.IconImageAssetId ~= 0 then
+            UI.GameImage.Image = "rbxthumb://type=Asset&id=" .. gameInfo.IconImageAssetId .. "&w=420&h=420"
+        end
+    end)
+end)
+
+_G.UniversalUtility.SwitchTab(Config.CurrentTab)
+
+UI.MainFrame.Visible = true
+UI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
+UI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+UI.ReopenButton.Visible = false
+
+TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0, 650, 0, 500),
+    Position = UDim2.new(0.5, -325, 0.5, -250)
+}):Play()
+
+print("✓ Initialization complete!")
+print("Press " .. (KeyCodeNames[Config.Keybind] or Config.Keybind.Name) .. " to toggle the UI")
