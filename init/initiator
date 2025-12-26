@@ -54,7 +54,8 @@ local function UpdateClickTypeButtons()
         Random = AntiAFKElements.ClickTypeRandom
     }
     for type, btn in pairs(buttons) do
-        local targetColor = (Config.ClickType == type) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
+        local isSelected = (Config.ClickType == type)
+        local targetColor = isSelected and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
         if _G.UniversalUtility.ButtonStates[btn] then
             _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
         end
@@ -159,21 +160,21 @@ KeySpamElements.SpamInput.FocusLost:Connect(function()
 end)
 
 AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
-    if not SetDebounce("ClickType", 0.2) then return end
+    if Config.ClickType == "Current" then return end
     Config.ClickType = "Current"
     UpdateClickTypeButtons()
     _G.UniversalUtility.SaveConfig()
 end)
 
 AntiAFKElements.ClickTypeCenter.MouseButton1Click:Connect(function()
-    if not SetDebounce("ClickType", 0.2) then return end
+    if Config.ClickType == "Center" then return end
     Config.ClickType = "Center"
     UpdateClickTypeButtons()
     _G.UniversalUtility.SaveConfig()
 end)
 
 AntiAFKElements.ClickTypeRandom.MouseButton1Click:Connect(function()
-    if not SetDebounce("ClickType", 0.2) then return end
+    if Config.ClickType == "Random" then return end
     Config.ClickType = "Random"
     UpdateClickTypeButtons()
     _G.UniversalUtility.SaveConfig()
