@@ -1,1 +1,118 @@
+local Config = _G.UniversalUtility.Config
+local LocalPlayer = _G.UniversalUtility.LocalPlayer
+local RunService = _G.UniversalUtility.Services.RunService
+local TweenService = _G.UniversalUtility.Services.TweenService
+local TweenPresets = _G.UniversalUtility.TweenPresets
+local UI = _G.UniversalUtility.UI
 
+function _G.UniversalUtility.ToggleFPSUnlock()
+    if not _G.UniversalUtility.SetDebounce("FPS", 0.3) then return end
+    if not _G.UniversalUtility.FPS_SUPPORTED then
+        UI.FPSUnlockStatus.Text = "FPS Unlock not supported"
+        UI.FPSUnlockStatus.TextColor3 = Color3.fromRGB(220, 50, 50)
+        return
+    end
+    
+    Config.FPSUnlockEnabled = not Config.FPSUnlockEnabled
+    TweenService:Create(UI.FPSUnlockToggle, TweenPresets.Medium, {
+        BackgroundColor3 = Config.FPSUnlockEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    }):Play()
+    
+    UI.FPSUnlockToggle.Text = "FPS Unlock: " .. (Config.FPSUnlockEnabled and "ON" or "OFF")
+    if Config.FPSUnlockEnabled then
+        setfpscap(Config.TargetFPS)
+        UI.FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
+        UI.FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+    else
+        setfpscap(60)
+        UI.FPSUnlockStatus.Text = "Default FPS"
+        UI.FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+    _G.UniversalUtility.SaveConfig()
+end
+
+local lastTime, frameCount, currentFPS = tick(), 0, 60
+local updateInterval = 1
+
+local FPSHistory = {}
+local PingHistory = {}
+local MAX_POINTS = 60
+for i = 1, MAX_POINTS do
+    table.insert(FPSHistory, 60)
+    table.insert(PingHistory, 0)
+end
+
+_G.UniversalUtility.FPSHistory = FPSHistory
+_G.UniversalUtility.PingHistory = PingHistory
+
+local function UpdateFPSStats(fps)
+    table.remove(FPSHistory, 1)
+    table.insert(FPSHistory, fps)
+    local minFPS, maxFPS, totalFPS = math.huge, 0, 0
+    for _, fpsVal in ipairs(FPSHistory) do
+        minFPS = math.min(minFPS, fpsVal)
+        maxFPS = math.max(maxFPS, fpsVal)
+        totalFPS = totalFPS + fpsVal
+    end
+    local avgFPS = math.floor(totalFPS / #FPSHistory)
+    UI.CurrentFPSLabel.Text = "Current: " .. fps
+    UI.AvgFPSLabel.Text = "Average: " .. avgFPS
+    UI.MinMaxFPSLabel.Text = string.format("Min: %d | Max: %d", minFPS, maxFPS)
+end
+
+local function UpdatePingStats(ping)
+    table.remove(PingHistory, 1)
+    table.insert(PingHistory, ping)
+    local minPing, maxPing, totalPing = math.huge, 0, 0
+    for _, pingVal in ipairs(PingHistory) do
+        minPing = math.min(minPing, pingVal)
+        maxPing = math.max(maxPing, pingVal)
+        totalPing = totalPing + pingVal
+    end
+    local avgPing = math.floor(totalPing / #PingHistory)
+    UI.CurrentPingLabel.Text = "Current: " .. ping .. "ms"
+    UI.AvgPingLabel.Text = "Average: " .. avgPing .. "ms"
+    UI.MinMaxPingLabel.Text = string.format("Min: %dms | Max: %dms", minPing, maxPing)
+    
+    local qualityText, qualityColor
+    if ping < 50 then
+        qualityText, qualityColor = "Excellent", Color3.fromRGB(50, 220, 100)
+    elseif ping < 100 then
+        qualityText, qualityColor = "Good", Color3.fromRGB(100, 200, 255)
+    elseif ping < 200 then
+        qualityText, qualityColor = "Fair", Color3.fromRGB(255, 200, 100)
+    elseif ping < 300 then
+        qualityText, qualityColor = "Poor", Color3.fromRGB(255, 150, 50)
+    else
+        qualityText, qualityColor = "Very Poor", Color3.fromRGB(220, 50, 50)
+    end
+    UI.NetworkQualityLabel.Text = qualityText
+    UI.NetworkQualityLabel.TextColor3 = qualityColor
+end
+
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local currentTime = tick()
+    if currentTime - lastTime >= updateInterval then
+        currentFPS = math.floor(frameCount / (currentTime - lastTime))
+        frameCount = 0
+        lastTime = currentTime
+        UI.FPSLabel.Text = "FPS: " .. currentFPS
+        UpdateFPSStats(currentFPS)
+    end
+    
+    if frameCount % 30 == 0 then
+        local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+        UI.PingLabel.Text = "Ping: " .. ping .. " ms"
+        UpdatePingStats(ping)
+        if ping < 100 then
+            UI.PingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+        elseif ping < 200 then
+            UI.PingLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+        else
+            UI.PingLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+        end
+    end
+end)
+
+print("✓ Features/Performance loaded")
