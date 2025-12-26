@@ -1,1 +1,38 @@
+local FPS_SUPPORTED = typeof(setfpscap) == "function"
 
+local function ToggleUnlock(config, statusLabel)
+    if not FPS_SUPPORTED then
+        statusLabel.Text = "Not supported"
+        statusLabel.TextColor3 = Color3.fromRGB(220, 50, 50)
+        return
+    end
+
+    config.FPSUnlockEnabled = not config.FPSUnlockEnabled
+
+    if config.FPSUnlockEnabled then
+        setfpscap(config.TargetFPS)
+        statusLabel.Text = "Target: " .. config.TargetFPS .. " FPS"
+        statusLabel.TextColor3 = Color3.fromRGB(50, 220, 100)
+    else
+        setfpscap(60)
+        statusLabel.Text = "Default FPS"
+        statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+end
+
+local function UpdateSlider(config, percentage, fill, valueBox, label)
+    config.TargetFPS = math.floor(15 + (percentage * 345))
+    fill.Size = UDim2.new(percentage, 0, 1, 0)
+    valueBox.Text = tostring(config.TargetFPS)
+    label.Text = "Target FPS: " .. config.TargetFPS
+
+    if config.FPSUnlockEnabled and FPS_SUPPORTED then
+        setfpscap(config.TargetFPS)
+    end
+end
+
+return {
+    ToggleUnlock = ToggleUnlock,
+    UpdateSlider = UpdateSlider,
+    IsSupported = FPS_SUPPORTED
+}
