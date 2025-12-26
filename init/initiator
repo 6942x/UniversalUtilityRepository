@@ -54,9 +54,11 @@ local function UpdateClickTypeButtons()
         Random = AntiAFKElements.ClickTypeRandom
     }
     for type, btn in pairs(buttons) do
-        TweenService:Create(btn, UI.TweenPresets.Fast, {
-            BackgroundColor3 = (Config.ClickType == type) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
-        }):Play()
+        local targetColor = (Config.ClickType == type) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
+        if _G.UniversalUtility.ButtonStates[btn] then
+            _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
+        end
+        btn.BackgroundColor3 = targetColor
     end
 end
 
@@ -180,9 +182,11 @@ end)
 AntiAFKElements.JumpToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Jump", 0.3) then return end
     Config.JumpEnabled = not Config.JumpEnabled
-    TweenService:Create(AntiAFKElements.JumpToggle, UI.TweenPresets.Medium, {
-        BackgroundColor3 = Config.JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    }):Play()
+    local targetColor = Config.JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.JumpToggle] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.JumpToggle].BaseColor = targetColor
+    end
+    AntiAFKElements.JumpToggle.BackgroundColor3 = targetColor
     
     AntiAFKElements.JumpToggle.Text = "Auto Jump: " .. (Config.JumpEnabled and "ON" or "OFF")
     if Config.JumpEnabled then
@@ -198,9 +202,11 @@ end)
 AntiAFKElements.ClickToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Click", 0.3) then return end
     Config.ClickEnabled = not Config.ClickEnabled
-    TweenService:Create(AntiAFKElements.ClickToggle, UI.TweenPresets.Medium, {
-        BackgroundColor3 = Config.ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    }):Play()
+    local targetColor = Config.ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickToggle] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickToggle].BaseColor = targetColor
+    end
+    AntiAFKElements.ClickToggle.BackgroundColor3 = targetColor
     
     AntiAFKElements.ClickToggle.Text = "Auto Click: " .. (Config.ClickEnabled and "ON" or "OFF")
     if Config.ClickEnabled then
@@ -234,14 +240,22 @@ KeySpamElements.AutoSpamToggle.MouseButton1Click:Connect(function()
         end
         
         Config.SpamKey = keyText
-        TweenService:Create(KeySpamElements.AutoSpamToggle, UI.TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(50, 220, 100)}):Play()
+        local targetColor = Color3.fromRGB(50, 220, 100)
+        if _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle] then
+            _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle].BaseColor = targetColor
+        end
+        KeySpamElements.AutoSpamToggle.BackgroundColor3 = targetColor
         KeySpamElements.AutoSpamToggle.Text = "ON"
         KeySpamElements.Status.Text = "Status: Spamming " .. keyText
         KeySpamElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
         task.wait(0.05)
         KeySpam.StartSpamThread()
     else
-        TweenService:Create(KeySpamElements.AutoSpamToggle, UI.TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+        local targetColor = Color3.fromRGB(220, 50, 50)
+        if _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle] then
+            _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle].BaseColor = targetColor
+        end
+        KeySpamElements.AutoSpamToggle.BackgroundColor3 = targetColor
         KeySpamElements.AutoSpamToggle.Text = "OFF"
         KeySpamElements.Status.Text = "Status: Inactive"
         KeySpamElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
@@ -260,9 +274,11 @@ PerformanceElements.FPSUnlockToggle.MouseButton1Click:Connect(function()
         return
     end
     
-    TweenService:Create(PerformanceElements.FPSUnlockToggle, UI.TweenPresets.Medium, {
-        BackgroundColor3 = result and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    }):Play()
+    local targetColor = result and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    if _G.UniversalUtility.ButtonStates[PerformanceElements.FPSUnlockToggle] then
+        _G.UniversalUtility.ButtonStates[PerformanceElements.FPSUnlockToggle].BaseColor = targetColor
+    end
+    PerformanceElements.FPSUnlockToggle.BackgroundColor3 = targetColor
     
     PerformanceElements.FPSUnlockToggle.Text = "FPS Unlock: " .. (result and "ON" or "OFF")
     if result then
@@ -277,9 +293,11 @@ end)
 RejoinElements.AutoRejoinToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Rejoin", 0.3) then return end
     Config.AutoRejoinEnabled = not Config.AutoRejoinEnabled
-    TweenService:Create(RejoinElements.AutoRejoinToggle, UI.TweenPresets.Medium, {
-        BackgroundColor3 = Config.AutoRejoinEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    }):Play()
+    local targetColor = Config.AutoRejoinEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    if _G.UniversalUtility.ButtonStates[RejoinElements.AutoRejoinToggle] then
+        _G.UniversalUtility.ButtonStates[RejoinElements.AutoRejoinToggle].BaseColor = targetColor
+    end
+    RejoinElements.AutoRejoinToggle.BackgroundColor3 = targetColor
     
     RejoinElements.AutoRejoinToggle.Text = "Auto Rejoin: " .. (Config.AutoRejoinEnabled and "ON" or "OFF")
     RejoinElements.Status.Text = "Status: " .. (Config.AutoRejoinEnabled and "Enabled" or "Disabled") .. "\n\nAutomatically rejoins the game when you get disconnected.\nUseful for preventing AFK kicks."
