@@ -36,4 +36,3 @@ for i, module in ipairs(modules) do
 end
 
 print("Universal Utility Loaded!")
-print("Press G to toggle the UI")
