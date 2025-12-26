@@ -1,57 +1,58 @@
 _G.UniversalUtility = _G.UniversalUtility or {}
-
 local REPO_URL = "https://raw.githubusercontent.com/6942x/UniversalUtilityRepository/main/"
 
-local modules = {
-    {name = "config", path = "core/config"},
-    {name = "helpers", path = "utils/helpers"},
-    {name = "framework", path = "ui/framework"},
-    {name = "antiafk", path = "features/antiafk"},
-    {name = "autorejoin", path = "features/autorejoin"},
-    {name = "keyspam", path = "features/keyspam"},
-    {name = "performance", path = "features/performance"},
-    {name = "scriptloader", path = "features/scriptloader"},
-    {name = "interactions", path = "ui/interactions"},
-    {name = "tabs", path = "ui/tabs"},
-    {name = "initiator", path = "init/initiator"}
+local features = {
+    {name = "Configuration",      path = "core/config"},
+    {name = "Helper Functions",   path = "utils/helpers"},
+    {name = "UI Framework",       path = "ui/framework"},
+    {name = "Anti-AFK",           path = "features/antiafk"},
+    {name = "Auto Rejoin",        path = "features/autorejoin"},
+    {name = "Key Spam",           path = "features/keyspam"},
+    {name = "Performance Boost",  path = "features/performance"},
+    {name = "Script Loader",      path = "features/scriptloader"},
+    {name = "UI Interactions",    path = "ui/interactions"},
+    {name = "Tab System",         path = "ui/tabs"},
+    {name = "Initialization",     path = "init/initiator"}
 }
 
-local function loadModule(moduleName, modulePath)
+local function loadFeature(featureName, featurePath)
     local success, result = pcall(function()
-        local url = REPO_URL .. modulePath
+        local url = REPO_URL .. featurePath
         local code = game:HttpGet(url, true)
         return loadstring(code)()
     end)
     
     if success then
+        print("✓ Loaded feature: " .. featureName)
         return true
     else
-        warn("✗ Failed to load " .. moduleName .. ": " .. tostring(result))
+        warn("✗ Failed to load feature: " .. featureName .. " → " .. tostring(result))
         return false
     end
 end
 
 print("============================================")
-print("   Universal Utility - Loading System")
+print(" Universal Utility - Feature Loading System")
 print("============================================")
 
 local loadedCount = 0
-local totalModules = #modules
+local totalFeatures = #features
 
-for _, module in ipairs(modules) do
-    if loadModule(module.name, module.path) then
+for _, feature in ipairs(features) do
+    if loadFeature(feature.name, feature.path) then
         loadedCount = loadedCount + 1
     else
-        warn("Critical error: " .. module.name .. " failed to load")
+        warn("CRITICAL: Feature '" .. feature.name .. "' failed to load - stopping")
         break
     end
     task.wait(0.05)
 end
 
 print("============================================")
-if loadedCount == totalModules then
-    print("✓ All modules loaded successfully (" .. loadedCount .. "/" .. totalModules .. ")")
-    print("✓ Universal Utility initialized")
+
+if loadedCount == totalFeatures then
+    print("✓ ALL FEATURES LOADED SUCCESSFULLY (" .. loadedCount .. "/" .. totalFeatures .. ")")
+    print("✓ Universal Utility fully initialized")
     
     task.wait(0.2)
     
@@ -63,9 +64,10 @@ if loadedCount == totalModules then
         warn("✗ ScreenGui not found in _G.UniversalUtility.UI")
     end
 else
-    warn("✗ Only " .. loadedCount .. "/" .. totalModules .. " modules loaded")
+    warn("✗ Only " .. loadedCount .. "/" .. totalFeatures .. " features loaded successfully")
     warn("✗ Universal Utility initialization incomplete")
 end
+
 print("============================================")
 
 return _G.UniversalUtility
