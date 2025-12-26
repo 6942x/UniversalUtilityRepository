@@ -68,33 +68,33 @@ function _G.UniversalUtility.Helpers.CreateButton(parent, size, text)
     corner.CornerRadius = UDim.new(0, 8)
 
     local originalSize = size
-    local isHovering = false
     
     _G.UniversalUtility.ButtonStates[button] = {
         OriginalSize = originalSize,
-        IsHovering = false
+        IsHovering = false,
+        BaseColor = Color3.fromRGB(45, 45, 52)
     }
 
     button.MouseEnter:Connect(function()
-        isHovering = true
         _G.UniversalUtility.ButtonStates[button].IsHovering = true
+        local currentColor = button.BackgroundColor3
+        _G.UniversalUtility.ButtonStates[button].BaseColor = currentColor
         TweenService:Create(button, TweenPresets.Fast, {
             Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset + 6, originalSize.Y.Scale, originalSize.Y.Offset + 4)
         }):Play()
     end)
 
     button.MouseLeave:Connect(function()
-        isHovering = false
         _G.UniversalUtility.ButtonStates[button].IsHovering = false
-        local currentColor = button.BackgroundColor3
+        local baseColor = _G.UniversalUtility.ButtonStates[button].BaseColor
         TweenService:Create(button, TweenPresets.Fast, {
             Size = originalSize,
-            BackgroundColor3 = currentColor
+            BackgroundColor3 = baseColor
         }):Play()
     end)
 
     button.MouseButton1Down:Connect(function()
-        if isHovering then
+        if _G.UniversalUtility.ButtonStates[button].IsHovering then
             TweenService:Create(button, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                 Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset - 4, originalSize.Y.Scale, originalSize.Y.Offset - 3)
             }):Play()
@@ -102,7 +102,7 @@ function _G.UniversalUtility.Helpers.CreateButton(parent, size, text)
     end)
 
     button.MouseButton1Up:Connect(function()
-        if isHovering then
+        if _G.UniversalUtility.ButtonStates[button].IsHovering then
             TweenService:Create(button, TweenPresets.Fast, {
                 Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset + 6, originalSize.Y.Scale, originalSize.Y.Offset + 4)
             }):Play()
