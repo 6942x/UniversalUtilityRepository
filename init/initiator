@@ -24,8 +24,6 @@ local function SetDebounce(key, duration)
     return true
 end
 
-_G.UniversalUtility.ResetAllStates()
-
 local AntiAFKElements = Tabs.CreateAntiAFKTab()
 local KeySpamElements = Tabs.CreateKeySpamTab()
 local PerformanceElements = Tabs.CreatePerformanceTab()
@@ -446,28 +444,80 @@ if configLoaded then
         RejoinElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
         AutoRejoin.Setup()
     end
+    
+    if Config.FPSUnlockEnabled and Performance.FPS_SUPPORTED then
+        PerformanceElements.FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        PerformanceElements.FPSUnlockToggle.Text = "FPS Unlock: ON"
+        PerformanceElements.FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        PerformanceElements.FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
+        Performance.SetTargetFPS(Config.TargetFPS)
+    end
+    
+    if Config.JumpEnabled then
+        AntiAFKElements.JumpToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        AntiAFKElements.JumpToggle.Text = "Auto Jump: ON"
+        task.wait(0.1)
+        AntiAFK.StartJumpThread()
+    else
+        AntiAFKElements.JumpToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        AntiAFKElements.JumpToggle.Text = "Auto Jump: OFF"
+    end
+    
+    if Config.ClickEnabled then
+        AntiAFKElements.ClickToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        AntiAFKElements.ClickToggle.Text = "Auto Click: ON"
+        task.wait(0.1)
+        AntiAFK.StartClickThread()
+    else
+        AntiAFKElements.ClickToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        AntiAFKElements.ClickToggle.Text = "Auto Click: OFF"
+    end
+    
+    if Config.AutoSpamEnabled then
+        local keyCode = KeyCodeMap[Config.SpamKey]
+        if keyCode then
+            KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+            KeySpamElements.AutoSpamToggle.Text = "ON"
+            KeySpamElements.Status.Text = "Status: Spamming " .. Config.SpamKey
+            KeySpamElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
+            task.wait(0.1)
+            KeySpam.StartSpamThread()
+        else
+            Config.AutoSpamEnabled = false
+            KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+            KeySpamElements.AutoSpamToggle.Text = "OFF"
+            KeySpamElements.Status.Text = "Status: Inactive"
+            KeySpamElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
+        end
+    else
+        KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        KeySpamElements.AutoSpamToggle.Text = "OFF"
+        KeySpamElements.Status.Text = "Status: Inactive"
+        KeySpamElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+    
+    UpdateAntiAFKStatus()
 else
     UpdateJumpSlider(0.2)
     UpdateClickSlider(0.22)
     UpdateSpamSlider(0.01)
     UpdateFPSSlider(0.13)
     UpdateClickTypeButtons()
+    
+    AntiAFKElements.JumpToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    AntiAFKElements.JumpToggle.Text = "Auto Jump: OFF"
+    AntiAFKElements.ClickToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    AntiAFKElements.ClickToggle.Text = "Auto Click: OFF"
+    KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    KeySpamElements.AutoSpamToggle.Text = "OFF"
+    KeySpamElements.Status.Text = "Status: Inactive"
+    KeySpamElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
+    PerformanceElements.FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    PerformanceElements.FPSUnlockToggle.Text = "FPS Unlock: OFF"
+    PerformanceElements.FPSUnlockStatus.Text = "Default FPS"
+    PerformanceElements.FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    UpdateAntiAFKStatus()
 end
-
-AntiAFKElements.JumpToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-AntiAFKElements.JumpToggle.Text = "Auto Jump: OFF"
-AntiAFKElements.ClickToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-AntiAFKElements.ClickToggle.Text = "Auto Click: OFF"
-KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-KeySpamElements.AutoSpamToggle.Text = "OFF"
-KeySpamElements.Status.Text = "Status: Inactive"
-KeySpamElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
-PerformanceElements.FPSUnlockToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-PerformanceElements.FPSUnlockToggle.Text = "FPS Unlock: OFF"
-PerformanceElements.FPSUnlockStatus.Text = "Default FPS"
-PerformanceElements.FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
-
-UpdateAntiAFKStatus()
 
 Interactions.SwitchTab(Config.CurrentTab)
 
