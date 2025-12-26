@@ -1,1 +1,163 @@
+_G.UniversalUtility.Services = {
+    Players = game:GetService("Players"),
+    RunService = game:GetService("RunService"),
+    UserInputService = game:GetService("UserInputService"),
+    TweenService = game:GetService("TweenService"),
+    CoreGui = game:GetService("CoreGui"),
+    VirtualInputManager = game:GetService("VirtualInputManager"),
+    MarketplaceService = game:GetService("MarketplaceService"),
+    TeleportService = game:GetService("TeleportService")
+}
 
+local Services = _G.UniversalUtility.Services
+
+_G.UniversalUtility.FPS_SUPPORTED = typeof(setfpscap) == "function"
+_G.UniversalUtility.LocalPlayer = Services.Players.LocalPlayer
+
+local oldGui = Services.CoreGui:FindFirstChild("UniversalUtility") or (gethui and gethui():FindFirstChild("UniversalUtility"))
+if oldGui then oldGui:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UniversalUtility"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = Services.CoreGui
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = Services.CoreGui
+end
+
+_G.UniversalUtility.ScreenGui = ScreenGui
+
+local KeyCodeNames, KeyCodeMap = {}, {}
+for i = 65, 90 do
+    local char = string.char(i)
+    KeyCodeNames[Enum.KeyCode[char]] = char
+    KeyCodeMap[char] = Enum.KeyCode[char]
+end
+
+local numNames = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"}
+for i = 0, 9 do
+    local keyName = i == 0 and "Zero" or numNames[i]
+    KeyCodeNames[Enum.KeyCode[keyName]] = tostring(i)
+    KeyCodeMap[tostring(i)] = Enum.KeyCode[keyName]
+end
+
+for i = 1, 12 do
+    KeyCodeNames[Enum.KeyCode["F" .. i]] = "F" .. i
+    KeyCodeMap["F" .. i] = Enum.KeyCode["F" .. i]
+end
+
+local specialKeys = {
+    LeftControl = "Left Ctrl",
+    RightControl = "Right Ctrl",
+    LeftShift = "Left Shift",
+    RightShift = "Right Shift",
+    LeftAlt = "Left Alt",
+    RightAlt = "Right Alt",
+    Tab = "Tab",
+    CapsLock = "Caps Lock",
+    Space = "Space",
+    Return = "Enter",
+    Backspace = "Backspace",
+    Delete = "Delete",
+    Insert = "Insert",
+    Home = "Home",
+    End = "End",
+    PageUp = "Page Up",
+    PageDown = "Page Down"
+}
+
+for k, v in pairs(specialKeys) do
+    KeyCodeNames[Enum.KeyCode[k]] = v
+end
+
+_G.UniversalUtility.KeyCodeNames = KeyCodeNames
+_G.UniversalUtility.KeyCodeMap = KeyCodeMap
+
+_G.UniversalUtility.Config = {
+    Keybind = Enum.KeyCode.G,
+    ClickType = "Current",
+    JumpEnabled = false,
+    ClickEnabled = false,
+    AutoSpamEnabled = false,
+    IsChangingKeybind = false,
+    FPSUnlockEnabled = false,
+    AutoRejoinEnabled = false,
+    TargetFPS = 60,
+    JumpDelay = 10.0,
+    ClickDelay = 3.0,
+    SpamDelay = 0.1,
+    SpamKey = "Q",
+    SavedCode = "",
+    CurrentTab = "Home"
+}
+
+_G.UniversalUtility.ActiveThreads = {}
+_G.UniversalUtility.Debounces = {}
+_G.UniversalUtility.TabButtons = {}
+_G.UniversalUtility.TabContents = {}
+_G.UniversalUtility.ButtonStates = {}
+
+_G.UniversalUtility.TweenPresets = {
+    Fast = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Slow = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+    Back = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+}
+
+function _G.UniversalUtility.SaveConfig()
+    if writefile then
+        local configData = game:GetService("HttpService"):JSONEncode({
+            Keybind = _G.UniversalUtility.Config.Keybind.Name,
+            ClickType = _G.UniversalUtility.Config.ClickType,
+            JumpEnabled = _G.UniversalUtility.Config.JumpEnabled,
+            ClickEnabled = _G.UniversalUtility.Config.ClickEnabled,
+            AutoRejoinEnabled = _G.UniversalUtility.Config.AutoRejoinEnabled,
+            FPSUnlockEnabled = _G.UniversalUtility.Config.FPSUnlockEnabled,
+            AutoSpamEnabled = _G.UniversalUtility.Config.AutoSpamEnabled,
+            TargetFPS = _G.UniversalUtility.Config.TargetFPS,
+            JumpDelay = _G.UniversalUtility.Config.JumpDelay,
+            ClickDelay = _G.UniversalUtility.Config.ClickDelay,
+            SpamDelay = _G.UniversalUtility.Config.SpamDelay,
+            SpamKey = _G.UniversalUtility.Config.SpamKey,
+            SavedCode = _G.UniversalUtility.Config.SavedCode,
+            CurrentTab = _G.UniversalUtility.Config.CurrentTab
+        })
+        writefile("UniversalUtilityConfig.json", configData)
+    end
+end
+
+function _G.UniversalUtility.LoadConfig()
+    if readfile and isfile and isfile("UniversalUtilityConfig.json") then
+        local success, data = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(readfile("UniversalUtilityConfig.json"))
+        end)
+        if success and data then
+            local Config = _G.UniversalUtility.Config
+            Config.Keybind = Enum.KeyCode[data.Keybind] or Enum.KeyCode.G
+            Config.ClickType = data.ClickType or "Current"
+            Config.JumpEnabled = data.JumpEnabled or false
+            Config.ClickEnabled = data.ClickEnabled or false
+            Config.AutoRejoinEnabled = data.AutoRejoinEnabled or false
+            Config.FPSUnlockEnabled = data.FPSUnlockEnabled or false
+            Config.AutoSpamEnabled = data.AutoSpamEnabled or false
+            Config.TargetFPS = data.TargetFPS or 60
+            Config.JumpDelay = data.JumpDelay or 10.0
+            Config.ClickDelay = data.ClickDelay or 3.0
+            Config.SpamDelay = data.SpamDelay or 0.1
+            Config.SpamKey = data.SpamKey or "Q"
+            Config.SavedCode = data.SavedCode or ""
+            Config.CurrentTab = data.CurrentTab or "Home"
+            return true
+        end
+    end
+    return false
+end
+
+print("✓ Core/Config loaded")
