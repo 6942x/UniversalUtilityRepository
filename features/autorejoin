@@ -30,5 +30,4 @@ function _G.UniversalUtility.AutoRejoin.Stop()
     _G.UniversalUtility.AutoRejoin.Teleporting = false
 end
 
-print("AutoRejoin module loaded successfully")
 return _G.UniversalUtility.AutoRejoin
