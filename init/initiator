@@ -161,21 +161,54 @@ end)
 AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
     if not SetDebounce("ClickType", 0.2) then return end
     Config.ClickType = "Current"
-    UpdateClickTypeButtons()
+    local buttons = {
+        Current = AntiAFKElements.ClickTypeCurrent,
+        Center = AntiAFKElements.ClickTypeCenter,
+        Random = AntiAFKElements.ClickTypeRandom
+    }
+    for type, btn in pairs(buttons) do
+        local targetColor = (type == "Current") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
+        if _G.UniversalUtility.ButtonStates[btn] then
+            _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
+        end
+        btn.BackgroundColor3 = targetColor
+    end
     _G.UniversalUtility.SaveConfig()
 end)
 
 AntiAFKElements.ClickTypeCenter.MouseButton1Click:Connect(function()
     if not SetDebounce("ClickType", 0.2) then return end
     Config.ClickType = "Center"
-    UpdateClickTypeButtons()
+    local buttons = {
+        Current = AntiAFKElements.ClickTypeCurrent,
+        Center = AntiAFKElements.ClickTypeCenter,
+        Random = AntiAFKElements.ClickTypeRandom
+    }
+    for type, btn in pairs(buttons) do
+        local targetColor = (type == "Center") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
+        if _G.UniversalUtility.ButtonStates[btn] then
+            _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
+        end
+        btn.BackgroundColor3 = targetColor
+    end
     _G.UniversalUtility.SaveConfig()
 end)
 
 AntiAFKElements.ClickTypeRandom.MouseButton1Click:Connect(function()
     if not SetDebounce("ClickType", 0.2) then return end
     Config.ClickType = "Random"
-    UpdateClickTypeButtons()
+    local buttons = {
+        Current = AntiAFKElements.ClickTypeCurrent,
+        Center = AntiAFKElements.ClickTypeCenter,
+        Random = AntiAFKElements.ClickTypeRandom
+    }
+    for type, btn in pairs(buttons) do
+        local targetColor = (type == "Random") and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
+        if _G.UniversalUtility.ButtonStates[btn] then
+            _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
+        end
+        btn.BackgroundColor3 = targetColor
+    end
     _G.UniversalUtility.SaveConfig()
 end)
 
