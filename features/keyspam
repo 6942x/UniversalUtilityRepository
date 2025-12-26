@@ -1,1 +1,37 @@
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
+local KeyCodeMap = {}
+for i = 65, 90 do local c = string.char(i) KeyCodeMap[c] = Enum.KeyCode[c] end
+for i = 0, 9 do KeyCodeMap[tostring(i)] = Enum.KeyCode[i == 0 and "Zero" or ({"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"})[i]] end
+for i = 1, 12 do KeyCodeMap["F"..i] = Enum.KeyCode["F"..i] end
+
+local ActiveThreads = {}
+
+local function Start(config)
+    if ActiveThreads.Spam then task.cancel(ActiveThreads.Spam) ActiveThreads.Spam = nil end
+
+    local keyText = config.SpamKey:upper()
+    local keyCode = KeyCodeMap[keyText]
+    if not keyCode then return false end
+
+    if keyCode == Enum.KeyCode.G or keyCode == Enum.KeyCode.P then return false end
+
+    ActiveThreads.Spam = task.spawn(function()
+        while config.AutoSpamEnabled do
+            task.wait(config.SpamDelay)
+            if config.AutoSpamEnabled then
+                VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+                task.wait(0.05)
+                VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+            end
+        end
+    end)
+
+    return true
+end
+
+return {
+    Start = Start,
+    Stop = function() if ActiveThreads.Spam then task.cancel(ActiveThreads.Spam) ActiveThreads.Spam = nil end end,
+    GetKeyCode = function(key) return KeyCodeMap[key:upper()] end
+}
