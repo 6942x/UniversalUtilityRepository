@@ -511,6 +511,4 @@ local openTween = TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.Easi
 })
 openTween:Play()
 
-print("Initiator module loaded successfully")
-print("UI should now be visible on screen")
 return _G.UniversalUtility.Initiator
