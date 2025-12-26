@@ -1,1 +1,32 @@
+local TeleportService = game:GetService("TeleportService")
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
+local teleporting = false
+
+local function Setup(config)
+    if not config.AutoRejoinEnabled then return end
+
+    local promptGui = CoreGui:WaitForChild("RobloxPromptGui", 10)
+    if not promptGui then return end
+
+    local promptOverlay = promptGui:WaitForChild("promptOverlay")
+
+    promptOverlay.ChildAdded:Connect(function(child)
+        if child.Name == "ErrorPrompt" and config.AutoRejoinEnabled and not teleporting then
+            teleporting = true
+            task.spawn(function()
+                while config.AutoRejoinEnabled and teleporting do
+                    TeleportService:Teleport(game.PlaceId, LocalPlayer)
+                    task.wait(2)
+                end
+            end)
+        end
+    end)
+end
+
+return {
+    Setup = Setup,
+    ResetFlag = function() teleporting = false end
+}
