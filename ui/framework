@@ -1,1 +1,212 @@
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 
+local Framework = {}
+
+function Framework.InitializeScreenGui()
+    local oldGui = CoreGui:FindFirstChild("UniversalUtility") or (gethui and gethui():FindFirstChild("UniversalUtility"))
+    if oldGui then oldGui:Destroy() end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "UniversalUtility"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    if syn and syn.protect_gui then
+        syn.protect_gui(ScreenGui)
+        ScreenGui.Parent = CoreGui
+    elseif gethui then
+        ScreenGui.Parent = gethui()
+    else
+        ScreenGui.Parent = CoreGui
+    end
+
+    return ScreenGui
+end
+
+function Framework.CreateMainFrame(parent)
+    local MainFrame = Instance.new("Frame", parent)
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(0, 0, 0, 0)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    MainFrame.ClipsDescendants = true
+    MainFrame.Visible = false
+
+    local UICorner = Instance.new("UICorner", MainFrame)
+    UICorner.CornerRadius = UDim.new(0, 16)
+
+    return MainFrame
+end
+
+function Framework.CreateTopBar(parent)
+    local TopBar = Instance.new("Frame", parent)
+    TopBar.Name = "TopBar"
+    TopBar.Size = UDim2.new(1, 0, 0, 40)
+    TopBar.Position = UDim2.new(0, 0, 0, 5)
+    TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+    TopBar.BackgroundTransparency = 0
+    TopBar.BorderSizePixel = 0
+
+    local TopBarCorner = Instance.new("UICorner", TopBar)
+    TopBarCorner.CornerRadius = UDim.new(0, 16)
+
+    local Title = Instance.new("TextLabel", TopBar)
+    Title.Size = UDim2.new(1, -80, 1, 0)
+    Title.Position = UDim2.new(0, 15, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "⚡ Universal Utility"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 24
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local CloseButton = Instance.new("ImageButton", TopBar)
+    CloseButton.Size = UDim2.new(0, 30, 0, 30)
+    CloseButton.Position = UDim2.new(1, -40, 0.48, 0)
+    CloseButton.AnchorPoint = Vector2.new(0, 0.5)
+    CloseButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    CloseButton.BorderSizePixel = 0
+    CloseButton.Image = "rbxassetid://3926305904"
+    CloseButton.ImageRectOffset = Vector2.new(284, 4)
+    CloseButton.ImageRectSize = Vector2.new(24, 24)
+    CloseButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
+
+    local CloseButtonCorner = Instance.new("UICorner", CloseButton)
+    CloseButtonCorner.CornerRadius = UDim.new(0, 8)
+
+    return TopBar, CloseButton
+end
+
+function Framework.CreateSideNav(parent)
+    local SideNav = Instance.new("Frame", parent)
+    SideNav.Name = "SideNav"
+    SideNav.Size = UDim2.new(0, 180, 1, -57)
+    SideNav.Position = UDim2.new(0, 2.5, 0, 50)
+    SideNav.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    SideNav.BorderSizePixel = 0
+
+    local SideNavCorner = Instance.new("UICorner", SideNav)
+    SideNavCorner.CornerRadius = UDim.new(0, 12)
+
+    return SideNav
+end
+
+function Framework.CreateContentFrame(parent)
+    local ContentFrame = Instance.new("Frame", parent)
+    ContentFrame.Name = "ContentFrame"
+    ContentFrame.Size = UDim2.new(1, -180, 1, -40)
+    ContentFrame.Position = UDim2.new(0, 180, 0, 45)
+    ContentFrame.BackgroundTransparency = 1
+    ContentFrame.BorderSizePixel = 0
+    ContentFrame.ClipsDescendants = true
+
+    return ContentFrame
+end
+
+function Framework.CreateReopenButton(parent)
+    local ReopenButton = Instance.new("ImageButton", parent)
+    ReopenButton.Name = "ReopenButton"
+    ReopenButton.Size = UDim2.new(0, 0, 0, 0)
+    ReopenButton.Position = UDim2.new(0.5, 0, 0, 30)
+    ReopenButton.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    ReopenButton.BorderSizePixel = 0
+    ReopenButton.Visible = false
+    ReopenButton.ZIndex = 10
+
+    local ReopenCorner = Instance.new("UICorner", ReopenButton)
+    ReopenCorner.CornerRadius = UDim.new(1, 0)
+
+    local ReopenIcon = Instance.new("TextLabel", ReopenButton)
+    ReopenIcon.Size = UDim2.new(1, 0, 1, 0)
+    ReopenIcon.BackgroundTransparency = 1
+    ReopenIcon.Text = "⚡"
+    ReopenIcon.Font = Enum.Font.GothamBold
+    ReopenIcon.TextSize = 24
+    ReopenIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+    return ReopenButton
+end
+
+function Framework.CreateButton(parent, size, text)
+    local button = Instance.new("TextButton", parent)
+    button.Size = size
+    button.AnchorPoint = Vector2.new(0.5, 0)
+    button.Position = UDim2.new(0.5, 0, 0, 0)
+    button.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    button.Text = text
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 13
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.BorderSizePixel = 0
+
+    local corner = Instance.new("UICorner", button)
+    corner.CornerRadius = UDim.new(0, 8)
+
+    return button
+end
+
+function Framework.CreateSlider(parent, size, minValue, maxValue, currentValue, labelText)
+    local sliderFrame = Instance.new("Frame", parent)
+    sliderFrame.Size = size
+    sliderFrame.BackgroundTransparency = 1
+
+    local valueLabel = Instance.new("TextLabel", sliderFrame)
+    valueLabel.Size = UDim2.new(1, 0, 0, 18)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.Text = labelText
+    valueLabel.Font = Enum.Font.Gotham
+    valueLabel.TextSize = 12
+    valueLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local slider = Instance.new("Frame", sliderFrame)
+    slider.Size = UDim2.new(1, -60, 0, 6)
+    slider.Position = UDim2.new(0, 0, 0, 22)
+    slider.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    slider.BorderSizePixel = 0
+
+    local sliderCorner = Instance.new("UICorner", slider)
+    sliderCorner.CornerRadius = UDim.new(0, 3)
+
+    local fill = Instance.new("Frame", slider)
+    fill.Size = UDim2.new(0.5, 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    fill.BorderSizePixel = 0
+
+    local fillCorner = Instance.new("UICorner", fill)
+    fillCorner.CornerRadius = UDim.new(0, 3)
+
+    local button = Instance.new("TextButton", slider)
+    button.Size = UDim2.new(1, 0, 1, 0)
+    button.BackgroundTransparency = 1
+    button.Text = ""
+
+    local valueBox = Instance.new("TextBox", sliderFrame)
+    valueBox.Size = UDim2.new(0, 50, 0, 24)
+    valueBox.Position = UDim2.new(1, -50, 0, 16)
+    valueBox.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    valueBox.Text = tostring(currentValue)
+    valueBox.Font = Enum.Font.Gotham
+    valueBox.TextScaled = true
+    valueBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    valueBox.ClearTextOnFocus = false
+
+    local valueCorner = Instance.new("UICorner", valueBox)
+    valueCorner.CornerRadius = UDim.new(0, 5)
+
+    return sliderFrame, slider, fill, button, valueBox, valueLabel
+end
+
+function Framework.UpdateSlider(fill, valueBox, value, min, max, format)
+    local percentage = (value - min) / (max - min)
+    TweenService:Create(fill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(percentage, 0, 1, 0)
+    }):Play()
+    valueBox.Text = string.format(format, value)
+end
+
+return Framework
