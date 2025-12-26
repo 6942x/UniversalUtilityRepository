@@ -306,5 +306,4 @@ function _G.UniversalUtility.Helpers.CleanupAllThreads()
     end
 end
 
-print("Helpers module loaded successfully")
 return _G.UniversalUtility.Helpers
