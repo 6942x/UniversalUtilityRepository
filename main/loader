@@ -60,7 +60,6 @@ if loadedCount == totalModules then
         print("✓ ScreenGui confirmed: " .. _G.UniversalUtility.UI.ScreenGui.Name)
         print("✓ ScreenGui Parent: " .. tostring(_G.UniversalUtility.UI.ScreenGui.Parent))
         print("✓ MainFrame Visible: " .. tostring(_G.UniversalUtility.UI.MainFrame.Visible))
-        print("✓ MainFrame Size: " .. tostring(_G.UniversalUtility.UI.MainFrame.Size))
     else
         warn("✗ ScreenGui not found in _G.UniversalUtility.UI")
     end
