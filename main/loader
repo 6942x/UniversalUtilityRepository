@@ -3,17 +3,17 @@ _G.UniversalUtility = _G.UniversalUtility or {}
 local REPO_URL = "https://raw.githubusercontent.com/6942x/UniversalUtilityRepository/main/"
 
 local modules = {
-    {name = "config", path = "core/config.lua"},
-    {name = "helpers", path = "utils/helpers.lua"},
-    {name = "framework", path = "ui/framework.lua"},
-    {name = "antiafk", path = "features/antiafk.lua"},
-    {name = "autorejoin", path = "features/autorejoin.lua"},
-    {name = "keyspam", path = "features/keyspam.lua"},
-    {name = "performance", path = "features/performance.lua"},
-    {name = "scriptloader", path = "features/scriptloader.lua"},
-    {name = "interactions", path = "ui/interactions.lua"},
-    {name = "tabs", path = "ui/tabs.lua"},
-    {name = "initiator", path = "init/initiator.lua"}
+    {name = "config", path = "core/config"},
+    {name = "helpers", path = "utils/helpers"},
+    {name = "framework", path = "ui/framework"},
+    {name = "antiafk", path = "features/antiafk"},
+    {name = "autorejoin", path = "features/autorejoin"},
+    {name = "keyspam", path = "features/keyspam"},
+    {name = "performance", path = "features/performance"},
+    {name = "scriptloader", path = "features/scriptloader"},
+    {name = "interactions", path = "ui/interactions"},
+    {name = "tabs", path = "ui/tabs"},
+    {name = "initiator", path = "init/initiator"}
 }
 
 local function loadModule(moduleName, modulePath)
@@ -52,7 +52,7 @@ end
 print("============================================")
 if loadedCount == totalModules then
     print("✓ All modules loaded successfully (" .. loadedCount .. "/" .. totalModules .. ")")
-    print("✓ Universal Utility initialized")
+    print("✓ [Universal Utility] initialized")
     
     task.wait(0.2)
     
