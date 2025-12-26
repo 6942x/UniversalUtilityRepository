@@ -496,17 +496,21 @@ end
 
 Interactions.SwitchTab(Config.CurrentTab)
 
+UI.ScreenGui.Destroying:Connect(Helpers.CleanupAllThreads)
+
+task.wait(0.1)
+
 UI.MainFrame.Visible = true
 UI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
 UI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 UI.ReopenButton.Visible = false
 
-TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+local openTween = TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
     Size = UDim2.new(0, 650, 0, 500),
     Position = UDim2.new(0.5, -325, 0.5, -250)
-}):Play()
-
-UI.ScreenGui.Destroying:Connect(Helpers.CleanupAllThreads)
+})
+openTween:Play()
 
 print("Initiator module loaded successfully")
+print("UI should now be visible on screen")
 return _G.UniversalUtility.Initiator
