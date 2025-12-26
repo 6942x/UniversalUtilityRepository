@@ -24,7 +24,6 @@ local function loadModule(moduleName, modulePath)
     end)
     
     if success then
-        print("✓ " .. moduleName .. " loaded successfully")
         return true
     else
         warn("✗ Failed to load " .. moduleName .. ": " .. tostring(result))
