@@ -27,5 +27,4 @@ function _G.UniversalUtility.ScriptLoader.SaveCode(code)
     _G.UniversalUtility.SaveConfig()
 end
 
-print("ScriptLoader module loaded successfully")
 return _G.UniversalUtility.ScriptLoader
