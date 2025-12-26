@@ -53,6 +53,17 @@ print("============================================")
 if loadedCount == totalModules then
     print("✓ All modules loaded successfully (" .. loadedCount .. "/" .. totalModules .. ")")
     print("✓ Universal Utility initialized")
+    
+    task.wait(0.2)
+    
+    if _G.UniversalUtility.UI and _G.UniversalUtility.UI.ScreenGui then
+        print("✓ ScreenGui confirmed: " .. _G.UniversalUtility.UI.ScreenGui.Name)
+        print("✓ ScreenGui Parent: " .. tostring(_G.UniversalUtility.UI.ScreenGui.Parent))
+        print("✓ MainFrame Visible: " .. tostring(_G.UniversalUtility.UI.MainFrame.Visible))
+        print("✓ MainFrame Size: " .. tostring(_G.UniversalUtility.UI.MainFrame.Size))
+    else
+        warn("✗ ScreenGui not found in _G.UniversalUtility.UI")
+    end
 else
     warn("✗ Only " .. loadedCount .. "/" .. totalModules .. " modules loaded")
     warn("✗ Universal Utility initialization incomplete")
