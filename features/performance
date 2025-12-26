@@ -129,5 +129,4 @@ function _G.UniversalUtility.Performance.SetTargetFPS(fps)
     _G.UniversalUtility.SaveConfig()
 end
 
-print("Performance module loaded successfully")
 return _G.UniversalUtility.Performance
