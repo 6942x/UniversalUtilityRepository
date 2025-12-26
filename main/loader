@@ -1,23 +1,26 @@
 local REPO_URL = "https://raw.githubusercontent.com/6942x/UniversalUtilityRepository/Branch/"
 
+_G.UniversalUtility = nil
+task.wait(0.2)
+
 local modules = {
-    "utils/helpers",
-    "core/config",
-    "features/antiafk",
-    "features/autorejoin",
-    "features/keyspam",
-    "features/performance",
-    "features/scriptloader",
-    "ui/framework",
-    "ui/interactions",
-    "ui/tabs/home",
-    "ui/tabs/antiafk",
-    "ui/tabs/keyspam",
-    "ui/tabs/performance",
-    "ui/tabs/autorejoin",
-    "ui/tabs/scriptloader",
-    "ui/tabs/settings",
-    "init/initiator"
+    "utils/helpers.lua",
+    "core/config.lua",
+    "features/antiafk.lua",
+    "features/autorejoin.lua",
+    "features/keyspam.lua",
+    "features/performance.lua",
+    "features/scriptloader.lua",
+    "ui/framework.lua",
+    "ui/interactions.lua",
+    "ui/tabs/home.lua",
+    "ui/tabs/antiafk.lua",
+    "ui/tabs/keyspam.lua",
+    "ui/tabs/performance.lua",
+    "ui/tabs/autorejoin.lua",
+    "ui/tabs/scriptloader.lua",
+    "ui/tabs/settings.lua",
+    "init/initiator.lua"
 }
 
 print("[Universal Utility Loader] Starting module loading sequence...")
@@ -52,8 +55,10 @@ local totalModules = #modules
 for _, modulePath in ipairs(modules) do
     if LoadModule(modulePath) then
         loadedCount = loadedCount + 1
+    else
+        warn("[Universal Utility Loader] Failed to load critical module: " .. modulePath)
     end
-    task.wait(0.05)
+    task.wait(0.1)
 end
 
 print(string.format("[Universal Utility Loader] Loading complete: %d/%d modules loaded successfully", loadedCount, totalModules))
