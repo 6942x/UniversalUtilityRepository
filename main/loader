@@ -32,7 +32,7 @@ local function loadFeature(featureName, featurePath)
 end
 
 print("============================================")
-print(" Universal Utility - Feature Loading System")
+print(" Universal Utility - Loading System")
 print("============================================")
 
 local loadedCount = 0
