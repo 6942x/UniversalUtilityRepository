@@ -68,5 +68,4 @@ function _G.UniversalUtility.AntiAFK.StartClickThread()
     end)
 end
 
-print("AntiAFK module loaded successfully")
 return _G.UniversalUtility.AntiAFK
