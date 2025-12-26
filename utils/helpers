@@ -1,1 +1,23 @@
+local TweenService = game:GetService("TweenService")
 
+local TweenPresets = {
+    Fast   = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Slow   = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+    Back   = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+}
+
+local function SetDebounce(key, duration)
+    duration = duration or 0.3
+    if _G.__UniDebounce == nil then _G.__UniDebounce = {} end
+    if _G.__UniDebounce[key] then return false end
+    _G.__UniDebounce[key] = true
+    task.delay(duration, function() _G.__UniDebounce[key] = nil end)
+    return true
+end
+
+return {
+    TweenPresets = TweenPresets,
+    SetDebounce = SetDebounce
+}
