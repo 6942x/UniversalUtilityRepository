@@ -1,6 +1,18 @@
 local HttpService = game:GetService("HttpService")
 
+if _G.UniversalUtility and _G.UniversalUtility.ActiveThreads then
+    for threadType, thread in pairs(_G.UniversalUtility.ActiveThreads) do
+        if thread and typeof(thread) == "thread" then
+            pcall(function()
+                task.cancel(thread)
+            end)
+        end
+    end
+    _G.UniversalUtility.ActiveThreads = {}
+end
+
 _G.UniversalUtility = _G.UniversalUtility or {}
+_G.UniversalUtility.ActiveThreads = {}
 _G.UniversalUtility.Config = {
     Keybind = Enum.KeyCode.G,
     ClickType = "Current",
@@ -20,26 +32,6 @@ _G.UniversalUtility.Config = {
 }
 
 local Config = _G.UniversalUtility.Config
-
-function _G.UniversalUtility.ResetAllStates()
-    Config.JumpEnabled = false
-    Config.ClickEnabled = false
-    Config.AutoSpamEnabled = false
-    Config.FPSUnlockEnabled = false
-    
-    if _G.UniversalUtility.AntiAFK then
-        _G.UniversalUtility.AntiAFK.StopJumpThread()
-        _G.UniversalUtility.AntiAFK.StopClickThread()
-    end
-    
-    if _G.UniversalUtility.KeySpam then
-        _G.UniversalUtility.KeySpam.StopSpamThread()
-    end
-    
-    if typeof(setfpscap) == "function" then
-        setfpscap(60)
-    end
-end
 
 function _G.UniversalUtility.SaveConfig()
     if writefile then
@@ -71,11 +63,11 @@ function _G.UniversalUtility.LoadConfig()
         if success and data then
             Config.Keybind = Enum.KeyCode[data.Keybind] or Enum.KeyCode.G
             Config.ClickType = data.ClickType or "Current"
-            Config.JumpEnabled = false
-            Config.ClickEnabled = false
-            Config.AutoSpamEnabled = false
-            Config.FPSUnlockEnabled = false
+            Config.JumpEnabled = data.JumpEnabled or false
+            Config.ClickEnabled = data.ClickEnabled or false
             Config.AutoRejoinEnabled = data.AutoRejoinEnabled or false
+            Config.FPSUnlockEnabled = data.FPSUnlockEnabled or false
+            Config.AutoSpamEnabled = data.AutoSpamEnabled or false
             Config.TargetFPS = data.TargetFPS or 60
             Config.JumpDelay = data.JumpDelay or 10.0
             Config.ClickDelay = data.ClickDelay or 3.0
