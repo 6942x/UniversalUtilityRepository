@@ -23,7 +23,7 @@ local function loadFeature(featureName, featurePath)
     end)
     
     if success then
-        print("✓ Loaded feature: " .. featureName)
+        print("✓ Sucessfully loaded: " .. featureName)
         return true
     else
         warn("✗ Failed to load feature: " .. featureName .. " → " .. tostring(result))
@@ -51,7 +51,7 @@ end
 print("============================================")
 
 if loadedCount == totalFeatures then
-    print("✓ ALL FEATURES LOADED SUCCESSFULLY (" .. loadedCount .. "/" .. totalFeatures .. ")")
+    print("✓ EVERYTHING LOADED SUCCESSFULLY (" .. loadedCount .. "/" .. totalFeatures .. ")")
     print("✓ Universal Utility fully initialized")
     
     task.wait(0.2)
