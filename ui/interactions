@@ -1,1 +1,79 @@
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
+local function SetupInteractions(mainFrame, reopenButton, config)
+    local debounceTable = {}
+
+    local function SetDebounce(key, duration)
+        duration = duration or 0.3
+        if debounceTable[key] then return false end
+        debounceTable[key] = true
+        task.delay(duration, function() debounceTable[key] = nil end)
+        return true
+    end
+
+    local function ToggleUI()
+        if not SetDebounce("UI", 0.8) then return end
+
+        if mainFrame.Visible then
+            TweenService:Create(mainFrame, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                Size = UDim2.new(0, 0, 0, 0),
+                Position = UDim2.new(0.5, 0, 0.5, 0)
+            }):Play()
+            task.delay(0.45, function()
+                mainFrame.Visible = false
+                reopenButton.Visible = true
+                reopenButton.Size = UDim2.new(0, 0, 0, 0)
+                TweenService:Create(reopenButton, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(0, 60, 0, 60),
+                    Position = UDim2.new(0.5, -30, 0, 30)
+                }):Play()
+            end)
+        else
+            TweenService:Create(reopenButton, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                Size = UDim2.new(0, 0, 0, 0)
+            }):Play()
+            task.delay(0.35, function()
+                reopenButton.Visible = false
+                mainFrame.Visible = true
+                mainFrame.Size = UDim2.new(0, 0, 0, 0)
+                TweenService:Create(mainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(0, 650, 0, 500),
+                    Position = UDim2.new(0.5, -325, 0.5, -250)
+                }):Play()
+            end)
+        end
+    end
+
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == config.Keybind and not config.IsChangingKeybind then
+            ToggleUI()
+        end
+    end)
+
+    reopenButton.MouseEnter:Connect(function()
+        TweenService:Create(reopenButton, TweenInfo.new(0.25), {
+            Size = UDim2.new(0, 70, 0, 70),
+            Position = UDim2.new(0.5, -35, 0, 25)
+        }):Play()
+    end)
+
+    reopenButton.MouseLeave:Connect(function()
+        TweenService:Create(reopenButton, TweenInfo.new(0.25), {
+            Size = UDim2.new(0, 60, 0, 60),
+            Position = UDim2.new(0.5, -30, 0, 30)
+        }):Play()
+    end)
+
+    reopenButton.MouseButton1Click:Connect(ToggleUI)
+
+    return {
+        ToggleUI = ToggleUI,
+        SetDebounce = SetDebounce
+    }
+end
+
+return {
+    SetupInteractions = SetupInteractions
+}
