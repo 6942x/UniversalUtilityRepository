@@ -1,1 +1,131 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
+local LocalPlayer = Players.LocalPlayer
+
+local TweenPresets = {
+    Fast   = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Slow   = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+    Back   = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+}
+
+local function CreateScreenGui()
+    local oldGui = CoreGui:FindFirstChild("UniversalUtility") 
+        or (gethui and gethui():FindFirstChild("UniversalUtility"))
+    
+    if oldGui then oldGui:Destroy() end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "UniversalUtility"
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    if syn and syn.protect_gui then
+        syn.protect_gui(gui)
+        gui.Parent = CoreGui
+    elseif gethui then
+        gui.Parent = gethui()
+    else
+        gui.Parent = CoreGui
+    end
+
+    return gui
+end
+
+local function CreateMainFrame(parent)
+    local frame = Instance.new("Frame")
+    frame.Name = "MainFrame"
+    frame.Size = UDim2.new(0, 0, 0, 0)
+    frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+    frame.ClipsDescendants = true
+    frame.Visible = false
+    frame.Parent = parent
+
+    local corner = Instance.new("UICorner", frame)
+    corner.CornerRadius = UDim.new(0, 16)
+
+    return frame
+end
+
+local function CreateTopBar(parent)
+    local top = Instance.new("Frame", parent)
+    top.Name = "TopBar"
+    top.Size = UDim2.new(1, 0, 0, 40)
+    top.Position = UDim2.new(0, 0, 0, 5)
+    top.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+    top.BorderSizePixel = 0
+
+    local corner = Instance.new("UICorner", top)
+    corner.CornerRadius = UDim.new(0, 16)
+
+    local title = Instance.new("TextLabel", top)
+    title.Size = UDim2.new(1, -80, 1, 0)
+    title.Position = UDim2.new(0, 15, 0, 0)
+    title.BackgroundTransparency = 1
+    title.Text = "⚡ Universal Utility"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 24
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local close = Instance.new("ImageButton", top)
+    close.Size = UDim2.new(0, 30, 0, 30)
+    close.Position = UDim2.new(1, -40, 0.48, 0)
+    close.AnchorPoint = Vector2.new(0, 0.5)
+    close.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    close.BorderSizePixel = 0
+    close.Image = "rbxassetid://3926305904"
+    close.ImageRectOffset = Vector2.new(284, 4)
+    close.ImageRectSize = Vector2.new(24, 24)
+    close.ImageColor3 = Color3.fromRGB(255, 255, 255)
+
+    local closeCorner = Instance.new("UICorner", close)
+    closeCorner.CornerRadius = UDim.new(0, 8)
+
+    return top, title, close
+end
+
+local function CreateButton(parent, size, text, position)
+    local btn = Instance.new("TextButton")
+    btn.Size = size
+    btn.Position = position or UDim2.new(0.5, 0, 0, 0)
+    btn.AnchorPoint = Vector2.new(0.5, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BorderSizePixel = 0
+    btn.Parent = parent
+
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 8)
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenPresets.Fast, {
+            Size = UDim2.new(size.X.Scale, size.X.Offset + 6, size.Y.Scale, size.Y.Offset + 4)
+        }):Play()
+    end)
+
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenPresets.Fast, {Size = size}):Play()
+    end)
+
+    return btn
+end
+
+return {
+    CreateScreenGui = CreateScreenGui,
+    CreateMainFrame = CreateMainFrame,
+    CreateTopBar = CreateTopBar,
+    CreateButton = CreateButton,
+    TweenPresets = TweenPresets
+}
