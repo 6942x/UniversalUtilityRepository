@@ -15,9 +15,7 @@ local modules = {
     "init"
 }
 
-print("╔════════════════════════════════════╗")
-print("║   Universal Utility Loading...     ║")
-print("╚════════════════════════════════════╝")
+print("Universal Utility Loading...")
 
 _G.UniversalUtility = _G.UniversalUtility or {}
 
@@ -37,7 +35,5 @@ for i, module in ipairs(modules) do
     task.wait(0.05)
 end
 
-print("╔════════════════════════════════════╗")
-print("║  Universal Utility Loaded!         ║")
-print("╚════════════════════════════════════╝")
+print("Universal Utility Loaded!")
 print("Press G to toggle the UI")
