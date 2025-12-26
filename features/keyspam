@@ -39,5 +39,4 @@ function _G.UniversalUtility.KeySpam.StartSpamThread()
     end)
 end
 
-print("KeySpam module loaded successfully")
 return _G.UniversalUtility.KeySpam
