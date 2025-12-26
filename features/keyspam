@@ -1,1 +1,30 @@
+local Config = _G.UniversalUtility.Config
+local ActiveThreads = _G.UniversalUtility.ActiveThreads
+local VirtualInputManager = _G.UniversalUtility.Services.VirtualInputManager
+local KeyCodeMap = _G.UniversalUtility.KeyCodeMap
+local UI = _G.UniversalUtility.UI
 
+function _G.UniversalUtility.StopSpamThread()
+    _G.UniversalUtility.StopThread("Spam")
+end
+
+function _G.UniversalUtility.StartSpamThread()
+    _G.UniversalUtility.StopSpamThread()
+    local keyText = UI.SpamInput.Text:upper()
+    local keyCode = KeyCodeMap[keyText]
+    if not keyCode then return end
+    
+    ActiveThreads.Spam = task.spawn(function()
+        while Config.AutoSpamEnabled do
+            task.wait(Config.SpamDelay)
+            if Config.AutoSpamEnabled then
+                VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+                task.wait(0.05)
+                VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+            end
+        end
+        ActiveThreads.Spam = nil
+    end)
+end
+
+print("✓ Features/KeySpam loaded")
