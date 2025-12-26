@@ -1,1 +1,32 @@
+local ScriptLoader = {}
 
+function ScriptLoader.ExecuteScript(scriptText)
+    if scriptText == "" or scriptText == nil then
+        return false, "Empty script"
+    end
+    
+    local success, errorMessage = pcall(function()
+        local func, err = loadstring(scriptText)
+        if not func then
+            error(err)
+        end
+        func()
+    end)
+    
+    return success, errorMessage
+end
+
+function ScriptLoader.ValidateScript(scriptText)
+    if scriptText == "" or scriptText == nil then
+        return false, "Script is empty"
+    end
+    
+    local func, err = loadstring(scriptText)
+    if not func then
+        return false, err
+    end
+    
+    return true, "Script is valid"
+end
+
+return ScriptLoader
