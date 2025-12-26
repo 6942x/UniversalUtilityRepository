@@ -1,1 +1,103 @@
+local Config = _G.UniversalUtility.Config
+local TweenService = _G.UniversalUtility.Services.TweenService
+local TweenPresets = _G.UniversalUtility.TweenPresets
+local UI = _G.UniversalUtility.UI
 
+function _G.UniversalUtility.UpdateLineNumbers()
+    local text = UI.LoadStringBox.Text
+    local lineCount = 1
+    for _ in text:gmatch("\n") do
+        lineCount = lineCount + 1
+    end
+    
+    local lineNumberText = ""
+    for i = 1, lineCount do
+        lineNumberText = lineNumberText .. i .. "\n"
+    end
+    UI.LineNumbers.Text = lineNumberText
+    
+    local textBounds = game:GetService("TextService"):GetTextSize(
+        UI.LoadStringBox.Text,
+        UI.LoadStringBox.TextSize,
+        UI.LoadStringBox.Font,
+        Vector2.new(UI.LoadStringBox.AbsoluteSize.X - 10, math.huge)
+    )
+    local newHeight = math.max(200, textBounds.Y + 20)
+    UI.LoadStringBox.Size = UDim2.new(1, -10, 0, newHeight)
+    UI.LoadStringScrollFrame.CanvasSize = UDim2.new(0, 0, 0, newHeight)
+    UI.LineNumbersScrollFrame.CanvasSize = UDim2.new(0, 0, 0, newHeight)
+    UI.LineNumbers.Size = UDim2.new(1, -5, 0, newHeight)
+end
+
+function _G.UniversalUtility.ExecuteLoadString()
+    if not _G.UniversalUtility.SetDebounce("Execute", 0.5) then return end
+    local loadstringText = UI.LoadStringBox.Text
+    if loadstringText == "" or loadstringText == nil then
+        UI.LoadStringStatus.Text = "Status: Empty script"
+        UI.LoadStringStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
+        return
+    end
+    
+    UI.LoadStringStatus.Text = "Status: Executing..."
+    UI.LoadStringStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
+    TweenService:Create(UI.ExecuteButton, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(255, 200, 100)}):Play()
+    
+    local success, errorMessage = pcall(function()
+        local func, err = loadstring(loadstringText)
+        if not func then
+            error(err)
+        end
+        func()
+    end)
+    
+    if success then
+        UI.LoadStringStatus.Text = "Status: Executed successfully!"
+        UI.LoadStringStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+        TweenService:Create(UI.ExecuteButton, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(50, 220, 100)}):Play()
+    else
+        UI.LoadStringStatus.Text = "Status: Error - " .. tostring(errorMessage):sub(1, 50) .. "..."
+        UI.LoadStringStatus.TextColor3 = Color3.fromRGB(220, 50, 50)
+        TweenService:Create(UI.ExecuteButton, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+        warn("Loadstring Error: " .. tostring(errorMessage))
+    end
+    
+    task.wait(2)
+    if UI.LoadStringStatus.Text:match("Error") or UI.LoadStringStatus.Text:match("successfully") then
+        UI.LoadStringStatus.Text = "Status: Ready"
+        UI.LoadStringStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+        TweenService:Create(UI.ExecuteButton, TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(45, 45, 52)}):Play()
+    end
+end
+
+local SaveCodeTimer = nil
+local SaveCodeDelay = 1.0
+
+local function SaveCodeAutomatically()
+    if SaveCodeTimer then
+        task.cancel(SaveCodeTimer)
+    end
+    SaveCodeTimer = task.delay(SaveCodeDelay, function()
+        Config.SavedCode = UI.LoadStringBox.Text
+        _G.UniversalUtility.SaveConfig()
+        UI.LoadStringStatus.Text = "Status: Code auto-saved"
+        UI.LoadStringStatus.TextColor3 = Color3.fromRGB(100, 200, 255)
+        task.wait(2)
+        if UI.LoadStringStatus.Text == "Status: Code auto-saved" then
+            UI.LoadStringStatus.Text = "Status: Ready"
+            UI.LoadStringStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+        end
+    end)
+end
+
+UI.LoadStringScrollFrame:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+    UI.LineNumbersScrollFrame.CanvasPosition = Vector2.new(0, UI.LoadStringScrollFrame.CanvasPosition.Y)
+end)
+
+UI.LoadStringBox:GetPropertyChangedSignal("Text"):Connect(function()
+    _G.UniversalUtility.UpdateLineNumbers()
+    SaveCodeAutomatically()
+end)
+
+_G.UniversalUtility.UpdateLineNumbers()
+
+print("✓ Features/ScriptLoader loaded")
