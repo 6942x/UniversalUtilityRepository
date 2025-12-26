@@ -2,6 +2,9 @@ local Config = _G.UniversalUtility.Config
 local UI = _G.UniversalUtility.UI
 local Interactions = _G.UniversalUtility.Interactions
 local KeyCodeNames = _G.UniversalUtility.KeyCodeNames
+
+task.wait(0.1)
+
 local SettingsContent = UI.TabContents["Settings"]
 
 local SettingsContainer = Instance.new("Frame", SettingsContent)
