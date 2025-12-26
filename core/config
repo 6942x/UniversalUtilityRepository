@@ -69,5 +69,4 @@ function _G.UniversalUtility.LoadConfig()
     return false
 end
 
-print("Config module loaded successfully")
 return _G.UniversalUtility.Config
