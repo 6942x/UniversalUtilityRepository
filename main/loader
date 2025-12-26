@@ -52,7 +52,7 @@ end
 print("============================================")
 if loadedCount == totalModules then
     print("✓ All modules loaded successfully (" .. loadedCount .. "/" .. totalModules .. ")")
-    print("✓ [Universal Utility] initialized")
+    print("✓ Universal Utility initialized")
     
     task.wait(0.2)
     
