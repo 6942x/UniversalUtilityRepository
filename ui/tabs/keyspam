@@ -136,7 +136,8 @@ _G.UniversalUtility.KeySpamTab = {
     AutoSpamToggle = AutoSpamToggle,
     AutoSpamStatus = AutoSpamStatus,
     UpdateSlider = UpdateSlider,
-    UpdateSpamSlider = UpdateSpamSlider
+    UpdateSpamSlider = UpdateSpamSlider,
+    SpamInput = SpamInput
 }
 
 print("[Universal Utility] KeySpam tab loaded")
