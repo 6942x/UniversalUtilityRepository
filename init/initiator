@@ -56,10 +56,14 @@ local function UpdateClickTypeButtons()
     for type, btn in pairs(buttons) do
         local isSelected = (Config.ClickType == type)
         local targetColor = isSelected and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
+        
         if _G.UniversalUtility.ButtonStates[btn] then
             _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
+            _G.UniversalUtility.ButtonStates[btn].IsHovering = false
         end
+        
         btn.BackgroundColor3 = targetColor
+        btn.Size = UDim2.new(0, 85, 0, 30)
     end
 end
 
