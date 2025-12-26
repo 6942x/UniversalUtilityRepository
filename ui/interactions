@@ -126,5 +126,4 @@ function _G.UniversalUtility.Interactions.SetupReopenButton()
     end)
 end
 
-print("Interactions module loaded successfully")
 return _G.UniversalUtility.Interactions
