@@ -1,1 +1,84 @@
+local TweenService = game:GetService("TweenService")
 
+local Helpers = {}
+
+local Debounces = {}
+
+function Helpers.SetDebounce(key, duration)
+    if Debounces[key] then return false end
+    Debounces[key] = true
+    task.delay(duration or 0.3, function() Debounces[key] = false end)
+    return true
+end
+
+Helpers.TweenPresets = {
+    Fast = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Slow = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+    Back = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+}
+
+Helpers.KeyCodeNames = {}
+Helpers.KeyCodeMap = {}
+
+for i = 65, 90 do
+    local char = string.char(i)
+    Helpers.KeyCodeNames[Enum.KeyCode[char]] = char
+    Helpers.KeyCodeMap[char] = Enum.KeyCode[char]
+end
+
+local numNames = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"}
+for i = 0, 9 do
+    local keyName = i == 0 and "Zero" or numNames[i]
+    Helpers.KeyCodeNames[Enum.KeyCode[keyName]] = tostring(i)
+    Helpers.KeyCodeMap[tostring(i)] = Enum.KeyCode[keyName]
+end
+
+for i = 1, 12 do
+    Helpers.KeyCodeNames[Enum.KeyCode["F" .. i]] = "F" .. i
+    Helpers.KeyCodeMap["F" .. i] = Enum.KeyCode["F" .. i]
+end
+
+local specialKeys = {
+    LeftControl = "Left Ctrl",
+    RightControl = "Right Ctrl",
+    LeftShift = "Left Shift",
+    RightShift = "Right Shift",
+    LeftAlt = "Left Alt",
+    RightAlt = "Right Alt",
+    Tab = "Tab",
+    CapsLock = "Caps Lock",
+    Space = "Space",
+    Return = "Enter",
+    Backspace = "Backspace",
+    Delete = "Delete",
+    Insert = "Insert",
+    Home = "Home",
+    End = "End",
+    PageUp = "Page Up",
+    PageDown = "Page Down"
+}
+
+for k, v in pairs(specialKeys) do
+    Helpers.KeyCodeNames[Enum.KeyCode[k]] = v
+end
+
+function Helpers.GetExecutorName()
+    return (identifyexecutor and identifyexecutor()) or 
+           (getexecutorname and getexecutorname()) or 
+           "Unknown Executor"
+end
+
+function Helpers.CleanupAllThreads(activeThreads)
+    for threadType, thread in pairs(activeThreads) do
+        if thread then
+            if coroutine.status(thread) ~= "dead" then
+                task.cancel(thread)
+            end
+            activeThreads[threadType] = nil
+        end
+    end
+end
+
+return Helpers
