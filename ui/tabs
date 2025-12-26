@@ -657,5 +657,4 @@ _G.UniversalUtility.Tabs.UIElements = {
     PingLabel = PingLabel
 }
 
-print("Tabs module loaded successfully")
 return _G.UniversalUtility.Tabs
