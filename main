@@ -1422,26 +1422,69 @@ end
 local function ChangeKeybind()
     if not SetDebounce("Keybind", 0.5) or Config.IsChangingKeybind then return end
     Config.IsChangingKeybind = true
+    
+    local wasUIToggled = false
+    
+    local originalToggleUI = ToggleUI
+    ToggleUI = function()
+        if Config.IsChangingKeybind then
+            wasUIToggled = true
+            return
+        end
+        return originalToggleUI()
+    end
+    
     KeybindButton.Text = "Press any key..."
     KeybindStatus.Text = "Waiting for input..."
     KeybindStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
     
+    KeybindButton.Active = false
+    
     local connection
+    local timeout = task.delay(5, function()
+        if connection then
+            connection:Disconnect()
+            Config.IsChangingKeybind = false
+            KeybindButton.Active = true
+            ToggleUI = originalToggleUI
+            
+            KeybindButton.Text = "Toggle Keybind: " .. (KeyCodeNames[Config.Keybind] or Config.Keybind.Name)
+            KeybindStatus.Text = "Timeout - Click again to retry"
+            KeybindStatus.TextColor3 = Color3.fromRGB(255, 100, 100)
+            task.wait(2)
+            if KeybindStatus.Text:match("Timeout") then
+                KeybindStatus.Text = "Click the button above to change your Toggle Keybind\n\nPress the keybind at any time to open/close this menu."
+                KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+            end
+        end
+    end)
+    
     connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if input.UserInputType == Enum.UserInputType.Keyboard and not gameProcessed then
+            task.cancel(timeout)
+            
             Config.Keybind = input.KeyCode
             local keyName = KeyCodeNames[input.KeyCode] or input.KeyCode.Name
             KeybindButton.Text = "Toggle Keybind: " .. keyName
             KeybindStatus.Text = "Keybind changed successfully!\n\nPress the keybind at any time to open/close this menu."
             KeybindStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
             SaveConfig()
+            
+            KeybindButton.Active = true
+            
+            ToggleUI = originalToggleUI
+            
+            connection:Disconnect()
+            
+            task.delay(0.1, function()
+                Config.IsChangingKeybind = false
+            end)
+            
             task.wait(1.5)
             if KeybindStatus.Text:match("successfully") then
                 KeybindStatus.Text = "Click the button above to change your Toggle Keybind\n\nPress the keybind at any time to open/close this menu."
                 KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
             end
-            Config.IsChangingKeybind = false
-            connection:Disconnect()
         end
     end)
 end
