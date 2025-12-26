@@ -150,5 +150,4 @@ function _G.UniversalUtility.UI.LoadPlayerInfo()
     end)
 end
 
-print("Framework module loaded successfully")
 return _G.UniversalUtility.UI
