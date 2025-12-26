@@ -1,1 +1,65 @@
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
+local ActiveThreads = {}
+
+local KeySpam = {}
+
+local KeyCodeMap = {}
+
+for i = 65, 90 do
+    local char = string.char(i)
+    KeyCodeMap[char] = Enum.KeyCode[char]
+end
+
+local numNames = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine"}
+for i = 0, 9 do
+    local keyName = i == 0 and "Zero" or numNames[i]
+    KeyCodeMap[tostring(i)] = Enum.KeyCode[keyName]
+end
+
+for i = 1, 12 do
+    KeyCodeMap["F" .. i] = Enum.KeyCode["F" .. i]
+end
+
+local function StopThread(threadType)
+    if ActiveThreads[threadType] then
+        local thread = ActiveThreads[threadType]
+        ActiveThreads[threadType] = nil
+        if coroutine.status(thread) ~= "dead" then
+            task.cancel(thread)
+        end
+    end
+end
+
+function KeySpam.StartSpamThread(config, keyText)
+    StopThread("Spam")
+    local keyCode = KeyCodeMap[keyText]
+    if not keyCode then return false end
+    
+    ActiveThreads.Spam = task.spawn(function()
+        while config.AutoSpamEnabled do
+            task.wait(config.SpamDelay)
+            if config.AutoSpamEnabled then
+                VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+                task.wait(0.05)
+                VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+            end
+        end
+        ActiveThreads.Spam = nil
+    end)
+    return true
+end
+
+function KeySpam.StopSpamThread()
+    StopThread("Spam")
+end
+
+function KeySpam.ValidateKey(keyText)
+    return KeyCodeMap[keyText] ~= nil
+end
+
+function KeySpam.GetKeyCodeMap()
+    return KeyCodeMap
+end
+
+return KeySpam
