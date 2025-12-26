@@ -1,1 +1,60 @@
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
+local ActiveThreads = {}
+
+local function StopThread(threadType)
+    if ActiveThreads[threadType] then
+        task.cancel(ActiveThreads[threadType])
+        ActiveThreads[threadType] = nil
+    end
+end
+
+local function StartJump(config)
+    StopThread("Jump")
+    ActiveThreads.Jump = task.spawn(function()
+        while config.JumpEnabled do
+            task.wait(config.JumpDelay)
+            if config.JumpEnabled and LocalPlayer.Character then
+                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end
+        end
+    end)
+end
+
+local function StartClick(config)
+    StopThread("Click")
+    ActiveThreads.Click = task.spawn(function()
+        while config.ClickEnabled do
+            task.wait(config.ClickDelay)
+            if config.ClickEnabled then
+                local x, y
+                if config.ClickType == "Current" then
+                    local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+                    x, y = mousePos.X, mousePos.Y
+                elseif config.ClickType == "Center" then
+                    local viewport = workspace.CurrentCamera.ViewportSize
+                    x, y = viewport.X/2, viewport.Y/2
+                else
+                    local viewport = workspace.CurrentCamera.ViewportSize
+                    x = math.random(100, viewport.X - 100)
+                    y = math.random(100, viewport.Y - 100)
+                end
+                VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
+                task.wait(0.05)
+                VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
+            end
+        end
+    end)
+end
+
+return {
+    StartJump = StartJump,
+    StartClick = StartClick,
+    StopJump = function() StopThread("Jump") end,
+    StopClick = function() StopThread("Click") end
+}
