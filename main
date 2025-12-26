@@ -23,7 +23,7 @@ local scriptloader    = loadModule("features/scriptloader")
 local framework       = loadModule("ui/framework")
 local interactions    = loadModule("ui/interactions")
 local tabsModule      = loadModule("ui/tabs")
-local init            = loadModule("init")
+local init            = loadModule("init/init")
 
 if not (configModule and helpers and framework and interactions and tabsModule and init) then
     warn("Critical modules failed to load - aborting")
