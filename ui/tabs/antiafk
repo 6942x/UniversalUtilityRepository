@@ -1,1 +1,226 @@
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
+local Config = _G.UniversalUtility.Config
+local UI = _G.UniversalUtility.UI
+local AntiAFK = _G.UniversalUtility.AntiAFK
+local Debounces = _G.UniversalUtility.Debounces
+local AntiAFKContent = UI.TabContents["Anti-AFK"]
+
+local function SetDebounce(key, duration)
+    if Debounces[key] then return false end
+    Debounces[key] = true
+    task.delay(duration or 0.3, function() Debounces[key] = false end)
+    return true
+end
+
+local AntiAFKContainer = Instance.new("Frame", AntiAFKContent)
+AntiAFKContainer.Size = UDim2.new(1, 0, 0, 380)
+AntiAFKContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+AntiAFKContainer.BorderSizePixel = 0
+AntiAFKContainer.LayoutOrder = 1
+
+local AntiAFKCorner = Instance.new("UICorner", AntiAFKContainer)
+AntiAFKCorner.CornerRadius = UDim.new(0, 10)
+
+local AntiAFKTitle = Instance.new("TextLabel", AntiAFKContainer)
+AntiAFKTitle.Size = UDim2.new(1, -20, 0, 24)
+AntiAFKTitle.Position = UDim2.new(0, 10, 0, 10)
+AntiAFKTitle.BackgroundTransparency = 1
+AntiAFKTitle.Text = "Anti-AFK Methods"
+AntiAFKTitle.Font = Enum.Font.GothamBold
+AntiAFKTitle.TextSize = 16
+AntiAFKTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiAFKTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local JumpToggle = UI.CreateButton(AntiAFKContainer, UDim2.new(0, 140, 0, 36), "Auto Jump: OFF")
+JumpToggle.Position = UDim2.new(0.25, 0, 0, 50)
+
+local ClickToggle = UI.CreateButton(AntiAFKContainer, UDim2.new(0, 140, 0, 36), "Auto Click: OFF")
+ClickToggle.Position = UDim2.new(0.75, 0, 0, 50)
+
+local ClickTypeLabel = Instance.new("TextLabel", AntiAFKContainer)
+ClickTypeLabel.Size = UDim2.new(1, -20, 0, 20)
+ClickTypeLabel.Position = UDim2.new(0, 10, 0, 100)
+ClickTypeLabel.BackgroundTransparency = 1
+ClickTypeLabel.Text = "Click Type:"
+ClickTypeLabel.Font = Enum.Font.Gotham
+ClickTypeLabel.TextSize = 13
+ClickTypeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+ClickTypeLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local ClickTypeCurrent = UI.CreateButton(AntiAFKContainer, UDim2.new(0, 85, 0, 30), "Current")
+ClickTypeCurrent.Position = UDim2.new(0.2, 0, 0, 130)
+
+local ClickTypeCenter = UI.CreateButton(AntiAFKContainer, UDim2.new(0, 85, 0, 30), "Center")
+ClickTypeCenter.Position = UDim2.new(0.5, 0, 0, 130)
+
+local ClickTypeRandom = UI.CreateButton(AntiAFKContainer, UDim2.new(0, 85, 0, 30), "Random")
+ClickTypeRandom.Position = UDim2.new(0.8, 0, 0, 130)
+
+local JumpDelayFrame, JumpDelaySlider, JumpSliderFill, JumpSliderButton, JumpDelayBox, JumpDelayLabel = UI.CreateSlider(AntiAFKContainer, UDim2.new(1, -20, 0, 50), 5, 30, 10, "Jump Delay (seconds):")
+JumpDelayFrame.Position = UDim2.new(0, 10, 0, 180)
+
+local ClickDelayFrame, ClickDelaySlider, ClickSliderFill, ClickSliderButton, ClickDelayBox, ClickDelayLabel = UI.CreateSlider(AntiAFKContainer, UDim2.new(1, -20, 0, 50), 1, 10, 3, "Click Delay (seconds):")
+ClickDelayFrame.Position = UDim2.new(0, 10, 0, 250)
+
+local AntiAFKStatus = Instance.new("TextLabel", AntiAFKContainer)
+AntiAFKStatus.Size = UDim2.new(1, -20, 0, 50)
+AntiAFKStatus.Position = UDim2.new(0, 10, 0, 320)
+AntiAFKStatus.BackgroundTransparency = 1
+AntiAFKStatus.Text = "Status: All Inactive"
+AntiAFKStatus.Font = Enum.Font.GothamBold
+AntiAFKStatus.TextSize = 16
+AntiAFKStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+AntiAFKStatus.TextXAlignment = Enum.TextXAlignment.Center
+
+local function UpdateAntiAFKStatus()
+    if Config.JumpEnabled and Config.ClickEnabled then
+        AntiAFKStatus.Text = "Status: Jump & Click Active"
+        AntiAFKStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
+    elseif Config.JumpEnabled then
+        AntiAFKStatus.Text = "Status: Jump Active"
+        AntiAFKStatus.TextColor3 = Color3.fromRGB(100, 200, 255)
+    elseif Config.ClickEnabled then
+        AntiAFKStatus.Text = "Status: Click Active"
+        AntiAFKStatus.TextColor3 = Color3.fromRGB(255, 200, 100)
+    else
+        AntiAFKStatus.Text = "Status: All Inactive"
+        AntiAFKStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+end
+
+local function UpdateClickTypeButtons()
+    local buttons = {Current = ClickTypeCurrent, Center = ClickTypeCenter, Random = ClickTypeRandom}
+    for type, btn in pairs(buttons) do
+        TweenService:Create(btn, UI.TweenPresets.Fast, {
+            BackgroundColor3 = (Config.ClickType == type) and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(45, 45, 52)
+        }):Play()
+    end
+end
+
+local function UpdateSlider(fill, valueBox, labelElement, value, min, max, format)
+    local percentage = (value - min) / (max - min)
+    TweenService:Create(fill, UI.TweenPresets.Fast, {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
+    valueBox.Text = string.format(format, value)
+end
+
+local function UpdateJumpSlider(percentage)
+    Config.JumpDelay = 5 + (percentage * 25)
+    UpdateSlider(JumpSliderFill, JumpDelayBox, JumpDelayLabel, Config.JumpDelay, 5, 30, "%.1f")
+    _G.UniversalUtility.SaveConfig()
+end
+
+local function UpdateClickSlider(percentage)
+    Config.ClickDelay = 1 + (percentage * 9)
+    UpdateSlider(ClickSliderFill, ClickDelayBox, ClickDelayLabel, Config.ClickDelay, 1, 10, "%.1f")
+    _G.UniversalUtility.SaveConfig()
+end
+
+JumpDelayBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(JumpDelayBox.Text) or Config.JumpDelay, 5, 30)
+    Config.JumpDelay = value
+    UpdateJumpSlider((value - 5) / 25)
+end)
+
+ClickDelayBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(ClickDelayBox.Text) or Config.ClickDelay, 1, 10)
+    Config.ClickDelay = value
+    UpdateClickSlider((value - 1) / 9)
+end)
+
+local dragging = {jump = false, click = false}
+
+JumpSliderButton.MouseButton1Down:Connect(function()
+    dragging.jump = true
+end)
+
+ClickSliderButton.MouseButton1Down:Connect(function()
+    dragging.click = true
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging.jump, dragging.click = false, false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mouseX = UserInputService:GetMouseLocation().X
+        if dragging.jump then
+            UpdateJumpSlider(math.clamp((mouseX - JumpDelaySlider.AbsolutePosition.X) / JumpDelaySlider.AbsoluteSize.X, 0, 1))
+        elseif dragging.click then
+            UpdateClickSlider(math.clamp((mouseX - ClickDelaySlider.AbsolutePosition.X) / ClickDelaySlider.AbsoluteSize.X, 0, 1))
+        end
+    end
+end)
+
+ClickTypeCurrent.MouseButton1Click:Connect(function()
+    if not SetDebounce("ClickType", 0.2) then return end
+    Config.ClickType = "Current"
+    UpdateClickTypeButtons()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+ClickTypeCenter.MouseButton1Click:Connect(function()
+    if not SetDebounce("ClickType", 0.2) then return end
+    Config.ClickType = "Center"
+    UpdateClickTypeButtons()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+ClickTypeRandom.MouseButton1Click:Connect(function()
+    if not SetDebounce("ClickType", 0.2) then return end
+    Config.ClickType = "Random"
+    UpdateClickTypeButtons()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+JumpToggle.MouseButton1Click:Connect(function()
+    if not SetDebounce("Jump", 0.3) then return end
+    Config.JumpEnabled = not Config.JumpEnabled
+    TweenService:Create(JumpToggle, UI.TweenPresets.Medium, {
+        BackgroundColor3 = Config.JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    }):Play()
+    
+    JumpToggle.Text = "Auto Jump: " .. (Config.JumpEnabled and "ON" or "OFF")
+    if Config.JumpEnabled then
+        task.wait(0.05)
+        AntiAFK.StartJump()
+    else
+        AntiAFK.StopJump()
+    end
+    UpdateAntiAFKStatus()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+ClickToggle.MouseButton1Click:Connect(function()
+    if not SetDebounce("Click", 0.3) then return end
+    Config.ClickEnabled = not Config.ClickEnabled
+    TweenService:Create(ClickToggle, UI.TweenPresets.Medium, {
+        BackgroundColor3 = Config.ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
+    }):Play()
+    
+    ClickToggle.Text = "Auto Click: " .. (Config.ClickEnabled and "ON" or "OFF")
+    if Config.ClickEnabled then
+        task.wait(0.05)
+        AntiAFK.StartClick()
+    else
+        AntiAFK.StopClick()
+    end
+    UpdateAntiAFKStatus()
+    _G.UniversalUtility.SaveConfig()
+end)
+
+_G.UniversalUtility.AntiAFKTab = {
+    JumpToggle = JumpToggle,
+    ClickToggle = ClickToggle,
+    UpdateSlider = UpdateSlider,
+    UpdateJumpSlider = UpdateJumpSlider,
+    UpdateClickSlider = UpdateClickSlider,
+    UpdateClickTypeButtons = UpdateClickTypeButtons,
+    UpdateAntiAFKStatus = UpdateAntiAFKStatus
+}
+
+print("[Universal Utility] Anti-AFK tab loaded")
