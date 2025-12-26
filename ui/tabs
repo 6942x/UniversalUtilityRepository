@@ -1,1 +1,290 @@
+local TabContents = _G.UniversalUtility.TabContents
+local Config = _G.UniversalUtility.Config
+local LocalPlayer = _G.UniversalUtility.LocalPlayer
+local MarketplaceService = _G.UniversalUtility.Services.MarketplaceService
+local CreateButton = _G.UniversalUtility.CreateButton
+local CreateSlider = _G.UniversalUtility.CreateSlider
 
+local UI = _G.UniversalUtility.UI
+
+local HomeContent = TabContents["Home"]
+local AntiAFKContent = TabContents["Anti-AFK"]
+local KeySpamContent = TabContents["KeySpam"]
+local FPSContent = TabContents["Performance Status"]
+local RejoinContent = TabContents["Auto Rejoin"]
+local LoaderContent = TabContents["Script Loader"]
+local SettingsContent = TabContents["Settings"]
+
+local PlayerInfoFrame = Instance.new("Frame", HomeContent)
+PlayerInfoFrame.Size = UDim2.new(1, 0, 0, 180)
+PlayerInfoFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+PlayerInfoFrame.BorderSizePixel = 0
+PlayerInfoFrame.LayoutOrder = 1
+
+local PlayerInfoCorner = Instance.new("UICorner", PlayerInfoFrame)
+PlayerInfoCorner.CornerRadius = UDim.new(0, 10)
+
+local PlayerImage = Instance.new("ImageLabel", PlayerInfoFrame)
+PlayerImage.Size = UDim2.new(0, 120, 0, 140)
+PlayerImage.Position = UDim2.new(0, 10, 0, 10)
+PlayerImage.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+PlayerImage.BorderSizePixel = 0
+PlayerImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+
+local PlayerImageCorner = Instance.new("UICorner", PlayerImage)
+PlayerImageCorner.CornerRadius = UDim.new(0, 10)
+
+UI.PlayerImage = PlayerImage
+
+local PlayerName = Instance.new("TextLabel", PlayerInfoFrame)
+PlayerName.Size = UDim2.new(1, -145, 0, 22)
+PlayerName.Position = UDim2.new(0, 140, 0, 10)
+PlayerName.BackgroundTransparency = 1
+PlayerName.Text = LocalPlayer.Name
+PlayerName.Font = Enum.Font.GothamBold
+PlayerName.TextSize = 28
+PlayerName.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlayerName.TextXAlignment = Enum.TextXAlignment.Left
+
+local FPSLabel = Instance.new("TextLabel", PlayerInfoFrame)
+FPSLabel.Size = UDim2.new(1, -145, 0, 18)
+FPSLabel.Position = UDim2.new(0, 140, 0, 50)
+FPSLabel.BackgroundTransparency = 1
+FPSLabel.Text = "FPS: 60"
+FPSLabel.Font = Enum.Font.Gotham
+FPSLabel.TextSize = 24
+FPSLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+FPSLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+UI.FPSLabel = FPSLabel
+
+local PingLabel = Instance.new("TextLabel", PlayerInfoFrame)
+PingLabel.Size = UDim2.new(1, -145, 0, 18)
+PingLabel.Position = UDim2.new(0, 140, 0, 90)
+PingLabel.BackgroundTransparency = 1
+PingLabel.Text = "Ping: 0 ms"
+PingLabel.Font = Enum.Font.Gotham
+PingLabel.TextSize = 24
+PingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+PingLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+UI.PingLabel = PingLabel
+
+local executor = (identifyexecutor and identifyexecutor()) or 
+                 (getexecutorname and getexecutorname()) or 
+                 "Unknown Executor"
+
+local ExecutorLabel = Instance.new("TextLabel", PlayerInfoFrame)
+ExecutorLabel.Size = UDim2.new(1, -145, 0, 18)
+ExecutorLabel.Position = UDim2.new(0, 140, 0, 130)
+ExecutorLabel.BackgroundTransparency = 1
+ExecutorLabel.Text = "Executor: " .. executor
+ExecutorLabel.Font = Enum.Font.Gotham
+ExecutorLabel.TextSize = 24
+ExecutorLabel.TextColor3 = Color3.fromRGB(255, 0, 125)
+ExecutorLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local GameInfoFrame = Instance.new("Frame", HomeContent)
+GameInfoFrame.Size = UDim2.new(1, 0, 0, 220)
+GameInfoFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+GameInfoFrame.BorderSizePixel = 0
+GameInfoFrame.LayoutOrder = 2
+
+local GameInfoCorner = Instance.new("UICorner", GameInfoFrame)
+GameInfoCorner.CornerRadius = UDim.new(0, 10)
+
+local GameImage = Instance.new("ImageLabel", GameInfoFrame)
+GameImage.Size = UDim2.new(0, 120, 0, 140)
+GameImage.Position = UDim2.new(0, 10, 0, 10)
+GameImage.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+GameImage.BorderSizePixel = 0
+GameImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+
+local GameImageCorner = Instance.new("UICorner", GameImage)
+GameImageCorner.CornerRadius = UDim.new(0, 10)
+
+UI.GameImage = GameImage
+
+local GameName = Instance.new("TextLabel", GameInfoFrame)
+GameName.Size = UDim2.new(1, -20, 0, 24)
+GameName.Position = UDim2.new(0, 0, 0, 10)
+GameName.BackgroundTransparency = 1
+GameName.Text = "Loading..."
+GameName.Font = Enum.Font.GothamBold
+GameName.TextSize = 24
+GameName.TextColor3 = Color3.fromRGB(255, 255, 255)
+GameName.TextXAlignment = Enum.TextXAlignment.Center
+GameName.TextWrapped = true
+
+UI.GameName = GameName
+
+local GameId = Instance.new("TextLabel", GameInfoFrame)
+GameId.Size = UDim2.new(1, -20, 0, 16)
+GameId.Position = UDim2.new(0, 27.5, 0, 50)
+GameId.BackgroundTransparency = 1
+GameId.Text = "Game ID: " .. game.PlaceId
+GameId.Font = Enum.Font.Gotham
+GameId.TextSize = 24
+GameId.TextColor3 = Color3.fromRGB(180, 180, 255)
+GameId.TextXAlignment = Enum.TextXAlignment.Center
+
+local Players = _G.UniversalUtility.Services.Players
+
+local PlayersInServerLabel = Instance.new("TextLabel", GameInfoFrame)
+PlayersInServerLabel.Size = UDim2.new(1, -20, 0, 16)
+PlayersInServerLabel.Position = UDim2.new(0, 27.5, 0, 90)
+PlayersInServerLabel.BackgroundTransparency = 1
+PlayersInServerLabel.Text = "Players in the server: " .. #Players:GetPlayers()
+PlayersInServerLabel.Font = Enum.Font.Gotham
+PlayersInServerLabel.TextSize = 24
+PlayersInServerLabel.TextColor3 = Color3.fromRGB(180, 255, 180)
+PlayersInServerLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local serverId = game.JobId
+
+local ServerIdLabel = Instance.new("TextLabel", GameInfoFrame)
+ServerIdLabel.Size = UDim2.new(1, 0, 0, 18)
+ServerIdLabel.Position = UDim2.new(0, 55, 0, 130)
+ServerIdLabel.BackgroundTransparency = 1
+ServerIdLabel.Text = "Server ID: " .. serverId
+ServerIdLabel.Font = Enum.Font.Gotham
+ServerIdLabel.TextSize = 14
+ServerIdLabel.TextColor3 = Color3.fromRGB(255, 180, 180)
+ServerIdLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+local AntiAFKContainer = Instance.new("Frame", AntiAFKContent)
+AntiAFKContainer.Size = UDim2.new(1, 0, 0, 380)
+AntiAFKContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+AntiAFKContainer.BorderSizePixel = 0
+AntiAFKContainer.LayoutOrder = 1
+
+local AntiAFKCorner = Instance.new("UICorner", AntiAFKContainer)
+AntiAFKCorner.CornerRadius = UDim.new(0, 10)
+
+local AntiAFKTitle = Instance.new("TextLabel", AntiAFKContainer)
+AntiAFKTitle.Size = UDim2.new(1, -20, 0, 24)
+AntiAFKTitle.Position = UDim2.new(0, 10, 0, 10)
+AntiAFKTitle.BackgroundTransparency = 1
+AntiAFKTitle.Text = "Anti-AFK Methods"
+AntiAFKTitle.Font = Enum.Font.GothamBold
+AntiAFKTitle.TextSize = 16
+AntiAFKTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiAFKTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local JumpToggle = CreateButton(AntiAFKContainer, UDim2.new(0, 140, 0, 36), "Auto Jump: OFF")
+JumpToggle.Position = UDim2.new(0.25, 0, 0, 50)
+UI.JumpToggle = JumpToggle
+
+local ClickToggle = CreateButton(AntiAFKContainer, UDim2.new(0, 140, 0, 36), "Auto Click: OFF")
+ClickToggle.Position = UDim2.new(0.75, 0, 0, 50)
+UI.ClickToggle = ClickToggle
+
+local ClickTypeLabel = Instance.new("TextLabel", AntiAFKContainer)
+ClickTypeLabel.Size = UDim2.new(1, -20, 0, 20)
+ClickTypeLabel.Position = UDim2.new(0, 10, 0, 100)
+ClickTypeLabel.BackgroundTransparency = 1
+ClickTypeLabel.Text = "Click Type:"
+ClickTypeLabel.Font = Enum.Font.Gotham
+ClickTypeLabel.TextSize = 13
+ClickTypeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+ClickTypeLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local ClickTypeCurrent = CreateButton(AntiAFKContainer, UDim2.new(0, 85, 0, 30), "Current")
+ClickTypeCurrent.Position = UDim2.new(0.2, 0, 0, 130)
+UI.ClickTypeCurrent = ClickTypeCurrent
+
+local ClickTypeCenter = CreateButton(AntiAFKContainer, UDim2.new(0, 85, 0, 30), "Center")
+ClickTypeCenter.Position = UDim2.new(0.5, 0, 0, 130)
+UI.ClickTypeCenter = ClickTypeCenter
+
+local ClickTypeRandom = CreateButton(AntiAFKContainer, UDim2.new(0, 85, 0, 30), "Random")
+ClickTypeRandom.Position = UDim2.new(0.8, 0, 0, 130)
+UI.ClickTypeRandom = ClickTypeRandom
+
+local JumpDelayFrame, JumpDelaySlider, JumpSliderFill, JumpSliderButton, JumpDelayBox, JumpDelayLabel = CreateSlider(AntiAFKContainer, UDim2.new(1, -20, 0, 50), 5, 30, 10, "Jump Delay (seconds):")
+JumpDelayFrame.Position = UDim2.new(0, 10, 0, 180)
+UI.JumpDelaySlider = JumpDelaySlider
+UI.JumpSliderFill = JumpSliderFill
+UI.JumpSliderButton = JumpSliderButton
+UI.JumpDelayBox = JumpDelayBox
+UI.JumpDelayLabel = JumpDelayLabel
+
+local ClickDelayFrame, ClickDelaySlider, ClickSliderFill, ClickSliderButton, ClickDelayBox, ClickDelayLabel = CreateSlider(AntiAFKContainer, UDim2.new(1, -20, 0, 50), 1, 10, 3, "Click Delay (seconds):")
+ClickDelayFrame.Position = UDim2.new(0, 10, 0, 250)
+UI.ClickDelaySlider = ClickDelaySlider
+UI.ClickSliderFill = ClickSliderFill
+UI.ClickSliderButton = ClickSliderButton
+UI.ClickDelayBox = ClickDelayBox
+UI.ClickDelayLabel = ClickDelayLabel
+
+local AntiAFKStatus = Instance.new("TextLabel", AntiAFKContainer)
+AntiAFKStatus.Size = UDim2.new(1, -20, 0, 50)
+AntiAFKStatus.Position = UDim2.new(0, 10, 0, 320)
+AntiAFKStatus.BackgroundTransparency = 1
+AntiAFKStatus.Text = "Status: All Inactive"
+AntiAFKStatus.Font = Enum.Font.GothamBold
+AntiAFKStatus.TextSize = 16
+AntiAFKStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+AntiAFKStatus.TextXAlignment = Enum.TextXAlignment.Center
+UI.AntiAFKStatus = AntiAFKStatus
+
+local KeySpamContainer = Instance.new("Frame", KeySpamContent)
+KeySpamContainer.Size = UDim2.new(1, 0, 0, 280)
+KeySpamContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+KeySpamContainer.BorderSizePixel = 0
+KeySpamContainer.LayoutOrder = 1
+
+local KeySpamCorner = Instance.new("UICorner", KeySpamContainer)
+KeySpamCorner.CornerRadius = UDim.new(0, 10)
+
+local KeySpamTitle = Instance.new("TextLabel", KeySpamContainer)
+KeySpamTitle.Size = UDim2.new(1, -20, 0, 24)
+KeySpamTitle.Position = UDim2.new(0, 10, 0, 10)
+KeySpamTitle.BackgroundTransparency = 1
+KeySpamTitle.Text = "Key Spam Configuration"
+KeySpamTitle.Font = Enum.Font.GothamBold
+KeySpamTitle.TextSize = 16
+KeySpamTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeySpamTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local SpamInput = Instance.new("TextBox", KeySpamContainer)
+SpamInput.Size = UDim2.new(1, -20, 0, 40)
+SpamInput.Position = UDim2.new(0, 10, 0, 50)
+SpamInput.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+SpamInput.Text = Config.SpamKey
+SpamInput.PlaceholderText = "Enter key (A-Z, 0-9, F1-F12)"
+SpamInput.Font = Enum.Font.Gotham
+SpamInput.TextSize = 14
+SpamInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpamInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+SpamInput.BorderSizePixel = 0
+SpamInput.ClearTextOnFocus = false
+
+local SpamInputCorner = Instance.new("UICorner", SpamInput)
+SpamInputCorner.CornerRadius = UDim.new(0, 8)
+UI.SpamInput = SpamInput
+
+local SpamDelayFrame, SpamDelaySlider, SpamSliderFill, SpamSliderButton, SpamDelayBox, SpamDelayLabel = CreateSlider(KeySpamContainer, UDim2.new(1, -20, 0, 50), 0.05, 5, 0.1, "Spam Delay (seconds):")
+SpamDelayFrame.Position = UDim2.new(0, 10, 0, 110)
+UI.SpamDelaySlider = SpamDelaySlider
+UI.SpamSliderFill = SpamSliderFill
+UI.SpamSliderButton = SpamSliderButton
+UI.SpamDelayBox = SpamDelayBox
+UI.SpamDelayLabel = SpamDelayLabel
+
+local AutoSpamToggle = CreateButton(KeySpamContainer, UDim2.new(0, 120, 0, 36), "OFF")
+AutoSpamToggle.Position = UDim2.new(0.5, 0, 0, 185)
+UI.AutoSpamToggle = AutoSpamToggle
+
+local AutoSpamStatus = Instance.new("TextLabel", KeySpamContainer)
+AutoSpamStatus.Size = UDim2.new(1, -20, 0, 50)
+AutoSpamStatus.Position = UDim2.new(0, 10, 0, 225)
+AutoSpamStatus.BackgroundTransparency = 1
+AutoSpamStatus.Text = "Status: Inactive"
+AutoSpamStatus.Font = Enum.Font.GothamBold
+AutoSpamStatus.TextSize = 16
+AutoSpamStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+AutoSpamStatus.TextXAlignment = Enum.TextXAlignment.Center
+UI.AutoSpamStatus = AutoSpamStatus
+
+print("✓ UI/Tabs loaded (part 1)")
