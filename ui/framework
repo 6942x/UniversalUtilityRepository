@@ -3,8 +3,26 @@ local TweenService = game:GetService("TweenService")
 
 _G.UniversalUtility.UI = _G.UniversalUtility.UI or {}
 
-local oldGui = CoreGui:FindFirstChild("UniversalUtility") or (gethui and gethui():FindFirstChild("UniversalUtility"))
-if oldGui then oldGui:Destroy() end
+if not _G.UniversalUtility then
+    _G.UniversalUtility = {}
+end
+
+local function FindAndDestroyOldGui()
+    local locations = {CoreGui}
+    if gethui then
+        table.insert(locations, gethui())
+    end
+    
+    for _, parent in ipairs(locations) do
+        local oldGui = parent:FindFirstChild("UniversalUtility")
+        if oldGui then
+            oldGui:Destroy()
+            task.wait(0.1)
+        end
+    end
+end
+
+FindAndDestroyOldGui()
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "UniversalUtility"
@@ -25,7 +43,21 @@ _G.UniversalUtility.UI.TabButtons = {}
 _G.UniversalUtility.UI.TabContents = {}
 _G.UniversalUtility.UI.ButtonStates = {}
 
-_G.UniversalUtility.UI.TweenPresets = {
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UniversalUtility"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = CoreGui
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = CoreGui
+end
+
+_G.UniversalUtility.UI.ScreenGui = ScreenGui
     Fast = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     Slow = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
