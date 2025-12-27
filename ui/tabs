@@ -191,11 +191,11 @@ PlayersInServerLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 local ServerIdLabel = Instance.new("TextLabel", GameInfoFrame)
 ServerIdLabel.Size = UDim2.new(1, 0, 0, 18)
-ServerIdLabel.Position = UDim2.new(0, 55, 0, 130)
+ServerIdLabel.Position = UDim2.new(0, 65, 0, 130)
 ServerIdLabel.BackgroundTransparency = 1
 ServerIdLabel.Text = "Server ID: " .. game.JobId
 ServerIdLabel.Font = Enum.Font.Gotham
-ServerIdLabel.TextSize = 14
+ServerIdLabel.TextScaled = true
 ServerIdLabel.TextColor3 = Color3.fromRGB(255, 180, 180)
 ServerIdLabel.TextXAlignment = Enum.TextXAlignment.Center
 
