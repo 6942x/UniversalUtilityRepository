@@ -57,78 +57,46 @@ function _G.UniversalUtility.Helpers.CreateButton(parent, size, text)
     button.Size = size
     button.AnchorPoint = Vector2.new(0.5, 0)
     button.Position = UDim2.new(0.5, 0, 0, 0)
-    button.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    button.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     button.Text = text
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
+    button.TextSize = 13
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.BorderSizePixel = 0
-    button.AutoButtonColor = false
-    button.TextStrokeTransparency = 0.9
 
     local corner = Instance.new("UICorner", button)
-    corner.CornerRadius = UDim.new(0, 10)
-    
-    local gradient = Instance.new("UIGradient", button)
-    gradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 60, 70)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 50))
-    }
-    gradient.Rotation = 90
-    
-    local glow = Instance.new("ImageLabel", button)
-    glow.Size = UDim2.new(1, 10, 1, 10)
-    glow.Position = UDim2.new(0, -5, 0, -5)
-    glow.BackgroundTransparency = 1
-    glow.Image = "rbxassetid://5028857084"
-    glow.ImageColor3 = Color3.fromRGB(100, 150, 255)
-    glow.ImageTransparency = 1
-    glow.ScaleType = Enum.ScaleType.Slice
-    glow.SliceCenter = Rect.new(24, 24, 276, 276)
-    glow.ZIndex = button.ZIndex - 1
+    corner.CornerRadius = UDim.new(0, 8)
 
     local originalSize = size
     
     _G.UniversalUtility.ButtonStates[button] = {
         OriginalSize = originalSize,
         IsHovering = false,
-        BaseColor = Color3.fromRGB(50, 50, 60),
-        Glow = glow
+        BaseColor = Color3.fromRGB(45, 45, 52)
     }
 
     button.MouseEnter:Connect(function()
         _G.UniversalUtility.ButtonStates[button].IsHovering = true
         local currentColor = button.BackgroundColor3
         _G.UniversalUtility.ButtonStates[button].BaseColor = currentColor
-        
         TweenService:Create(button, TweenPresets.Fast, {
-            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset + 8, originalSize.Y.Scale, originalSize.Y.Offset + 4),
-            BackgroundColor3 = Color3.fromRGB(70, 70, 85)
-        }):Play()
-        
-        TweenService:Create(glow, TweenPresets.Fast, {
-            ImageTransparency = 0.6
+            Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset + 6, originalSize.Y.Scale, originalSize.Y.Offset + 4)
         }):Play()
     end)
 
     button.MouseLeave:Connect(function()
         _G.UniversalUtility.ButtonStates[button].IsHovering = false
         local baseColor = _G.UniversalUtility.ButtonStates[button].BaseColor
-        
         TweenService:Create(button, TweenPresets.Fast, {
             Size = originalSize,
             BackgroundColor3 = baseColor
-        }):Play()
-        
-        TweenService:Create(glow, TweenPresets.Fast, {
-            ImageTransparency = 1
         }):Play()
     end)
 
     button.MouseButton1Down:Connect(function()
         if _G.UniversalUtility.ButtonStates[button].IsHovering then
-            TweenService:Create(button, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset - 4, originalSize.Y.Scale, originalSize.Y.Offset - 2)
+            TweenService:Create(button, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset - 4, originalSize.Y.Scale, originalSize.Y.Offset - 3)
             }):Play()
         end
     end)
@@ -136,7 +104,7 @@ function _G.UniversalUtility.Helpers.CreateButton(parent, size, text)
     button.MouseButton1Up:Connect(function()
         if _G.UniversalUtility.ButtonStates[button].IsHovering then
             TweenService:Create(button, TweenPresets.Fast, {
-                Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset + 8, originalSize.Y.Scale, originalSize.Y.Offset + 4)
+                Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset + 6, originalSize.Y.Scale, originalSize.Y.Offset + 4)
             }):Play()
         else
             TweenService:Create(button, TweenPresets.Fast, {
@@ -155,23 +123,22 @@ function _G.UniversalUtility.Helpers.CreateSlider(parent, size, minValue, maxVal
     sliderFrame.BackgroundTransparency = 1
 
     local valueLabel = Instance.new("TextLabel", sliderFrame)
-    valueLabel.Size = UDim2.new(1, 0, 0, 20)
+    valueLabel.Size = UDim2.new(1, 0, 0, 18)
     valueLabel.BackgroundTransparency = 1
     valueLabel.Text = labelText
-    valueLabel.Font = Enum.Font.GothamBold
-    valueLabel.TextSize = 13
-    valueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    valueLabel.Font = Enum.Font.Gotham
+    valueLabel.TextSize = 12
+    valueLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     valueLabel.TextXAlignment = Enum.TextXAlignment.Left
-    valueLabel.TextStrokeTransparency = 0.9
 
     local slider = Instance.new("Frame", sliderFrame)
-    slider.Size = UDim2.new(1, -60, 0, 8)
-    slider.Position = UDim2.new(0, 0, 0, 26)
-    slider.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    slider.Size = UDim2.new(1, -60, 0, 6)
+    slider.Position = UDim2.new(0, 0, 0, 22)
+    slider.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     slider.BorderSizePixel = 0
 
     local sliderCorner = Instance.new("UICorner", slider)
-    sliderCorner.CornerRadius = UDim.new(0, 4)
+    sliderCorner.CornerRadius = UDim.new(0, 3)
 
     local fill = Instance.new("Frame", slider)
     fill.Size = UDim2.new(0.5, 0, 1, 0)
@@ -179,13 +146,7 @@ function _G.UniversalUtility.Helpers.CreateSlider(parent, size, minValue, maxVal
     fill.BorderSizePixel = 0
 
     local fillCorner = Instance.new("UICorner", fill)
-    fillCorner.CornerRadius = UDim.new(0, 4)
-    
-    local fillGradient = Instance.new("UIGradient", fill)
-    fillGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 150, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 100, 255))
-    }
+    fillCorner.CornerRadius = UDim.new(0, 3)
 
     local button = Instance.new("TextButton", slider)
     button.Size = UDim2.new(1, 0, 1, 0)
@@ -193,18 +154,17 @@ function _G.UniversalUtility.Helpers.CreateSlider(parent, size, minValue, maxVal
     button.Text = ""
 
     local valueBox = Instance.new("TextBox", sliderFrame)
-    valueBox.Size = UDim2.new(0, 50, 0, 28)
-    valueBox.Position = UDim2.new(1, -50, 0, 20)
-    valueBox.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    valueBox.Size = UDim2.new(0, 50, 0, 24)
+    valueBox.Position = UDim2.new(1, -50, 0, 16)
+    valueBox.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     valueBox.Text = tostring(currentValue)
-    valueBox.Font = Enum.Font.GothamBold
+    valueBox.Font = Enum.Font.Gotham
     valueBox.TextScaled = true
     valueBox.TextColor3 = Color3.fromRGB(255, 255, 255)
     valueBox.ClearTextOnFocus = false
-    valueBox.TextStrokeTransparency = 0.9
 
     local valueCorner = Instance.new("UICorner", valueBox)
-    valueCorner.CornerRadius = UDim.new(0, 6)
+    valueCorner.CornerRadius = UDim.new(0, 5)
 
     return sliderFrame, slider, fill, button, valueBox, valueLabel
 end
@@ -212,7 +172,7 @@ end
 function _G.UniversalUtility.Helpers.UpdateSlider(fill, valueBox, labelElement, value, min, max, format)
     local TweenPresets = _G.UniversalUtility.UI.TweenPresets
     local percentage = (value - min) / (max - min)
-    TweenService:Create(fill, TweenPresets.Smooth, {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
+    TweenService:Create(fill, TweenPresets.Fast, {Size = UDim2.new(percentage, 0, 1, 0)}):Play()
     valueBox.Text = string.format(format, value)
 end
 
@@ -249,72 +209,48 @@ function _G.UniversalUtility.Helpers.CreateTabButton(name, icon, position)
     
     local btn = Instance.new("TextButton", SideNav)
     btn.Name = name .. "Tab"
-    btn.Size = UDim2.new(1, -14, 0, 58)
+    btn.Size = UDim2.new(1, -10, 0, 55)
     btn.Position = position
-    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
     btn.BorderSizePixel = 0
     btn.Text = ""
     btn.AutoButtonColor = false
     
     local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0, 12)
-    
-    local gradient = Instance.new("UIGradient", btn)
-    gradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 50)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 40))
-    }
-    gradient.Rotation = 90
-    
-    local glow = Instance.new("ImageLabel", btn)
-    glow.Size = UDim2.new(1, 8, 1, 8)
-    glow.Position = UDim2.new(0, -4, 0, -4)
-    glow.BackgroundTransparency = 1
-    glow.Image = "rbxassetid://5028857084"
-    glow.ImageColor3 = Color3.fromRGB(100, 150, 255)
-    glow.ImageTransparency = 1
-    glow.ScaleType = Enum.ScaleType.Slice
-    glow.SliceCenter = Rect.new(24, 24, 276, 276)
-    glow.ZIndex = btn.ZIndex - 1
+    corner.CornerRadius = UDim.new(0, 8)
     
     local iconLabel = Instance.new("TextLabel", btn)
-    iconLabel.Size = UDim2.new(0, 35, 1, 0)
-    iconLabel.Position = UDim2.new(0, 12, 0, 0)
+    iconLabel.Size = UDim2.new(0, 30, 1, 0)
+    iconLabel.Position = UDim2.new(0, 10, 0, 0)
     iconLabel.BackgroundTransparency = 1
     iconLabel.Text = icon
     iconLabel.Font = Enum.Font.GothamBold
-    iconLabel.TextSize = 26
+    iconLabel.TextSize = 24
     iconLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     iconLabel.TextXAlignment = Enum.TextXAlignment.Left
-    iconLabel.TextStrokeTransparency = 0.8
     
     local nameLabel = Instance.new("TextLabel", btn)
-    nameLabel.Size = UDim2.new(1, -55, 1, 0)
-    nameLabel.Position = UDim2.new(0, 50, 0, 0)
+    nameLabel.Size = UDim2.new(1, -50, 1, 0)
+    nameLabel.Position = UDim2.new(0, 45, 0, 0)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = name
     nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextSize = 14
+    nameLabel.TextSize = 13
     nameLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    nameLabel.TextStrokeTransparency = 0.9
     
-    _G.UniversalUtility.UI.TabButtons[name] = {Button = btn, Icon = iconLabel, Label = nameLabel, Glow = glow}
+    _G.UniversalUtility.UI.TabButtons[name] = {Button = btn, Icon = iconLabel, Label = nameLabel}
     
     btn.MouseEnter:Connect(function()
         if Config.CurrentTab ~= name then
             TweenService:Create(btn, TweenPresets.Fast, {
-                BackgroundColor3 = Color3.fromRGB(50, 50, 65),
-                Size = UDim2.new(1, -10, 0, 58)
+                BackgroundColor3 = Color3.fromRGB(45, 45, 52)
             }):Play()
             TweenService:Create(iconLabel, TweenPresets.Fast, {
-                TextColor3 = Color3.fromRGB(220, 220, 220)
+                TextColor3 = Color3.fromRGB(200, 200, 200)
             }):Play()
             TweenService:Create(nameLabel, TweenPresets.Fast, {
-                TextColor3 = Color3.fromRGB(220, 220, 220)
-            }):Play()
-            TweenService:Create(glow, TweenPresets.Fast, {
-                ImageTransparency = 0.85
+                TextColor3 = Color3.fromRGB(200, 200, 200)
             }):Play()
         end
     end)
@@ -322,17 +258,13 @@ function _G.UniversalUtility.Helpers.CreateTabButton(name, icon, position)
     btn.MouseLeave:Connect(function()
         if Config.CurrentTab ~= name then
             TweenService:Create(btn, TweenPresets.Fast, {
-                BackgroundColor3 = Color3.fromRGB(35, 35, 45),
-                Size = UDim2.new(1, -14, 0, 58)
+                BackgroundColor3 = Color3.fromRGB(35, 35, 42)
             }):Play()
             TweenService:Create(iconLabel, TweenPresets.Fast, {
                 TextColor3 = Color3.fromRGB(180, 180, 180)
             }):Play()
             TweenService:Create(nameLabel, TweenPresets.Fast, {
                 TextColor3 = Color3.fromRGB(180, 180, 180)
-            }):Play()
-            TweenService:Create(glow, TweenPresets.Fast, {
-                ImageTransparency = 1
             }):Play()
         end
     end)
@@ -348,16 +280,16 @@ function _G.UniversalUtility.Helpers.CreateTabContent(name)
     scroll.Position = UDim2.new(0, 5, 0, 5)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
-    scroll.ScrollBarThickness = 6
-    scroll.ScrollBarImageColor3 = Color3.fromRGB(120, 160, 255)
-    scroll.ScrollBarImageTransparency = 0.4
+    scroll.ScrollBarThickness = 4
+    scroll.ScrollBarImageColor3 = Color3.fromRGB(100, 150, 255)
+    scroll.ScrollBarImageTransparency = 0.5
     scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     scroll.Visible = false
     scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
     
     local layout = Instance.new("UIListLayout", scroll)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding = UDim.new(0, 12)
+    layout.Padding = UDim.new(0, 10)
     
     _G.UniversalUtility.UI.TabContents[name] = scroll
     return scroll
