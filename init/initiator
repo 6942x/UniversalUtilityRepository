@@ -20,7 +20,7 @@ _G.UniversalUtility.Initiator = {}
 local function SetDebounce(key, duration)
     if Debounces[key] then return false end
     Debounces[key] = true
-    task.delay(duration or 0.3, function() Debounces[key] = false end)
+    task.delay(duration or 0.01, function() Debounces[key] = false end)
     return true
 end
 
