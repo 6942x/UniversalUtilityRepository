@@ -188,7 +188,7 @@ AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
 end)
 
 AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
-    if not SetDebounce("ClickType", 0.3) then return end
+    if not SetDebounce("ClickType", 0.01) then return end
     if Config.ClickType == "Current" then return end
     Config.ClickType = "Current"
     UpdateClickTypeButtons()
@@ -196,7 +196,7 @@ AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
 end)
 
 AntiAFKElements.ClickTypeCenter.MouseButton1Click:Connect(function()
-    if not SetDebounce("ClickType", 0.3) then return end
+    if not SetDebounce("ClickType", 0.01) then return end
     if Config.ClickType == "Center" then return end
     Config.ClickType = "Center"
     UpdateClickTypeButtons()
@@ -204,7 +204,7 @@ AntiAFKElements.ClickTypeCenter.MouseButton1Click:Connect(function()
 end)
 
 AntiAFKElements.ClickTypeRandom.MouseButton1Click:Connect(function()
-    if not SetDebounce("ClickType", 0.3) then return end
+    if not SetDebounce("ClickType", 0.01) then return end
     if Config.ClickType == "Random" then return end
     Config.ClickType = "Random"
     UpdateClickTypeButtons()
