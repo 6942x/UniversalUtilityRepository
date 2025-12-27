@@ -195,7 +195,7 @@ ServerIdLabel.Position = UDim2.new(0, 65, 0, 130)
 ServerIdLabel.BackgroundTransparency = 1
 ServerIdLabel.Text = "Server ID: " .. game.JobId
 ServerIdLabel.Font = Enum.Font.Gotham
-ServerIdLabel.TextScaled = true
+ServerIdLabel.TextSize = 14
 ServerIdLabel.TextColor3 = Color3.fromRGB(255, 180, 180)
 ServerIdLabel.TextXAlignment = Enum.TextXAlignment.Center
 
