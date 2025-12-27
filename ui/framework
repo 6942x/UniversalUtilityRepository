@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local MarketplaceService = game:GetService("MarketplaceService")
+local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local Config = _G.UniversalUtility.Config
@@ -31,7 +32,9 @@ _G.UniversalUtility.UI.TweenPresets = {
     Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     Slow = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
     Back = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-    BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+    Smooth = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+    Elastic = TweenInfo.new(0.6, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)
 }
 
 local MainFrame = Instance.new("Frame", ScreenGui)
@@ -48,6 +51,32 @@ MainFrame.Visible = false
 local UICorner = Instance.new("UICorner", MainFrame)
 UICorner.CornerRadius = UDim.new(0, 16)
 
+local MainFrameStroke = Instance.new("UIStroke", MainFrame)
+MainFrameStroke.Color = Color3.fromRGB(100, 150, 255)
+MainFrameStroke.Thickness = 2
+MainFrameStroke.Transparency = 0.5
+
+local MainGradient = Instance.new("UIGradient", MainFrame)
+MainGradient.Color = ColorSequence.new(Color3.fromRGB(30, 30, 38), Color3.fromRGB(20, 20, 25))
+MainGradient.Rotation = 45
+
+local GlowFrame = Instance.new("Frame", MainFrame)
+GlowFrame.Name = "Glow"
+GlowFrame.Size = UDim2.new(1, 6, 1, 6)
+GlowFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+GlowFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+GlowFrame.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+GlowFrame.BackgroundTransparency = 0.85
+GlowFrame.BorderSizePixel = 0
+GlowFrame.ZIndex = 0
+Instance.new("UICorner", GlowFrame).CornerRadius = UDim.new(0, 18)
+
+local glowTween = TweenService:Create(GlowFrame, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+    BackgroundTransparency = 0.7,
+    Size = UDim2.new(1, 10, 1, 10)
+})
+glowTween:Play()
+
 local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Name = "TopBar"
 TopBar.Size = UDim2.new(1, 0, 0, 40)
@@ -59,6 +88,30 @@ TopBar.BorderSizePixel = 0
 local TopBarCorner = Instance.new("UICorner", TopBar)
 TopBarCorner.CornerRadius = UDim.new(0, 16)
 
+local TopBarGradient = Instance.new("UIGradient", TopBar)
+TopBarGradient.Color = ColorSequence.new(Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
+TopBarGradient.Rotation = 90
+
+local TopBarShine = Instance.new("Frame", TopBar)
+TopBarShine.Size = UDim2.new(0, 100, 1, 0)
+TopBarShine.Position = UDim2.new(-0.2, 0, 0, 0)
+TopBarShine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+TopBarShine.BackgroundTransparency = 0.9
+TopBarShine.BorderSizePixel = 0
+TopBarShine.ZIndex = 5
+local shineGradient = Instance.new("UIGradient", TopBarShine)
+shineGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 1),
+    NumberSequenceKeypoint.new(0.5, 0),
+    NumberSequenceKeypoint.new(1, 1)
+})
+shineGradient.Rotation = 90
+
+local shineTween = TweenService:Create(TopBarShine, TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {
+    Position = UDim2.new(1.2, 0, 0, 0)
+})
+shineTween:Play()
+
 local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(1, -80, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
@@ -68,20 +121,40 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 24
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.ZIndex = 6
 
-local CloseButton = Instance.new("ImageButton", TopBar)
+local titleStroke = Instance.new("UIStroke", Title)
+titleStroke.Color = Color3.fromRGB(100, 150, 255)
+titleStroke.Thickness = 1
+titleStroke.Transparency = 0.7
+
+local titleGradient = Instance.new("UIGradient", Title)
+titleGradient.Color = ColorSequence.new(Color3.fromRGB(150, 200, 255), Color3.fromRGB(255, 255, 255))
+titleGradient.Rotation = 45
+
+local CloseButton = Instance.new("TextButton", TopBar)
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -40, 0.48, 0)
+CloseButton.Position = UDim2.new(1, -40, 0.5, 0)
 CloseButton.AnchorPoint = Vector2.new(0, 0.5)
 CloseButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
 CloseButton.BorderSizePixel = 0
-CloseButton.Image = "rbxassetid://3926305904"
-CloseButton.ImageRectOffset = Vector2.new(284, 4)
-CloseButton.ImageRectSize = Vector2.new(24, 24)
-CloseButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Text = "✕"
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 18
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.ZIndex = 6
 
 local CloseButtonCorner = Instance.new("UICorner", CloseButton)
 CloseButtonCorner.CornerRadius = UDim.new(0, 8)
+
+local closeButtonStroke = Instance.new("UIStroke", CloseButton)
+closeButtonStroke.Color = Color3.fromRGB(180, 30, 30)
+closeButtonStroke.Thickness = 2
+closeButtonStroke.Transparency = 0.3
+
+local closeGradient = Instance.new("UIGradient", CloseButton)
+closeGradient.Color = ColorSequence.new(Color3.fromRGB(240, 60, 60), Color3.fromRGB(200, 40, 40))
+closeGradient.Rotation = 135
 
 local SideNav = Instance.new("Frame", MainFrame)
 SideNav.Name = "SideNav"
@@ -93,6 +166,15 @@ SideNav.BorderSizePixel = 0
 local SideNavCorner = Instance.new("UICorner", SideNav)
 SideNavCorner.CornerRadius = UDim.new(0, 12)
 
+local sideNavGradient = Instance.new("UIGradient", SideNav)
+sideNavGradient.Color = ColorSequence.new(Color3.fromRGB(35, 35, 42), Color3.fromRGB(25, 25, 30))
+sideNavGradient.Rotation = 90
+
+local sideNavStroke = Instance.new("UIStroke", SideNav)
+sideNavStroke.Color = Color3.fromRGB(80, 120, 255)
+sideNavStroke.Thickness = 1
+sideNavStroke.Transparency = 0.8
+
 local ContentFrame = Instance.new("Frame", MainFrame)
 ContentFrame.Name = "ContentFrame"
 ContentFrame.Size = UDim2.new(1, -180, 1, -40)
@@ -101,7 +183,7 @@ ContentFrame.BackgroundTransparency = 1
 ContentFrame.BorderSizePixel = 0
 ContentFrame.ClipsDescendants = true
 
-local ReopenButton = Instance.new("ImageButton", ScreenGui)
+local ReopenButton = Instance.new("TextButton", ScreenGui)
 ReopenButton.Name = "ReopenButton"
 ReopenButton.Size = UDim2.new(0, 0, 0, 0)
 ReopenButton.Position = UDim2.new(0.5, 0, 0, 30)
@@ -109,17 +191,50 @@ ReopenButton.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 ReopenButton.BorderSizePixel = 0
 ReopenButton.Visible = false
 ReopenButton.ZIndex = 10
+ReopenButton.Text = ""
 
 local ReopenCorner = Instance.new("UICorner", ReopenButton)
 ReopenCorner.CornerRadius = UDim.new(1, 0)
+
+local reopenStroke = Instance.new("UIStroke", ReopenButton)
+reopenStroke.Color = Color3.fromRGB(150, 200, 255)
+reopenStroke.Thickness = 3
+reopenStroke.Transparency = 0.3
+
+local reopenGradient = Instance.new("UIGradient", ReopenButton)
+reopenGradient.Color = ColorSequence.new(Color3.fromRGB(120, 170, 255), Color3.fromRGB(80, 130, 235))
+reopenGradient.Rotation = 135
+
+local ReopenGlow = Instance.new("Frame", ReopenButton)
+ReopenGlow.Name = "Glow"
+ReopenGlow.Size = UDim2.new(1, 12, 1, 12)
+ReopenGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+ReopenGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+ReopenGlow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+ReopenGlow.BackgroundTransparency = 0.8
+ReopenGlow.BorderSizePixel = 0
+ReopenGlow.ZIndex = 9
+Instance.new("UICorner", ReopenGlow).CornerRadius = UDim.new(1, 0)
+
+local reopenGlowTween = TweenService:Create(ReopenGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+    BackgroundTransparency = 0.6,
+    Size = UDim2.new(1, 18, 1, 18)
+})
+reopenGlowTween:Play()
 
 local ReopenIcon = Instance.new("TextLabel", ReopenButton)
 ReopenIcon.Size = UDim2.new(1, 0, 1, 0)
 ReopenIcon.BackgroundTransparency = 1
 ReopenIcon.Text = "⚡"
 ReopenIcon.Font = Enum.Font.GothamBold
-ReopenIcon.TextSize = 24
+ReopenIcon.TextSize = 28
 ReopenIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+ReopenIcon.ZIndex = 11
+
+local iconStroke = Instance.new("UIStroke", ReopenIcon)
+iconStroke.Color = Color3.fromRGB(200, 230, 255)
+iconStroke.Thickness = 2
+iconStroke.Transparency = 0.5
 
 _G.UniversalUtility.UI.MainFrame = MainFrame
 _G.UniversalUtility.UI.ContentFrame = ContentFrame
@@ -133,17 +248,102 @@ local executor = (identifyexecutor and identifyexecutor()) or
                  (getexecutorname and getexecutorname()) or 
                  "Unknown Executor"
 
+local particleConnection
+function _G.UniversalUtility.UI.CreateParticleEffect()
+    if particleConnection then return end
+    
+    local particles = {}
+    for i = 1, 8 do
+        local particle = Instance.new("Frame", MainFrame)
+        particle.Size = UDim2.new(0, 4, 0, 4)
+        particle.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+        particle.BackgroundTransparency = 0.7
+        particle.BorderSizePixel = 0
+        particle.ZIndex = 1
+        Instance.new("UICorner", particle).CornerRadius = UDim.new(1, 0)
+        
+        particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+        particles[i] = {
+            frame = particle,
+            speedX = (math.random() - 0.5) * 0.002,
+            speedY = (math.random() - 0.5) * 0.002
+        }
+    end
+    
+    particleConnection = RunService.RenderStepped:Connect(function()
+        for _, particle in ipairs(particles) do
+            local pos = particle.frame.Position
+            local newX = pos.X.Scale + particle.speedX
+            local newY = pos.Y.Scale + particle.speedY
+            
+            if newX < 0 or newX > 1 then particle.speedX = -particle.speedX end
+            if newY < 0 or newY > 1 then particle.speedY = -particle.speedY end
+            
+            particle.frame.Position = UDim2.new(
+                math.clamp(newX, 0, 1), 0,
+                math.clamp(newY, 0, 1), 0
+            )
+        end
+    end)
+end
+
+local rainbowConnection
+function _G.UniversalUtility.UI.StartRainbowEffect()
+    if rainbowConnection then return end
+    
+    local hue = 0
+    rainbowConnection = RunService.RenderStepped:Connect(function(dt)
+        hue = (hue + dt * 0.1) % 1
+        local color = Color3.fromHSV(hue, 0.6, 1)
+        
+        if MainFrameStroke then
+            MainFrameStroke.Color = color
+        end
+        if reopenStroke then
+            reopenStroke.Color = color
+        end
+    end)
+end
+
+function _G.UniversalUtility.UI.StopRainbowEffect()
+    if rainbowConnection then
+        rainbowConnection:Disconnect()
+        rainbowConnection = nil
+        
+        if MainFrameStroke then
+            MainFrameStroke.Color = Color3.fromRGB(100, 150, 255)
+        end
+        if reopenStroke then
+            reopenStroke.Color = Color3.fromRGB(150, 200, 255)
+        end
+    end
+end
+
 function _G.UniversalUtility.UI.LoadPlayerInfo()
     task.spawn(function()
         pcall(function()
             if _G.UniversalUtility.UI.PlayerImage then
                 _G.UniversalUtility.UI.PlayerImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=420&h=420"
+                
+                local loadTween = TweenService:Create(_G.UniversalUtility.UI.PlayerImage, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                    ImageTransparency = 0
+                })
+                _G.UniversalUtility.UI.PlayerImage.ImageTransparency = 1
+                loadTween:Play()
             end
+            
             if _G.UniversalUtility.UI.GameName and _G.UniversalUtility.UI.GameImage then
                 local gameInfo = MarketplaceService:GetProductInfo(game.PlaceId)
                 _G.UniversalUtility.UI.GameName.Text = gameInfo.Name
+                
                 if gameInfo.IconImageAssetId and gameInfo.IconImageAssetId ~= 0 then
                     _G.UniversalUtility.UI.GameImage.Image = "rbxthumb://type=Asset&id=" .. gameInfo.IconImageAssetId .. "&w=420&h=420"
+                    
+                    local loadTween = TweenService:Create(_G.UniversalUtility.UI.GameImage, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                        ImageTransparency = 0
+                    })
+                    _G.UniversalUtility.UI.GameImage.ImageTransparency = 1
+                    loadTween:Play()
                 end
             end
         end)
