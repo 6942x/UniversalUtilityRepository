@@ -28,7 +28,8 @@ _G.UniversalUtility.Config = {
     SpamDelay = 0.1,
     SpamKey = "Q",
     SavedCode = "",
-    CurrentTab = "Home"
+    CurrentTab = "Home",
+    UITransparency = 0
 }
 
 local Config = _G.UniversalUtility.Config
@@ -49,7 +50,8 @@ function _G.UniversalUtility.SaveConfig()
             SpamDelay = Config.SpamDelay,
             SpamKey = Config.SpamKey,
             SavedCode = Config.SavedCode,
-            CurrentTab = Config.CurrentTab
+            CurrentTab = Config.CurrentTab,
+            UITransparency = Config.UITransparency
         })
         writefile("UniversalUtilityConfig.json", configData)
     end
@@ -75,6 +77,7 @@ function _G.UniversalUtility.LoadConfig()
             Config.SpamKey = data.SpamKey or "Q"
             Config.SavedCode = data.SavedCode or ""
             Config.CurrentTab = data.CurrentTab or "Home"
+            Config.UITransparency = data.UITransparency or 0
             return true
         end
     end
