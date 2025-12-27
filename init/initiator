@@ -62,8 +62,13 @@ local function UpdateClickTypeButtons()
             _G.UniversalUtility.ButtonStates[btn].IsHovering = false
         end
         
+        local originalSize = UDim2.new(0, 85, 0, 30)
         btn.BackgroundColor3 = targetColor
-        btn.Size = UDim2.new(0, 85, 0, 30)
+        btn.Size = originalSize
+        
+        if _G.UniversalUtility.ButtonStates[btn] then
+            _G.UniversalUtility.ButtonStates[btn].OriginalSize = originalSize
+        end
     end
 end
 
@@ -166,21 +171,84 @@ end)
 AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
     if Config.ClickType == "Current" then return end
     Config.ClickType = "Current"
-    UpdateClickTypeButtons()
+    
+    AntiAFKElements.ClickTypeCurrent.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    AntiAFKElements.ClickTypeCenter.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    AntiAFKElements.ClickTypeRandom.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent].BaseColor = Color3.fromRGB(100, 150, 255)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent].IsHovering = false
+    end
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter].BaseColor = Color3.fromRGB(45, 45, 52)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter].IsHovering = false
+    end
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom].BaseColor = Color3.fromRGB(45, 45, 52)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom].IsHovering = false
+    end
+    
+    AntiAFKElements.ClickTypeCurrent.Size = UDim2.new(0, 85, 0, 30)
+    AntiAFKElements.ClickTypeCenter.Size = UDim2.new(0, 85, 0, 30)
+    AntiAFKElements.ClickTypeRandom.Size = UDim2.new(0, 85, 0, 30)
+    
     _G.UniversalUtility.SaveConfig()
 end)
 
 AntiAFKElements.ClickTypeCenter.MouseButton1Click:Connect(function()
     if Config.ClickType == "Center" then return end
     Config.ClickType = "Center"
-    UpdateClickTypeButtons()
+    
+    AntiAFKElements.ClickTypeCurrent.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    AntiAFKElements.ClickTypeCenter.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    AntiAFKElements.ClickTypeRandom.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent].BaseColor = Color3.fromRGB(45, 45, 52)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent].IsHovering = false
+    end
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter].BaseColor = Color3.fromRGB(100, 150, 255)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter].IsHovering = false
+    end
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom].BaseColor = Color3.fromRGB(45, 45, 52)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom].IsHovering = false
+    end
+    
+    AntiAFKElements.ClickTypeCurrent.Size = UDim2.new(0, 85, 0, 30)
+    AntiAFKElements.ClickTypeCenter.Size = UDim2.new(0, 85, 0, 30)
+    AntiAFKElements.ClickTypeRandom.Size = UDim2.new(0, 85, 0, 30)
+    
     _G.UniversalUtility.SaveConfig()
 end)
 
 AntiAFKElements.ClickTypeRandom.MouseButton1Click:Connect(function()
     if Config.ClickType == "Random" then return end
     Config.ClickType = "Random"
-    UpdateClickTypeButtons()
+    
+    AntiAFKElements.ClickTypeCurrent.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    AntiAFKElements.ClickTypeCenter.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+    AntiAFKElements.ClickTypeRandom.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent].BaseColor = Color3.fromRGB(45, 45, 52)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCurrent].IsHovering = false
+    end
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter].BaseColor = Color3.fromRGB(45, 45, 52)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeCenter].IsHovering = false
+    end
+    if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom] then
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom].BaseColor = Color3.fromRGB(100, 150, 255)
+        _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickTypeRandom].IsHovering = false
+    end
+    
+    AntiAFKElements.ClickTypeCurrent.Size = UDim2.new(0, 85, 0, 30)
+    AntiAFKElements.ClickTypeCenter.Size = UDim2.new(0, 85, 0, 30)
+    AntiAFKElements.ClickTypeRandom.Size = UDim2.new(0, 85, 0, 30)
+    
     _G.UniversalUtility.SaveConfig()
 end)
 
