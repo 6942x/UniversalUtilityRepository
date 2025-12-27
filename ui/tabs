@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local Config = _G.UniversalUtility.Config
@@ -18,42 +17,11 @@ local KeyCodeNames = _G.UniversalUtility.KeyCodeNames
 
 _G.UniversalUtility.Tabs = {}
 
-local TWEEN_INFO_FAST = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-local TWEEN_INFO_SMOOTH = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-local TWEEN_INFO_BOUNCE = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-
 local function SetDebounce(key, duration)
     if Debounces[key] then return false end
     Debounces[key] = true
     task.delay(duration or 0.3, function() Debounces[key] = false end)
     return true
-end
-
-local function CreateGradient(parent, color1, color2, rotation)
-    local gradient = Instance.new("UIGradient", parent)
-    gradient.Color = ColorSequence.new(color1 or Color3.fromRGB(80, 80, 100), color2 or Color3.fromRGB(40, 40, 50))
-    gradient.Rotation = rotation or 90
-    return gradient
-end
-
-local function AnimateGlow(frame)
-    local glow = Instance.new("Frame", frame)
-    glow.Size = UDim2.new(1, 4, 1, 4)
-    glow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    glow.AnchorPoint = Vector2.new(0.5, 0.5)
-    glow.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-    glow.BackgroundTransparency = 0.7
-    glow.BorderSizePixel = 0
-    glow.ZIndex = frame.ZIndex - 1
-    Instance.new("UICorner", glow).CornerRadius = UDim.new(0, 12)
-    
-    local pulse = TweenService:Create(glow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
-        BackgroundTransparency = 0.9,
-        Size = UDim2.new(1, 8, 1, 8)
-    })
-    pulse:Play()
-    
-    return glow
 end
 
 local tabList = {
@@ -88,7 +56,6 @@ PlayerInfoFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
 PlayerInfoFrame.BorderSizePixel = 0
 PlayerInfoFrame.LayoutOrder = 1
 Instance.new("UICorner", PlayerInfoFrame).CornerRadius = UDim.new(0, 10)
-CreateGradient(PlayerInfoFrame, Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
 
 local PlayerImage = Instance.new("ImageLabel", PlayerInfoFrame)
 PlayerImage.Size = UDim2.new(0, 120, 0, 140)
@@ -97,7 +64,6 @@ PlayerImage.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
 PlayerImage.BorderSizePixel = 0
 PlayerImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
 Instance.new("UICorner", PlayerImage).CornerRadius = UDim.new(0, 10)
-Instance.new("UIStroke", PlayerImage).Color = Color3.fromRGB(80, 120, 255)
 
 local PlayerName = Instance.new("TextLabel", PlayerInfoFrame)
 PlayerName.Size = UDim2.new(1, -145, 0, 22)
@@ -116,7 +82,7 @@ FPSLabel.BackgroundTransparency = 1
 FPSLabel.Text = "FPS: 60"
 FPSLabel.Font = Enum.Font.Gotham
 FPSLabel.TextSize = 24
-FPSLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+FPSLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 FPSLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local PingLabel = Instance.new("TextLabel", PlayerInfoFrame)
@@ -126,7 +92,7 @@ PingLabel.BackgroundTransparency = 1
 PingLabel.Text = "Ping: 0 ms"
 PingLabel.Font = Enum.Font.Gotham
 PingLabel.TextSize = 24
-PingLabel.TextColor3 = Color3.fromRGB(50, 255, 150)
+PingLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
 PingLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local executor = (identifyexecutor and identifyexecutor()) or (getexecutorname and getexecutorname()) or "Unknown Executor"
@@ -138,7 +104,7 @@ ExecutorLabel.BackgroundTransparency = 1
 ExecutorLabel.Text = "Executor: " .. executor
 ExecutorLabel.Font = Enum.Font.Gotham
 ExecutorLabel.TextSize = 24
-ExecutorLabel.TextColor3 = Color3.fromRGB(255, 80, 180)
+ExecutorLabel.TextColor3 = Color3.fromRGB(255, 0, 125)
 ExecutorLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local GameInfoFrame = Instance.new("Frame", HomeContent)
@@ -147,7 +113,6 @@ GameInfoFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
 GameInfoFrame.BorderSizePixel = 0
 GameInfoFrame.LayoutOrder = 2
 Instance.new("UICorner", GameInfoFrame).CornerRadius = UDim.new(0, 10)
-CreateGradient(GameInfoFrame, Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
 
 local GameImage = Instance.new("ImageLabel", GameInfoFrame)
 GameImage.Size = UDim2.new(0, 120, 0, 140)
@@ -156,7 +121,6 @@ GameImage.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
 GameImage.BorderSizePixel = 0
 GameImage.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
 Instance.new("UICorner", GameImage).CornerRadius = UDim.new(0, 10)
-Instance.new("UIStroke", GameImage).Color = Color3.fromRGB(80, 120, 255)
 
 local GameName = Instance.new("TextLabel", GameInfoFrame)
 GameName.Size = UDim2.new(1, -20, 0, 24)
@@ -186,12 +150,12 @@ PlayersInServerLabel.BackgroundTransparency = 1
 PlayersInServerLabel.Text = "Players in the server: " .. #Players:GetPlayers()
 PlayersInServerLabel.Font = Enum.Font.Gotham
 PlayersInServerLabel.TextSize = 24
-PlayersInServerLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
+PlayersInServerLabel.TextColor3 = Color3.fromRGB(180, 255, 180)
 PlayersInServerLabel.TextXAlignment = Enum.TextXAlignment.Center
 
 local ServerIdLabel = Instance.new("TextLabel", GameInfoFrame)
 ServerIdLabel.Size = UDim2.new(1, 0, 0, 18)
-ServerIdLabel.Position = UDim2.new(0, 65, 0, 130)
+ServerIdLabel.Position = UDim2.new(0, 55, 0, 130)
 ServerIdLabel.BackgroundTransparency = 1
 ServerIdLabel.Text = "Server ID: " .. game.JobId
 ServerIdLabel.Font = Enum.Font.Gotham
@@ -210,7 +174,6 @@ _G.UniversalUtility.Tabs.CreateAntiAFKTab = function()
     Container.BorderSizePixel = 0
     Container.LayoutOrder = 1
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
-    CreateGradient(Container, Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
     
     local Title = Instance.new("TextLabel", Container)
     Title.Size = UDim2.new(1, -20, 0, 24)
@@ -219,7 +182,7 @@ _G.UniversalUtility.Tabs.CreateAntiAFKTab = function()
     Title.Text = "Anti-AFK Methods"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
-    Title.TextColor3 = Color3.fromRGB(100, 200, 255)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     
     local JumpToggle = Helpers.CreateButton(Container, UDim2.new(0, 140, 0, 36), "Auto Jump: OFF")
@@ -235,7 +198,7 @@ _G.UniversalUtility.Tabs.CreateAntiAFKTab = function()
     ClickTypeLabel.Text = "Click Type:"
     ClickTypeLabel.Font = Enum.Font.Gotham
     ClickTypeLabel.TextSize = 13
-    ClickTypeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    ClickTypeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     ClickTypeLabel.TextXAlignment = Enum.TextXAlignment.Left
     
     local ClickTypeCurrent = Helpers.CreateButton(Container, UDim2.new(0, 85, 0, 30), "Current")
@@ -288,7 +251,6 @@ _G.UniversalUtility.Tabs.CreateKeySpamTab = function()
     Container.BorderSizePixel = 0
     Container.LayoutOrder = 1
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
-    CreateGradient(Container, Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
     
     local Title = Instance.new("TextLabel", Container)
     Title.Size = UDim2.new(1, -20, 0, 24)
@@ -297,7 +259,7 @@ _G.UniversalUtility.Tabs.CreateKeySpamTab = function()
     Title.Text = "Key Spam Configuration"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
-    Title.TextColor3 = Color3.fromRGB(100, 200, 255)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     
     local SpamInput = Instance.new("TextBox", Container)
@@ -313,7 +275,6 @@ _G.UniversalUtility.Tabs.CreateKeySpamTab = function()
     SpamInput.BorderSizePixel = 0
     SpamInput.ClearTextOnFocus = false
     Instance.new("UICorner", SpamInput).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", SpamInput).Color = Color3.fromRGB(80, 120, 255)
     
     local SpamDelayFrame, SpamDelaySlider, SpamSliderFill, SpamSliderButton, SpamDelayBox = Helpers.CreateSlider(Container, UDim2.new(1, -20, 0, 50), 0.05, 5, 0.1, "Spam Delay (seconds):")
     SpamDelayFrame.Position = UDim2.new(0, 10, 0, 110)
@@ -349,7 +310,6 @@ _G.UniversalUtility.Tabs.CreatePerformanceTab = function()
     Container.BorderSizePixel = 0
     Container.LayoutOrder = 1
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
-    CreateGradient(Container, Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
     
     local Title = Instance.new("TextLabel", Container)
     Title.Size = UDim2.new(1, -20, 0, 24)
@@ -358,7 +318,7 @@ _G.UniversalUtility.Tabs.CreatePerformanceTab = function()
     Title.Text = "Performance Analytics"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
-    Title.TextColor3 = Color3.fromRGB(100, 200, 255)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     
     local FPSUnlockToggle = Helpers.CreateButton(Container, UDim2.new(0, 160, 0, 36), "FPS Unlock: OFF")
@@ -371,7 +331,7 @@ _G.UniversalUtility.Tabs.CreatePerformanceTab = function()
     FPSUnlockStatus.Text = "Target: 60 FPS"
     FPSUnlockStatus.Font = Enum.Font.Gotham
     FPSUnlockStatus.TextSize = 16
-    FPSUnlockStatus.TextColor3 = Color3.fromRGB(200, 200, 200)
+    FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
     FPSUnlockStatus.TextXAlignment = Enum.TextXAlignment.Center
     
     local FPSValueFrame, FPSSlider, FPSFill, FPSButton, FPSValueBox = Helpers.CreateSlider(Container, UDim2.new(1, -20, 0, 50), 15, 360, 60, "Target FPS:")
@@ -383,7 +343,6 @@ _G.UniversalUtility.Tabs.CreatePerformanceTab = function()
     FPSStatsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     FPSStatsFrame.BorderSizePixel = 0
     Instance.new("UICorner", FPSStatsFrame).CornerRadius = UDim.new(0, 8)
-    CreateGradient(FPSStatsFrame, Color3.fromRGB(40, 40, 48), Color3.fromRGB(25, 25, 30))
     
     local CurrentFPSLabel = Instance.new("TextLabel", FPSStatsFrame)
     CurrentFPSLabel.Size = UDim2.new(0.33, 0, 1, 0)
@@ -420,7 +379,6 @@ _G.UniversalUtility.Tabs.CreatePerformanceTab = function()
     PingStatsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     PingStatsFrame.BorderSizePixel = 0
     Instance.new("UICorner", PingStatsFrame).CornerRadius = UDim.new(0, 8)
-    CreateGradient(PingStatsFrame, Color3.fromRGB(40, 40, 48), Color3.fromRGB(25, 25, 30))
     
     local CurrentPingLabel = Instance.new("TextLabel", PingStatsFrame)
     CurrentPingLabel.Size = UDim2.new(0.33, 0, 1, 0)
@@ -457,7 +415,6 @@ _G.UniversalUtility.Tabs.CreatePerformanceTab = function()
     NetworkStatusFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     NetworkStatusFrame.BorderSizePixel = 0
     Instance.new("UICorner", NetworkStatusFrame).CornerRadius = UDim.new(0, 8)
-    CreateGradient(NetworkStatusFrame, Color3.fromRGB(40, 40, 48), Color3.fromRGB(25, 25, 30))
     
     local NetworkStatusLabel = Instance.new("TextLabel", NetworkStatusFrame)
     NetworkStatusLabel.Size = UDim2.new(0.5, 0, 1, 0)
@@ -484,23 +441,18 @@ _G.UniversalUtility.Tabs.CreatePerformanceTab = function()
     PerformanceInfo.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     PerformanceInfo.BorderSizePixel = 0
     PerformanceInfo.Text = "Performance monitoring provides real-time statistics about your game's FPS and network latency.\n\nLocking your FPS into small values may result in a lower memory consumption from Roblox but will also decrease the game quality."
-    PerformanceInfo.Font = Enum.Font.GothamBold
-    PerformanceInfo.TextSize = 14
-    PerformanceInfo.TextColor3 = Color3.fromRGB(255, 220, 180)
+    PerformanceInfo.Font = Enum.Font.Gotham
+    PerformanceInfo.TextScaled = true
+    PerformanceInfo.TextColor3 = Color3.fromRGB(255, 200, 150)
     PerformanceInfo.TextWrapped = true
     PerformanceInfo.TextXAlignment = Enum.TextXAlignment.Left
     PerformanceInfo.TextYAlignment = Enum.TextYAlignment.Top
     Instance.new("UICorner", PerformanceInfo).CornerRadius = UDim.new(0, 8)
-    CreateGradient(PerformanceInfo, Color3.fromRGB(40, 40, 48), Color3.fromRGB(25, 25, 30))
     local padding = Instance.new("UIPadding", PerformanceInfo)
     padding.PaddingLeft = UDim.new(0, 10)
     padding.PaddingRight = UDim.new(0, 10)
     padding.PaddingTop = UDim.new(0, 10)
     padding.PaddingBottom = UDim.new(0, 10)
-    local stroke = Instance.new("UIStroke", PerformanceInfo)
-    stroke.Color = Color3.fromRGB(255, 200, 150)
-    stroke.Thickness = 0.5
-    stroke.Transparency = 0.7
     
     return {
         FPSUnlockToggle = FPSUnlockToggle,
@@ -530,7 +482,6 @@ _G.UniversalUtility.Tabs.CreateAutoRejoinTab = function()
     Container.BorderSizePixel = 0
     Container.LayoutOrder = 1
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
-    CreateGradient(Container, Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
     
     local Title = Instance.new("TextLabel", Container)
     Title.Size = UDim2.new(1, -20, 0, 24)
@@ -539,7 +490,7 @@ _G.UniversalUtility.Tabs.CreateAutoRejoinTab = function()
     Title.Text = "Auto Rejoin"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
-    Title.TextColor3 = Color3.fromRGB(100, 200, 255)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     
     local AutoRejoinToggle = Helpers.CreateButton(Container, UDim2.new(0, 180, 0, 40), "Auto Rejoin: OFF")
@@ -552,7 +503,7 @@ _G.UniversalUtility.Tabs.CreateAutoRejoinTab = function()
     Status.Text = "Status: Disabled\n\nAutomatically rejoins the game when you get disconnected.\nUseful for preventing AFK kicks."
     Status.Font = Enum.Font.Gotham
     Status.TextSize = 16
-    Status.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Status.TextColor3 = Color3.fromRGB(180, 180, 180)
     Status.TextXAlignment = Enum.TextXAlignment.Center
     Status.TextWrapped = true
     
@@ -569,7 +520,6 @@ _G.UniversalUtility.Tabs.CreateScriptLoaderTab = function()
     Container.BorderSizePixel = 0
     Container.LayoutOrder = 1
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
-    CreateGradient(Container, Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
     
     local Title = Instance.new("TextLabel", Container)
     Title.Size = UDim2.new(1, -20, 0, 24)
@@ -578,7 +528,7 @@ _G.UniversalUtility.Tabs.CreateScriptLoaderTab = function()
     Title.Text = "Script Loader"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
-    Title.TextColor3 = Color3.fromRGB(100, 200, 255)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     
     local CodeEditorFrame = Instance.new("Frame", Container)
@@ -587,7 +537,6 @@ _G.UniversalUtility.Tabs.CreateScriptLoaderTab = function()
     CodeEditorFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
     CodeEditorFrame.BorderSizePixel = 0
     Instance.new("UICorner", CodeEditorFrame).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", CodeEditorFrame).Color = Color3.fromRGB(80, 120, 255)
     
     local LineNumbersScrollFrame = Instance.new("ScrollingFrame", CodeEditorFrame)
     LineNumbersScrollFrame.Size = UDim2.new(0, 40, 1, 0)
@@ -611,7 +560,7 @@ _G.UniversalUtility.Tabs.CreateScriptLoaderTab = function()
     local Separator = Instance.new("Frame", CodeEditorFrame)
     Separator.Size = UDim2.new(0, 1, 1, 0)
     Separator.Position = UDim2.new(0, 40, 0, 0)
-    Separator.BackgroundColor3 = Color3.fromRGB(80, 120, 255)
+    Separator.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
     Separator.BorderSizePixel = 0
     
     local LoadStringScrollFrame = Instance.new("ScrollingFrame", CodeEditorFrame)
@@ -652,7 +601,7 @@ _G.UniversalUtility.Tabs.CreateScriptLoaderTab = function()
     Status.Text = "Status: Ready"
     Status.Font = Enum.Font.Gotham
     Status.TextSize = 16
-    Status.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Status.TextColor3 = Color3.fromRGB(180, 180, 180)
     Status.TextXAlignment = Enum.TextXAlignment.Center
     
     return {
@@ -672,7 +621,6 @@ _G.UniversalUtility.Tabs.CreateSettingsTab = function()
     Container.BorderSizePixel = 0
     Container.LayoutOrder = 1
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
-    CreateGradient(Container, Color3.fromRGB(45, 45, 55), Color3.fromRGB(30, 30, 38))
     
     local Title = Instance.new("TextLabel", Container)
     Title.Size = UDim2.new(1, -20, 0, 24)
@@ -681,7 +629,7 @@ _G.UniversalUtility.Tabs.CreateSettingsTab = function()
     Title.Text = "UI Settings"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
-    Title.TextColor3 = Color3.fromRGB(100, 200, 255)
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     
     local KeybindButton = Helpers.CreateButton(Container, UDim2.new(0, 220, 0, 40), "Toggle Keybind: G")
@@ -694,7 +642,7 @@ _G.UniversalUtility.Tabs.CreateSettingsTab = function()
     Status.Text = "Click the button above to change your Toggle Keybind\n\nPress the keybind at any time to open / close this menu."
     Status.Font = Enum.Font.Gotham
     Status.TextSize = 16
-    Status.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Status.TextColor3 = Color3.fromRGB(150, 150, 150)
     Status.TextXAlignment = Enum.TextXAlignment.Center
     Status.TextWrapped = true
     
