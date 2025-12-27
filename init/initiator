@@ -1,5 +1,6 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+
 local Config = _G.UniversalUtility.Config
 local UI = _G.UniversalUtility.UI
 local Helpers = _G.UniversalUtility.Helpers
@@ -60,17 +61,30 @@ local function UpdateClickTypeButtons()
         if _G.UniversalUtility.ButtonStates[btn] then
             _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
         end
+
         btn.BackgroundColor3 = targetColor
+        
         btn.Size = UDim2.new(0, 85, 0, 30)
     end
 end
 
 local dragging = {jump = false, click = false, spam = false, fps = false}
 
-AntiAFKElements.JumpSliderButton.MouseButton1Down:Connect(function() dragging.jump = true end)
-AntiAFKElements.ClickSliderButton.MouseButton1Down:Connect(function() dragging.click = true end)
-KeySpamElements.SpamSliderButton.MouseButton1Down:Connect(function() dragging.spam = true end)
-PerformanceElements.FPSButton.MouseButton1Down:Connect(function() dragging.fps = true end)
+AntiAFKElements.JumpSliderButton.MouseButton1Down:Connect(function()
+    dragging.jump = true
+end)
+
+AntiAFKElements.ClickSliderButton.MouseButton1Down:Connect(function()
+    dragging.click = true
+end)
+
+KeySpamElements.SpamSliderButton.MouseButton1Down:Connect(function()
+    dragging.spam = true
+end)
+
+PerformanceElements.FPSButton.MouseButton1Down:Connect(function()
+    dragging.fps = true
+end)
 
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -99,19 +113,16 @@ end
 local function UpdateFPSSlider(percentage)
     Config.TargetFPS = math.floor(15 + (percentage * 345))
     Helpers.UpdateSlider(PerformanceElements.FPSFill, PerformanceElements.FPSValueBox, nil, Config.TargetFPS, 15, 360, "%d")
-    
     if Config.FPSUnlockEnabled and Performance.FPS_SUPPORTED then
         Performance.SetTargetFPS(Config.TargetFPS)
         PerformanceElements.FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
     end
-    
     _G.UniversalUtility.SaveConfig()
 end
 
 UserInputService.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then
         local mouseX = UserInputService:GetMouseLocation().X
-        
         if dragging.jump then
             UpdateJumpSlider(math.clamp((mouseX - AntiAFKElements.JumpDelaySlider.AbsolutePosition.X) / AntiAFKElements.JumpDelaySlider.AbsoluteSize.X, 0, 1))
         elseif dragging.click then
@@ -160,7 +171,9 @@ local function HandleClickTypeChange(newType)
     clickTypeDebounce = true
     
     Config.ClickType = newType
+    
     UpdateClickTypeButtons()
+    
     _G.UniversalUtility.SaveConfig()
     
     task.delay(0.1, function()
@@ -168,14 +181,21 @@ local function HandleClickTypeChange(newType)
     end)
 end
 
-AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function() HandleClickTypeChange("Current") end)
-AntiAFKElements.ClickTypeCenter.MouseButton1Click:Connect(function() HandleClickTypeChange("Center") end)
-AntiAFKElements.ClickTypeRandom.MouseButton1Click:Connect(function() HandleClickTypeChange("Random") end)
+AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
+    HandleClickTypeChange("Current")
+end)
+
+AntiAFKElements.ClickTypeCenter.MouseButton1Click:Connect(function()
+    HandleClickTypeChange("Center")
+end)
+
+AntiAFKElements.ClickTypeRandom.MouseButton1Click:Connect(function()
+    HandleClickTypeChange("Random")
+end)
 
 AntiAFKElements.JumpToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Jump", 0.3) then return end
     Config.JumpEnabled = not Config.JumpEnabled
-    
     local targetColor = Config.JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
     if _G.UniversalUtility.ButtonStates[AntiAFKElements.JumpToggle] then
         _G.UniversalUtility.ButtonStates[AntiAFKElements.JumpToggle].BaseColor = targetColor
@@ -183,14 +203,12 @@ AntiAFKElements.JumpToggle.MouseButton1Click:Connect(function()
     AntiAFKElements.JumpToggle.BackgroundColor3 = targetColor
     
     AntiAFKElements.JumpToggle.Text = "Auto Jump: " .. (Config.JumpEnabled and "ON" or "OFF")
-    
     if Config.JumpEnabled then
         task.wait(0.05)
         AntiAFK.StartJumpThread()
     else
         AntiAFK.StopJumpThread()
     end
-    
     UpdateAntiAFKStatus()
     _G.UniversalUtility.SaveConfig()
 end)
@@ -198,7 +216,6 @@ end)
 AntiAFKElements.ClickToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Click", 0.3) then return end
     Config.ClickEnabled = not Config.ClickEnabled
-    
     local targetColor = Config.ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
     if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickToggle] then
         _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickToggle].BaseColor = targetColor
@@ -206,14 +223,12 @@ AntiAFKElements.ClickToggle.MouseButton1Click:Connect(function()
     AntiAFKElements.ClickToggle.BackgroundColor3 = targetColor
     
     AntiAFKElements.ClickToggle.Text = "Auto Click: " .. (Config.ClickEnabled and "ON" or "OFF")
-    
     if Config.ClickEnabled then
         task.wait(0.05)
         AntiAFK.StartClickThread()
     else
         AntiAFK.StopClickThread()
     end
-    
     UpdateAntiAFKStatus()
     _G.UniversalUtility.SaveConfig()
 end)
@@ -221,42 +236,50 @@ end)
 KeySpamElements.AutoSpamToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Spam", 0.3) then return end
     Config.AutoSpamEnabled = not Config.AutoSpamEnabled
-    
     if Config.AutoSpamEnabled then
         local keyText = KeySpamElements.SpamInput.Text:upper()
         local keyCode = KeyCodeMap[keyText]
-        
-        if not keyCode or keyCode == Enum.KeyCode.P or keyCode == Enum.KeyCode.G then
+        if not keyCode then
             Config.AutoSpamEnabled = false
-            KeySpamElements.Status.Text = keyCode and "Status: Key reserved" or "Status: Invalid key"
+            KeySpamElements.Status.Text = "Status: Invalid key"
             KeySpamElements.Status.TextColor3 = Color3.fromRGB(220, 50, 50)
-            KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-            KeySpamElements.AutoSpamToggle.Text = "OFF"
+            return
+        end
+        
+        if keyCode == Enum.KeyCode.P or keyCode == Enum.KeyCode.G then
+            Config.AutoSpamEnabled = false
+            KeySpamElements.Status.Text = "Status: Key reserved"
+            KeySpamElements.Status.TextColor3 = Color3.fromRGB(220, 50, 50)
             return
         end
         
         Config.SpamKey = keyText
-        KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
+        local targetColor = Color3.fromRGB(50, 220, 100)
+        if _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle] then
+            _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle].BaseColor = targetColor
+        end
+        KeySpamElements.AutoSpamToggle.BackgroundColor3 = targetColor
         KeySpamElements.AutoSpamToggle.Text = "ON"
         KeySpamElements.Status.Text = "Status: Spamming " .. keyText
         KeySpamElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
-        
         task.wait(0.05)
         KeySpam.StartSpamThread()
     else
-        KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        local targetColor = Color3.fromRGB(220, 50, 50)
+        if _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle] then
+            _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle].BaseColor = targetColor
+        end
+        KeySpamElements.AutoSpamToggle.BackgroundColor3 = targetColor
         KeySpamElements.AutoSpamToggle.Text = "OFF"
         KeySpamElements.Status.Text = "Status: Inactive"
         KeySpamElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
         KeySpam.StopSpamThread()
     end
-    
     _G.UniversalUtility.SaveConfig()
 end)
 
 PerformanceElements.FPSUnlockToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("FPS", 0.3) then return end
-    
     local success, result = Performance.ToggleFPSUnlock()
     
     if not success then
@@ -272,11 +295,9 @@ PerformanceElements.FPSUnlockToggle.MouseButton1Click:Connect(function()
     PerformanceElements.FPSUnlockToggle.BackgroundColor3 = targetColor
     
     PerformanceElements.FPSUnlockToggle.Text = "FPS Unlock: " .. (result and "ON" or "OFF")
-    
     if result then
         PerformanceElements.FPSUnlockStatus.Text = "Your target: " .. Config.TargetFPS .. " FPS"
         PerformanceElements.FPSUnlockStatus.TextColor3 = Color3.fromRGB(50, 220, 100)
-        Performance.SetTargetFPS(Config.TargetFPS)
     else
         PerformanceElements.FPSUnlockStatus.Text = "Default FPS"
         PerformanceElements.FPSUnlockStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
@@ -286,7 +307,6 @@ end)
 RejoinElements.AutoRejoinToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Rejoin", 0.3) then return end
     Config.AutoRejoinEnabled = not Config.AutoRejoinEnabled
-    
     local targetColor = Config.AutoRejoinEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
     if _G.UniversalUtility.ButtonStates[RejoinElements.AutoRejoinToggle] then
         _G.UniversalUtility.ButtonStates[RejoinElements.AutoRejoinToggle].BaseColor = targetColor
@@ -302,7 +322,6 @@ RejoinElements.AutoRejoinToggle.MouseButton1Click:Connect(function()
     else
         AutoRejoin.Stop()
     end
-    
     _G.UniversalUtility.SaveConfig()
 end)
 
@@ -338,8 +357,9 @@ local SaveCodeTimer = nil
 local SaveCodeDelay = 1.0
 
 LoaderElements.LoadStringBox:GetPropertyChangedSignal("Text"):Connect(function()
-    if SaveCodeTimer then task.cancel(SaveCodeTimer) end
-    
+    if SaveCodeTimer then
+        task.cancel(SaveCodeTimer)
+    end
     SaveCodeTimer = task.delay(SaveCodeDelay, function()
         ScriptLoader.SaveCode(LoaderElements.LoadStringBox.Text)
         LoaderElements.Status.Text = "Status: Code auto-saved"
@@ -350,13 +370,7 @@ LoaderElements.LoadStringBox:GetPropertyChangedSignal("Text"):Connect(function()
             LoaderElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
         end
     end)
-    
-    Helpers.UpdateLineNumbers(
-        LoaderElements.LoadStringBox,
-        LoaderElements.LineNumbers,
-        LoaderElements.LoadStringScrollFrame,
-        LoaderElements.LineNumbersScrollFrame
-    )
+    Helpers.UpdateLineNumbers(LoaderElements.LoadStringBox, LoaderElements.LineNumbers, LoaderElements.LoadStringScrollFrame, LoaderElements.LineNumbersScrollFrame)
 end)
 
 LoaderElements.LoadStringScrollFrame:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
@@ -370,6 +384,7 @@ SettingsElements.KeybindButton.MouseButton1Click:Connect(function()
     SettingsElements.KeybindButton.Text = "Press any key..."
     SettingsElements.Status.Text = "Waiting for input..."
     SettingsElements.Status.TextColor3 = Color3.fromRGB(255, 200, 100)
+    
     SettingsElements.KeybindButton.Active = false
     
     local connection
@@ -378,6 +393,7 @@ SettingsElements.KeybindButton.MouseButton1Click:Connect(function()
             connection:Disconnect()
             Config.IsChangingKeybind = false
             SettingsElements.KeybindButton.Active = true
+            
             SettingsElements.KeybindButton.Text = "Toggle Keybind: " .. (KeyCodeNames[Config.Keybind] or Config.Keybind.Name)
             SettingsElements.Status.Text = "Timeout - Click again to retry"
             SettingsElements.Status.TextColor3 = Color3.fromRGB(255, 100, 100)
@@ -398,9 +414,10 @@ SettingsElements.KeybindButton.MouseButton1Click:Connect(function()
             SettingsElements.KeybindButton.Text = "Toggle Keybind: " .. keyName
             SettingsElements.Status.Text = "Keybind changed successfully!\n\nPress the keybind at any time to open/close this menu."
             SettingsElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
-            
             _G.UniversalUtility.SaveConfig()
+            
             SettingsElements.KeybindButton.Active = true
+            
             connection:Disconnect()
             
             task.delay(0.1, function()
@@ -416,9 +433,10 @@ SettingsElements.KeybindButton.MouseButton1Click:Connect(function()
     end)
 end)
 
-for _, tabName in ipairs({"Home", "Anti-AFK", "KeySpam", "Performance Status", "Auto Rejoin", "Script Loader", "Settings"}) do
-    UI.TabButtons[tabName].Button.MouseButton1Click:Connect(function()
-        Interactions.SwitchTab(tabName)
+for _, tab in ipairs({{name="Home"},{name="Anti-AFK"},{name="KeySpam"},{name="Performance Status"},{name="Auto Rejoin"},{name="Script Loader"},{name="Settings"}}) do
+    local name = tab.name
+    UI.TabButtons[name].Button.MouseButton1Click:Connect(function()
+        Interactions.SwitchTab(name)
     end)
 end
 
@@ -434,12 +452,8 @@ Performance.StartMonitoring({
 })
 
 UI.LoadPlayerInfo()
-Helpers.UpdateLineNumbers(
-    LoaderElements.LoadStringBox,
-    LoaderElements.LineNumbers,
-    LoaderElements.LoadStringScrollFrame,
-    LoaderElements.LineNumbersScrollFrame
-)
+
+Helpers.UpdateLineNumbers(LoaderElements.LoadStringBox, LoaderElements.LineNumbers, LoaderElements.LoadStringScrollFrame, LoaderElements.LineNumbersScrollFrame)
 
 local configLoaded = _G.UniversalUtility.LoadConfig()
 
@@ -493,7 +507,7 @@ if configLoaded then
     
     if Config.AutoSpamEnabled then
         local keyCode = KeyCodeMap[Config.SpamKey]
-        if keyCode and keyCode ~= Enum.KeyCode.P and keyCode ~= Enum.KeyCode.G then
+        if keyCode then
             KeySpamElements.AutoSpamToggle.BackgroundColor3 = Color3.fromRGB(50, 220, 100)
             KeySpamElements.AutoSpamToggle.Text = "ON"
             KeySpamElements.Status.Text = "Status: Spamming " .. Config.SpamKey
@@ -537,19 +551,21 @@ else
     UpdateAntiAFKStatus()
 end
 
-Interactions.SwitchTab(Config.CurrentTab or "Home")
+Interactions.SwitchTab(Config.CurrentTab)
 
 UI.ScreenGui.Destroying:Connect(Helpers.CleanupAllThreads)
 
 task.wait(0.1)
+
 UI.MainFrame.Visible = true
 UI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
 UI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 UI.ReopenButton.Visible = false
 
-TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+local openTween = TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
     Size = UDim2.new(0, 650, 0, 500),
     Position = UDim2.new(0.5, -325, 0.5, -250)
-}):Play()
+})
+openTween:Play()
 
 return _G.UniversalUtility.Initiator
