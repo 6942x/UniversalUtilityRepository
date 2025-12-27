@@ -62,7 +62,10 @@ local function UpdateClickTypeButtons()
             _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
         end
         
-        btn.BackgroundColor3 = targetColor
+        local tween = TweenService:Create(btn, UI.TweenPresets.Fast, {
+            BackgroundColor3 = targetColor
+        })
+        tween:Play()
         
         btn.Size = UDim2.new(0, 85, 0, 30)
     end
@@ -165,7 +168,7 @@ KeySpamElements.SpamInput.FocusLost:Connect(function()
 end)
 
 local clickTypeDebounce = false
-local clickTypeChangeDebounce = 0.3
+local clickTypeChangeDebounce = 0.5
 
 local function HandleClickTypeChange(newType)
     if clickTypeDebounce or Config.ClickType == newType then return end
