@@ -1,11 +1,18 @@
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local Config = _G.UniversalUtility.Config
 local UI = _G.UniversalUtility.UI
 local Debounces = _G.UniversalUtility.Debounces
 
 _G.UniversalUtility.Interactions = {}
+
+local TWEEN_ULTRA_FAST = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local TWEEN_SMOOTH = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local TWEEN_BOUNCE = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local TWEEN_ELASTIC = TweenInfo.new(0.6, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)
+local TWEEN_CLOSE = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
 
 local function SetDebounce(key, duration)
     if Debounces[key] then return false end
@@ -14,58 +21,178 @@ local function SetDebounce(key, duration)
     return true
 end
 
+local function CreateRippleEffect(button, clickPosition)
+    local ripple = Instance.new("Frame", button)
+    ripple.Size = UDim2.new(0, 0, 0, 0)
+    ripple.Position = UDim2.new(0, clickPosition.X, 0, clickPosition.Y)
+    ripple.AnchorPoint = Vector2.new(0.5, 0.5)
+    ripple.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ripple.BackgroundTransparency = 0.5
+    ripple.BorderSizePixel = 0
+    ripple.ZIndex = button.ZIndex + 10
+    
+    local maxSize = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 2.5
+    
+    local corner = Instance.new("UICorner", ripple)
+    corner.CornerRadius = UDim.new(1, 0)
+    
+    local expandTween = TweenService:Create(ripple, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, maxSize, 0, maxSize),
+        BackgroundTransparency = 1
+    })
+    
+    expandTween:Play()
+    expandTween.Completed:Connect(function()
+        ripple:Destroy()
+    end)
+end
+
+local function PulseEffect(element, scale, duration)
+    local originalSize = element.Size
+    TweenService:Create(element, TweenInfo.new(duration or 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(originalSize.X.Scale * scale, 0, originalSize.Y.Scale * scale, 0)
+    }):Play()
+    
+    task.wait(duration or 0.15)
+    
+    TweenService:Create(element, TweenInfo.new(duration or 0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = originalSize
+    }):Play()
+end
+
 function _G.UniversalUtility.Interactions.ToggleUI()
-    if not SetDebounce("UI", 0.8) then return end
+    if not SetDebounce("UI", 0.9) then return end
+    
     if UI.MainFrame.Visible then
-        TweenService:Create(UI.MainFrame, UI.TweenPresets.BackIn, {
+        TweenService:Create(UI.MainFrame, TWEEN_CLOSE, {
             Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0.5, 0)
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            Rotation = 180
         }):Play()
+        
+        TweenService:Create(UI.MainFrame, TWEEN_SMOOTH, {
+            BackgroundTransparency = 1
+        }):Play()
+        
         task.wait(0.45)
         UI.MainFrame.Visible = false
+        UI.MainFrame.Rotation = 0
+        UI.MainFrame.BackgroundTransparency = 0
+        
         UI.ReopenButton.Visible = true
         UI.ReopenButton.Size = UDim2.new(0, 0, 0, 0)
         UI.ReopenButton.Position = UDim2.new(0.5, 0, 0, 30)
-        TweenService:Create(UI.ReopenButton, UI.TweenPresets.Back, {
+        UI.ReopenButton.Rotation = -180
+        UI.ReopenButton.BackgroundTransparency = 1
+        
+        local openTween = TweenService:Create(UI.ReopenButton, TWEEN_ELASTIC, {
             Size = UDim2.new(0, 60, 0, 60),
-            Position = UDim2.new(0.5, -30, 0, 30)
-        }):Play()
+            Position = UDim2.new(0.5, -30, 0, 30),
+            Rotation = 0
+        })
+        
+        local fadeTween = TweenService:Create(UI.ReopenButton, TWEEN_SMOOTH, {
+            BackgroundTransparency = 0
+        })
+        
+        openTween:Play()
+        fadeTween:Play()
+        
     else
-        TweenService:Create(UI.ReopenButton, UI.TweenPresets.BackIn, {
+        TweenService:Create(UI.ReopenButton, TWEEN_CLOSE, {
             Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0, 30)
+            Position = UDim2.new(0.5, 0, 0, 30),
+            Rotation = 180
         }):Play()
+        
+        TweenService:Create(UI.ReopenButton, TWEEN_SMOOTH, {
+            BackgroundTransparency = 1
+        }):Play()
+        
         task.wait(0.35)
         UI.ReopenButton.Visible = false
+        UI.ReopenButton.Rotation = 0
+        UI.ReopenButton.BackgroundTransparency = 0
+        
         UI.MainFrame.Visible = true
         UI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
         UI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-        TweenService:Create(UI.MainFrame, UI.TweenPresets.Back, {
+        UI.MainFrame.Rotation = -180
+        UI.MainFrame.BackgroundTransparency = 1
+        
+        local openTween = TweenService:Create(UI.MainFrame, TWEEN_BOUNCE, {
             Size = UDim2.new(0, 650, 0, 500),
-            Position = UDim2.new(0.5, -325, 0.5, -250)
-        }):Play()
+            Position = UDim2.new(0.5, -325, 0.5, -250),
+            Rotation = 0
+        })
+        
+        local fadeTween = TweenService:Create(UI.MainFrame, TWEEN_SMOOTH, {
+            BackgroundTransparency = 0
+        })
+        
+        openTween:Play()
+        fadeTween:Play()
     end
 end
 
 function _G.UniversalUtility.Interactions.SwitchTab(tabName)
-    if not SetDebounce("Tab", 0.1) then return end
+    if not SetDebounce("Tab", 0.15) then return end
     Config.CurrentTab = tabName
     _G.UniversalUtility.SaveConfig()
     
     for name, content in pairs(UI.TabContents) do
-        content.Visible = (name == tabName)
+        if name == tabName then
+            content.Visible = true
+            content.Position = UDim2.new(0, -20, 0, 0)
+            content.GroupTransparency = 1
+            
+            TweenService:Create(content, TWEEN_SMOOTH, {
+                Position = UDim2.new(0, 0, 0, 0),
+                GroupTransparency = 0
+            }):Play()
+        else
+            if content.Visible then
+                TweenService:Create(content, TWEEN_ULTRA_FAST, {
+                    Position = UDim2.new(0, 20, 0, 0),
+                    GroupTransparency = 1
+                }):Play()
+                
+                task.delay(0.12, function()
+                    content.Visible = false
+                    content.Position = UDim2.new(0, 0, 0, 0)
+                    content.GroupTransparency = 0
+                end)
+            end
+        end
     end
     
     for name, tabData in pairs(UI.TabButtons) do
         local isActive = (name == tabName)
-        TweenService:Create(tabData.Button, UI.TweenPresets.Fast, {
-            BackgroundColor3 = isActive and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(35, 35, 42)
+        
+        if isActive then
+            TweenService:Create(tabData.Button, TWEEN_SMOOTH, {
+                BackgroundColor3 = Color3.fromRGB(100, 150, 255),
+                Size = UDim2.new(1, 4, 0, 57)
+            }):Play()
+            
+            task.spawn(function()
+                PulseEffect(tabData.Icon, 1.2, 0.1)
+            end)
+        else
+            TweenService:Create(tabData.Button, TWEEN_SMOOTH, {
+                BackgroundColor3 = Color3.fromRGB(35, 35, 42),
+                Size = UDim2.new(1, -10, 0, 53)
+            }):Play()
+        end
+        
+        TweenService:Create(tabData.Icon, TWEEN_SMOOTH, {
+            TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180),
+            TextSize = isActive and 20 or 18
         }):Play()
-        TweenService:Create(tabData.Icon, UI.TweenPresets.Fast, {
-            TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
-        }):Play()
-        TweenService:Create(tabData.Label, UI.TweenPresets.Fast, {
-            TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
+        
+        TweenService:Create(tabData.Label, TWEEN_SMOOTH, {
+            TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180),
+            TextSize = isActive and 13 or 12
         }):Play()
     end
 end
@@ -79,51 +206,140 @@ function _G.UniversalUtility.Interactions.SetupKeybindListener()
 end
 
 function _G.UniversalUtility.Interactions.SetupCloseButton()
-    UI.CloseButton.MouseButton1Click:Connect(_G.UniversalUtility.Interactions.ToggleUI)
+    UI.CloseButton.MouseButton1Click:Connect(function()
+        _G.UniversalUtility.Interactions.ToggleUI()
+        task.spawn(function()
+            PulseEffect(UI.CloseButton, 0.8, 0.08)
+        end)
+    end)
     
     UI.CloseButton.MouseEnter:Connect(function()
-        TweenService:Create(UI.CloseButton, UI.TweenPresets.Fast, {
-            BackgroundColor3 = Color3.fromRGB(240, 70, 70),
-            Size = UDim2.new(0, 32, 0, 32)
+        TweenService:Create(UI.CloseButton, TWEEN_SMOOTH, {
+            BackgroundColor3 = Color3.fromRGB(255, 90, 90),
+            Size = UDim2.new(0, 34, 0, 34),
+            Rotation = 90
+        }):Play()
+        
+        TweenService:Create(UI.CloseButton.TextLabel, TWEEN_SMOOTH, {
+            TextSize = 20,
+            TextColor3 = Color3.fromRGB(255, 255, 255)
         }):Play()
     end)
 
     UI.CloseButton.MouseLeave:Connect(function()
-        TweenService:Create(UI.CloseButton, UI.TweenPresets.Fast, {
+        TweenService:Create(UI.CloseButton, TWEEN_SMOOTH, {
             BackgroundColor3 = Color3.fromRGB(220, 50, 50),
-            Size = UDim2.new(0, 30, 0, 30)
+            Size = UDim2.new(0, 30, 0, 30),
+            Rotation = 0
+        }):Play()
+        
+        TweenService:Create(UI.CloseButton.TextLabel, TWEEN_SMOOTH, {
+            TextSize = 18,
+            TextColor3 = Color3.fromRGB(255, 255, 255)
         }):Play()
     end)
 
     UI.CloseButton.MouseButton1Down:Connect(function()
-        TweenService:Create(UI.CloseButton, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 28, 0, 28)
+        TweenService:Create(UI.CloseButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 26, 0, 26),
+            BackgroundColor3 = Color3.fromRGB(180, 30, 30)
         }):Play()
+        
+        local mousePos = UserInputService:GetMouseLocation()
+        local buttonPos = UI.CloseButton.AbsolutePosition
+        local relativePos = Vector2.new(mousePos.X - buttonPos.X, mousePos.Y - buttonPos.Y)
+        CreateRippleEffect(UI.CloseButton, relativePos)
     end)
 
     UI.CloseButton.MouseButton1Up:Connect(function()
-        TweenService:Create(UI.CloseButton, UI.TweenPresets.Fast, {
-            Size = UDim2.new(0, 30, 0, 30)
+        TweenService:Create(UI.CloseButton, TWEEN_SMOOTH, {
+            Size = UDim2.new(0, 34, 0, 34),
+            BackgroundColor3 = Color3.fromRGB(255, 90, 90)
         }):Play()
     end)
 end
 
 function _G.UniversalUtility.Interactions.SetupReopenButton()
-    UI.ReopenButton.MouseButton1Click:Connect(_G.UniversalUtility.Interactions.ToggleUI)
+    UI.ReopenButton.MouseButton1Click:Connect(function()
+        _G.UniversalUtility.Interactions.ToggleUI()
+        task.spawn(function()
+            PulseEffect(UI.ReopenButton, 0.85, 0.1)
+        end)
+    end)
     
     UI.ReopenButton.MouseEnter:Connect(function()
-        TweenService:Create(UI.ReopenButton, UI.TweenPresets.Medium, {
-            Size = UDim2.new(0, 70, 0, 70),
-            Position = UDim2.new(0.5, -35, 0, 25)
+        TweenService:Create(UI.ReopenButton, TWEEN_BOUNCE, {
+            Size = UDim2.new(0, 75, 0, 75),
+            Position = UDim2.new(0.5, -37.5, 0, 22.5),
+            Rotation = 360,
+            BackgroundColor3 = Color3.fromRGB(120, 170, 255)
         }):Play()
+        
+        if UI.ReopenButton:FindFirstChild("TextLabel") then
+            TweenService:Create(UI.ReopenButton.TextLabel, TWEEN_SMOOTH, {
+                TextSize = 32,
+                Rotation = -360
+            }):Play()
+        end
     end)
 
     UI.ReopenButton.MouseLeave:Connect(function()
-        TweenService:Create(UI.ReopenButton, UI.TweenPresets.Medium, {
+        TweenService:Create(UI.ReopenButton, TWEEN_SMOOTH, {
             Size = UDim2.new(0, 60, 0, 60),
-            Position = UDim2.new(0.5, -30, 0, 30)
+            Position = UDim2.new(0.5, -30, 0, 30),
+            Rotation = 0,
+            BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+        }):Play()
+        
+        if UI.ReopenButton:FindFirstChild("TextLabel") then
+            TweenService:Create(UI.ReopenButton.TextLabel, TWEEN_SMOOTH, {
+                TextSize = 28,
+                Rotation = 0
+            }):Play()
+        end
+    end)
+    
+    UI.ReopenButton.MouseButton1Down:Connect(function()
+        TweenService:Create(UI.ReopenButton, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 65, 0, 65),
+            Position = UDim2.new(0.5, -32.5, 0, 27.5),
+            BackgroundColor3 = Color3.fromRGB(80, 130, 235)
+        }):Play()
+        
+        local mousePos = UserInputService:GetMouseLocation()
+        local buttonPos = UI.ReopenButton.AbsolutePosition
+        local relativePos = Vector2.new(mousePos.X - buttonPos.X, mousePos.Y - buttonPos.Y)
+        CreateRippleEffect(UI.ReopenButton, relativePos)
+    end)
+    
+    UI.ReopenButton.MouseButton1Up:Connect(function()
+        TweenService:Create(UI.ReopenButton, TWEEN_SMOOTH, {
+            Size = UDim2.new(0, 75, 0, 75),
+            Position = UDim2.new(0.5, -37.5, 0, 22.5),
+            BackgroundColor3 = Color3.fromRGB(120, 170, 255)
         }):Play()
     end)
+end
+
+local floatConnection
+function _G.UniversalUtility.Interactions.StartFloatingAnimation()
+    if floatConnection then return end
+    
+    local startTime = tick()
+    floatConnection = RunService.RenderStepped:Connect(function()
+        if UI.ReopenButton and UI.ReopenButton.Visible then
+            local elapsed = tick() - startTime
+            local offset = math.sin(elapsed * 2) * 3
+            UI.ReopenButton.Position = UDim2.new(0.5, -30, 0, 30 + offset)
+        end
+    end)
+end
+
+function _G.UniversalUtility.Interactions.StopFloatingAnimation()
+    if floatConnection then
+        floatConnection:Disconnect()
+        floatConnection = nil
+    end
 end
 
 return _G.UniversalUtility.Interactions
