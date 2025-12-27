@@ -31,34 +31,20 @@ local RejoinElements = Tabs.CreateAutoRejoinTab()
 local LoaderElements = Tabs.CreateScriptLoaderTab()
 local SettingsElements = Tabs.CreateSettingsTab()
 
-local function AnimateStatusUpdate(element, text, color)
-    element.TextTransparency = 1
-    element.Text = text
-    element.TextColor3 = color
-    TweenService:Create(element, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        TextTransparency = 0
-    }):Play()
-end
-
 local function UpdateAntiAFKStatus()
-    local statusText = "Status: "
-    local statusColor = Color3.fromRGB(180, 180, 180)
-    
     if Config.JumpEnabled and Config.ClickEnabled then
-        statusText = statusText .. "Jump & Click Active"
-        statusColor = Color3.fromRGB(50, 220, 100)
+        AntiAFKElements.Status.Text = "Status: Jump & Click Active"
+        AntiAFKElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
     elseif Config.JumpEnabled then
-        statusText = statusText .. "Jump Active"
-        statusColor = Color3.fromRGB(100, 200, 255)
+        AntiAFKElements.Status.Text = "Status: Jump Active"
+        AntiAFKElements.Status.TextColor3 = Color3.fromRGB(100, 200, 255)
     elseif Config.ClickEnabled then
-        statusText = statusText .. "Click Active"
-        statusColor = Color3.fromRGB(255, 200, 100)
+        AntiAFKElements.Status.Text = "Status: Click Active"
+        AntiAFKElements.Status.TextColor3 = Color3.fromRGB(255, 200, 100)
     else
-        statusText = statusText .. "All Inactive"
-        statusColor = Color3.fromRGB(180, 180, 180)
+        AntiAFKElements.Status.Text = "Status: All Inactive"
+        AntiAFKElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
     end
-    
-    AnimateStatusUpdate(AntiAFKElements.Status, statusText, statusColor)
 end
 
 local function UpdateClickTypeButtons()
@@ -76,17 +62,9 @@ local function UpdateClickTypeButtons()
             _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
         end
 
-        TweenService:Create(btn, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = targetColor
-        }):Play()
+        btn.BackgroundColor3 = targetColor
         
-        if isActive then
-            TweenService:Create(btn, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 98, 0, 38)
-            }):Play()
-        else
-            btn.Size = UDim2.new(0, 95, 0, 35)
-        end
+        btn.Size = UDim2.new(0, 85, 0, 30)
     end
 end
 
@@ -193,7 +171,9 @@ local function HandleClickTypeChange(newType)
     clickTypeDebounce = true
     
     Config.ClickType = newType
+    
     UpdateClickTypeButtons()
+    
     _G.UniversalUtility.SaveConfig()
     
     task.delay(0.1, function()
@@ -217,14 +197,10 @@ AntiAFKElements.JumpToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Jump", 0.3) then return end
     Config.JumpEnabled = not Config.JumpEnabled
     local targetColor = Config.JumpEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    
     if _G.UniversalUtility.ButtonStates[AntiAFKElements.JumpToggle] then
         _G.UniversalUtility.ButtonStates[AntiAFKElements.JumpToggle].BaseColor = targetColor
     end
-    
-    TweenService:Create(AntiAFKElements.JumpToggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = targetColor
-    }):Play()
+    AntiAFKElements.JumpToggle.BackgroundColor3 = targetColor
     
     AntiAFKElements.JumpToggle.Text = "Auto Jump: " .. (Config.JumpEnabled and "ON" or "OFF")
     if Config.JumpEnabled then
@@ -241,14 +217,10 @@ AntiAFKElements.ClickToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Click", 0.3) then return end
     Config.ClickEnabled = not Config.ClickEnabled
     local targetColor = Config.ClickEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    
     if _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickToggle] then
         _G.UniversalUtility.ButtonStates[AntiAFKElements.ClickToggle].BaseColor = targetColor
     end
-    
-    TweenService:Create(AntiAFKElements.ClickToggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = targetColor
-    }):Play()
+    AntiAFKElements.ClickToggle.BackgroundColor3 = targetColor
     
     AntiAFKElements.ClickToggle.Text = "Auto Click: " .. (Config.ClickEnabled and "ON" or "OFF")
     if Config.ClickEnabled then
@@ -269,44 +241,38 @@ KeySpamElements.AutoSpamToggle.MouseButton1Click:Connect(function()
         local keyCode = KeyCodeMap[keyText]
         if not keyCode then
             Config.AutoSpamEnabled = false
-            AnimateStatusUpdate(KeySpamElements.Status, "Status: Invalid key", Color3.fromRGB(220, 50, 50))
+            KeySpamElements.Status.Text = "Status: Invalid key"
+            KeySpamElements.Status.TextColor3 = Color3.fromRGB(220, 50, 50)
             return
         end
         
         if keyCode == Enum.KeyCode.P or keyCode == Enum.KeyCode.G then
             Config.AutoSpamEnabled = false
-            AnimateStatusUpdate(KeySpamElements.Status, "Status: Key reserved", Color3.fromRGB(220, 50, 50))
+            KeySpamElements.Status.Text = "Status: Key reserved"
+            KeySpamElements.Status.TextColor3 = Color3.fromRGB(220, 50, 50)
             return
         end
         
         Config.SpamKey = keyText
         local targetColor = Color3.fromRGB(50, 220, 100)
-        
         if _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle] then
             _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle].BaseColor = targetColor
         end
-        
-        TweenService:Create(KeySpamElements.AutoSpamToggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = targetColor
-        }):Play()
-        
+        KeySpamElements.AutoSpamToggle.BackgroundColor3 = targetColor
         KeySpamElements.AutoSpamToggle.Text = "ON"
-        AnimateStatusUpdate(KeySpamElements.Status, "Status: Spamming " .. keyText, Color3.fromRGB(50, 220, 100))
+        KeySpamElements.Status.Text = "Status: Spamming " .. keyText
+        KeySpamElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
         task.wait(0.05)
         KeySpam.StartSpamThread()
     else
         local targetColor = Color3.fromRGB(220, 50, 50)
-        
         if _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle] then
             _G.UniversalUtility.ButtonStates[KeySpamElements.AutoSpamToggle].BaseColor = targetColor
         end
-        
-        TweenService:Create(KeySpamElements.AutoSpamToggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = targetColor
-        }):Play()
-        
+        KeySpamElements.AutoSpamToggle.BackgroundColor3 = targetColor
         KeySpamElements.AutoSpamToggle.Text = "OFF"
-        AnimateStatusUpdate(KeySpamElements.Status, "Status: Inactive", Color3.fromRGB(180, 180, 180))
+        KeySpamElements.Status.Text = "Status: Inactive"
+        KeySpamElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
         KeySpam.StopSpamThread()
     end
     _G.UniversalUtility.SaveConfig()
@@ -323,14 +289,10 @@ PerformanceElements.FPSUnlockToggle.MouseButton1Click:Connect(function()
     end
     
     local targetColor = result and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    
     if _G.UniversalUtility.ButtonStates[PerformanceElements.FPSUnlockToggle] then
         _G.UniversalUtility.ButtonStates[PerformanceElements.FPSUnlockToggle].BaseColor = targetColor
     end
-    
-    TweenService:Create(PerformanceElements.FPSUnlockToggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = targetColor
-    }):Play()
+    PerformanceElements.FPSUnlockToggle.BackgroundColor3 = targetColor
     
     PerformanceElements.FPSUnlockToggle.Text = "FPS Unlock: " .. (result and "ON" or "OFF")
     if result then
@@ -346,14 +308,10 @@ RejoinElements.AutoRejoinToggle.MouseButton1Click:Connect(function()
     if not SetDebounce("Rejoin", 0.3) then return end
     Config.AutoRejoinEnabled = not Config.AutoRejoinEnabled
     local targetColor = Config.AutoRejoinEnabled and Color3.fromRGB(50, 220, 100) or Color3.fromRGB(220, 50, 50)
-    
     if _G.UniversalUtility.ButtonStates[RejoinElements.AutoRejoinToggle] then
         _G.UniversalUtility.ButtonStates[RejoinElements.AutoRejoinToggle].BaseColor = targetColor
     end
-    
-    TweenService:Create(RejoinElements.AutoRejoinToggle, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = targetColor
-    }):Play()
+    RejoinElements.AutoRejoinToggle.BackgroundColor3 = targetColor
     
     RejoinElements.AutoRejoinToggle.Text = "Auto Rejoin: " .. (Config.AutoRejoinEnabled and "ON" or "OFF")
     RejoinElements.Status.Text = "Status: " .. (Config.AutoRejoinEnabled and "Enabled" or "Disabled") .. "\n\nAutomatically rejoins the game when you get disconnected.\nUseful for preventing AFK kicks."
@@ -371,31 +329,27 @@ LoaderElements.ExecuteButton.MouseButton1Click:Connect(function()
     if not SetDebounce("Execute", 0.5) then return end
     local code = LoaderElements.LoadStringBox.Text
     
-    AnimateStatusUpdate(LoaderElements.Status, "Status: Executing...", Color3.fromRGB(255, 200, 100))
-    TweenService:Create(LoaderElements.ExecuteButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundColor3 = Color3.fromRGB(255, 200, 100)
-    }):Play()
+    LoaderElements.Status.Text = "Status: Executing..."
+    LoaderElements.Status.TextColor3 = Color3.fromRGB(255, 200, 100)
+    TweenService:Create(LoaderElements.ExecuteButton, UI.TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(255, 200, 100)}):Play()
     
     local success, message = ScriptLoader.Execute(code)
     
     if success then
-        AnimateStatusUpdate(LoaderElements.Status, "Status: " .. message, Color3.fromRGB(50, 220, 100))
-        TweenService:Create(LoaderElements.ExecuteButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = Color3.fromRGB(50, 220, 100)
-        }):Play()
+        LoaderElements.Status.Text = "Status: " .. message
+        LoaderElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
+        TweenService:Create(LoaderElements.ExecuteButton, UI.TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(50, 220, 100)}):Play()
     else
-        AnimateStatusUpdate(LoaderElements.Status, "Status: " .. message, Color3.fromRGB(220, 50, 50))
-        TweenService:Create(LoaderElements.ExecuteButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-        }):Play()
+        LoaderElements.Status.Text = "Status: " .. message
+        LoaderElements.Status.TextColor3 = Color3.fromRGB(220, 50, 50)
+        TweenService:Create(LoaderElements.ExecuteButton, UI.TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
     end
     
     task.wait(2)
     if LoaderElements.Status.Text:match("Error") or LoaderElements.Status.Text:match("successfully") then
-        AnimateStatusUpdate(LoaderElements.Status, "Status: Ready", Color3.fromRGB(180, 180, 180))
-        TweenService:Create(LoaderElements.ExecuteButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundColor3 = Color3.fromRGB(45, 45, 52)
-        }):Play()
+        LoaderElements.Status.Text = "Status: Ready"
+        LoaderElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
+        TweenService:Create(LoaderElements.ExecuteButton, UI.TweenPresets.Medium, {BackgroundColor3 = Color3.fromRGB(45, 45, 52)}):Play()
     end
 end)
 
@@ -408,10 +362,12 @@ LoaderElements.LoadStringBox:GetPropertyChangedSignal("Text"):Connect(function()
     end
     SaveCodeTimer = task.delay(SaveCodeDelay, function()
         ScriptLoader.SaveCode(LoaderElements.LoadStringBox.Text)
-        AnimateStatusUpdate(LoaderElements.Status, "Status: Code auto-saved", Color3.fromRGB(100, 200, 255))
+        LoaderElements.Status.Text = "Status: Code auto-saved"
+        LoaderElements.Status.TextColor3 = Color3.fromRGB(100, 200, 255)
         task.wait(2)
         if LoaderElements.Status.Text == "Status: Code auto-saved" then
-            AnimateStatusUpdate(LoaderElements.Status, "Status: Ready", Color3.fromRGB(180, 180, 180))
+            LoaderElements.Status.Text = "Status: Ready"
+            LoaderElements.Status.TextColor3 = Color3.fromRGB(180, 180, 180)
         end
     end)
     Helpers.UpdateLineNumbers(LoaderElements.LoadStringBox, LoaderElements.LineNumbers, LoaderElements.LoadStringScrollFrame, LoaderElements.LineNumbersScrollFrame)
@@ -426,7 +382,8 @@ SettingsElements.KeybindButton.MouseButton1Click:Connect(function()
     Config.IsChangingKeybind = true
     
     SettingsElements.KeybindButton.Text = "Press any key..."
-    AnimateStatusUpdate(SettingsElements.Status, "Waiting for input...", Color3.fromRGB(255, 200, 100))
+    SettingsElements.Status.Text = "Waiting for input..."
+    SettingsElements.Status.TextColor3 = Color3.fromRGB(255, 200, 100)
     
     SettingsElements.KeybindButton.Active = false
     
@@ -438,7 +395,8 @@ SettingsElements.KeybindButton.MouseButton1Click:Connect(function()
             SettingsElements.KeybindButton.Active = true
             
             SettingsElements.KeybindButton.Text = "Toggle Keybind: " .. (KeyCodeNames[Config.Keybind] or Config.Keybind.Name)
-            AnimateStatusUpdate(SettingsElements.Status, "Timeout - Click again to retry", Color3.fromRGB(255, 100, 100))
+            SettingsElements.Status.Text = "Timeout - Click again to retry"
+            SettingsElements.Status.TextColor3 = Color3.fromRGB(255, 100, 100)
             task.wait(2)
             if SettingsElements.Status.Text:match("Timeout") then
                 SettingsElements.Status.Text = "Click the button above to change your Toggle Keybind\n\nPress the keybind at any time to open/close this menu."
@@ -454,7 +412,8 @@ SettingsElements.KeybindButton.MouseButton1Click:Connect(function()
             Config.Keybind = input.KeyCode
             local keyName = KeyCodeNames[input.KeyCode] or input.KeyCode.Name
             SettingsElements.KeybindButton.Text = "Toggle Keybind: " .. keyName
-            AnimateStatusUpdate(SettingsElements.Status, "Keybind changed successfully!\n\nPress the keybind at any time to open/close this menu.", Color3.fromRGB(50, 220, 100))
+            SettingsElements.Status.Text = "Keybind changed successfully!\n\nPress the keybind at any time to open/close this menu."
+            SettingsElements.Status.TextColor3 = Color3.fromRGB(50, 220, 100)
             _G.UniversalUtility.SaveConfig()
             
             SettingsElements.KeybindButton.Active = true
@@ -601,29 +560,12 @@ task.wait(0.1)
 UI.MainFrame.Visible = true
 UI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
 UI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-UI.MainFrame.BackgroundTransparency = 1
 UI.ReopenButton.Visible = false
 
-local scaleTween = TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+local openTween = TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
     Size = UDim2.new(0, 650, 0, 500),
     Position = UDim2.new(0.5, -325, 0.5, -250)
 })
-local fadeTween = TweenService:Create(UI.MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-    BackgroundTransparency = 0
-})
-
-scaleTween:Play()
-fadeTween:Play()
-
-task.wait(1.5)
-for _, particle in ipairs(particles) do
-    TweenService:Create(particle, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundTransparency = 1
-    }):Play()
-end
-task.wait(0.5)
-for _, particle in ipairs(particles) do
-    particle:Destroy()
-end
+openTween:Play()
 
 return _G.UniversalUtility.Initiator
