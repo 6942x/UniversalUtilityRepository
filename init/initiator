@@ -604,30 +604,6 @@ UI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 UI.MainFrame.BackgroundTransparency = 1
 UI.ReopenButton.Visible = false
 
-local particles = {}
-for i = 1, 15 do
-    local particle = Instance.new("Frame", UI.MainFrame)
-    particle.Size = UDim2.new(0, math.random(3, 8), 0, math.random(3, 8))
-    particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
-    particle.BackgroundColor3 = Color3.fromHSV(math.random(), 0.7, 1)
-    particle.BackgroundTransparency = 0.3
-    particle.BorderSizePixel = 0
-    particle.ZIndex = 100
-    local corner = Instance.new("UICorner", particle)
-    corner.CornerRadius = UDim.new(1, 0)
-    table.insert(particles, particle)
-    
-    task.spawn(function()
-        while particle.Parent do
-            TweenService:Create(particle, TweenInfo.new(math.random(2, 4), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
-                Position = UDim2.new(math.random(), 0, math.random(), 0),
-                BackgroundTransparency = math.random(3, 7) / 10
-            }):Play()
-            task.wait(0.01)
-        end
-    end)
-end
-
 local scaleTween = TweenService:Create(UI.MainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
     Size = UDim2.new(0, 650, 0, 500),
     Position = UDim2.new(0.5, -325, 0.5, -250)
