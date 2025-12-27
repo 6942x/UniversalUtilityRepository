@@ -59,8 +59,12 @@ local function UpdateClickTypeButtons()
         if _G.UniversalUtility.ButtonStates[btn] then
             _G.UniversalUtility.ButtonStates[btn].BaseColor = targetColor
             _G.UniversalUtility.ButtonStates[btn].IsHovering = false
+            _G.UniversalUtility.ButtonStates[btn].MouseEnter:Disconnect()
+            _G.UniversalUtility.ButtonStates[btn].MouseLeave:Disconnect()
+            btn.BackgroundColor3 = targetColor
+        else
+            btn.BackgroundColor3 = targetColor
         end
-        btn.BackgroundColor3 = targetColor
         btn.Size = UDim2.new(0, 85, 0, 30)
     end
 end
@@ -161,28 +165,26 @@ KeySpamElements.SpamInput.FocusLost:Connect(function()
     _G.UniversalUtility.SaveConfig()
 end)
 
-AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
-    if not SetDebounce("ClickType", 0.2) then return end
-    if Config.ClickType == "Current" then return end
-    Config.ClickType = "Current"
+local function SetClickType(newType)
+    if Config.ClickType == newType then return end
+    Config.ClickType = newType
     UpdateClickTypeButtons()
     _G.UniversalUtility.SaveConfig()
+end
+
+AntiAFKElements.ClickTypeCurrent.MouseButton1Click:Connect(function()
+    if not SetDebounce("ClickType", 0.2) then return end
+    SetClickType("Current")
 end)
 
 AntiAFKElements.ClickTypeCenter.MouseButton1Click:Connect(function()
     if not SetDebounce("ClickType", 0.2) then return end
-    if Config.ClickType == "Center" then return end
-    Config.ClickType = "Center"
-    UpdateClickTypeButtons()
-    _G.UniversalUtility.SaveConfig()
+    SetClickType("Center")
 end)
 
 AntiAFKElements.ClickTypeRandom.MouseButton1Click:Connect(function()
     if not SetDebounce("ClickType", 0.2) then return end
-    if Config.ClickType == "Random" then return end
-    Config.ClickType = "Random"
-    UpdateClickTypeButtons()
-    _G.UniversalUtility.SaveConfig()
+    SetClickType("Random")
 end)
 
 AntiAFKElements.JumpToggle.MouseButton1Click:Connect(function()
