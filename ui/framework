@@ -27,18 +27,19 @@ end
 
 _G.UniversalUtility.UI.ScreenGui = ScreenGui
 _G.UniversalUtility.UI.TweenPresets = {
-    Fast = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-    Medium = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-    Slow = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-    Back = TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-    BackIn = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    Fast = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Medium = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    Slow = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+    Back = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    BackIn = TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+    Smooth = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 }
 
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -46,62 +47,132 @@ MainFrame.ClipsDescendants = true
 MainFrame.Visible = false
 
 local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 16)
+UICorner.CornerRadius = UDim.new(0, 20)
+
+local GradientFrame = Instance.new("Frame", MainFrame)
+GradientFrame.Name = "GradientOverlay"
+GradientFrame.Size = UDim2.new(1, 0, 1, 0)
+GradientFrame.BackgroundTransparency = 0.7
+GradientFrame.BorderSizePixel = 0
+GradientFrame.ZIndex = 0
+
+local GradientCorner = Instance.new("UICorner", GradientFrame)
+GradientCorner.CornerRadius = UDim.new(0, 20)
+
+local Gradient = Instance.new("UIGradient", GradientFrame)
+Gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 120, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(140, 80, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 120, 255))
+}
+Gradient.Rotation = 45
+
+task.spawn(function()
+    while MainFrame.Parent do
+        for i = 0, 360, 2 do
+            if not MainFrame.Parent then break end
+            Gradient.Rotation = i
+            task.wait(0.05)
+        end
+    end
+end)
+
+local GlassEffect = Instance.new("Frame", MainFrame)
+GlassEffect.Name = "GlassEffect"
+GlassEffect.Size = UDim2.new(1, 0, 1, 0)
+GlassEffect.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+GlassEffect.BackgroundTransparency = 0.95
+GlassEffect.BorderSizePixel = 0
+GlassEffect.ZIndex = 1
+
+local GlassCorner = Instance.new("UICorner", GlassEffect)
+GlassCorner.CornerRadius = UDim.new(0, 20)
 
 local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Name = "TopBar"
-TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.Size = UDim2.new(1, 0, 0, 50)
 TopBar.Position = UDim2.new(0, 0, 0, 5)
-TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-TopBar.BackgroundTransparency = 0
+TopBar.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+TopBar.BackgroundTransparency = 0.3
 TopBar.BorderSizePixel = 0
+TopBar.ZIndex = 2
 
 local TopBarCorner = Instance.new("UICorner", TopBar)
-TopBarCorner.CornerRadius = UDim.new(0, 16)
+TopBarCorner.CornerRadius = UDim.new(0, 20)
+
+local AccentLine = Instance.new("Frame", TopBar)
+AccentLine.Name = "AccentLine"
+AccentLine.Size = UDim2.new(1, -20, 0, 2)
+AccentLine.Position = UDim2.new(0, 10, 1, -3)
+AccentLine.BorderSizePixel = 0
+AccentLine.ZIndex = 3
+
+local AccentGradient = Instance.new("UIGradient", AccentLine)
+AccentGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 150, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 100, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 150, 255))
+}
 
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -80, 1, 0)
-Title.Position = UDim2.new(0, 15, 0, 0)
+Title.Size = UDim2.new(1, -80, 1, -10)
+Title.Position = UDim2.new(0, 20, 0, 5)
 Title.BackgroundTransparency = 1
 Title.Text = "⚡ Universal Utility"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 24
+Title.TextSize = 26
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextStrokeTransparency = 0.8
+Title.ZIndex = 3
 
-local CloseButton = Instance.new("ImageButton", TopBar)
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -40, 0.48, 0)
-CloseButton.AnchorPoint = Vector2.new(0, 0.5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+local CloseButton = Instance.new("TextButton", TopBar)
+CloseButton.Size = UDim2.new(0, 35, 0, 35)
+CloseButton.Position = UDim2.new(1, -45, 0.5, -17.5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
 CloseButton.BorderSizePixel = 0
-CloseButton.Image = "rbxassetid://3926305904"
-CloseButton.ImageRectOffset = Vector2.new(284, 4)
-CloseButton.ImageRectSize = Vector2.new(24, 24)
-CloseButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Text = "✕"
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 18
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.ZIndex = 3
 
 local CloseButtonCorner = Instance.new("UICorner", CloseButton)
-CloseButtonCorner.CornerRadius = UDim.new(0, 8)
+CloseButtonCorner.CornerRadius = UDim.new(0, 10)
 
 local SideNav = Instance.new("Frame", MainFrame)
 SideNav.Name = "SideNav"
-SideNav.Size = UDim2.new(0, 180, 1, -57)
-SideNav.Position = UDim2.new(0, 2.5, 0, 50)
-SideNav.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+SideNav.Size = UDim2.new(0, 190, 1, -67)
+SideNav.Position = UDim2.new(0, 5, 0, 58)
+SideNav.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+SideNav.BackgroundTransparency = 0.2
 SideNav.BorderSizePixel = 0
+SideNav.ZIndex = 2
 
 local SideNavCorner = Instance.new("UICorner", SideNav)
-SideNavCorner.CornerRadius = UDim.new(0, 12)
+SideNavCorner.CornerRadius = UDim.new(0, 15)
+
+local SideNavGlow = Instance.new("ImageLabel", SideNav)
+SideNavGlow.Size = UDim2.new(1, 20, 1, 20)
+SideNavGlow.Position = UDim2.new(0, -10, 0, -10)
+SideNavGlow.BackgroundTransparency = 1
+SideNavGlow.Image = "rbxassetid://5028857084"
+SideNavGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
+SideNavGlow.ImageTransparency = 0.8
+SideNavGlow.ScaleType = Enum.ScaleType.Slice
+SideNavGlow.SliceCenter = Rect.new(24, 24, 276, 276)
+SideNavGlow.ZIndex = 1
 
 local ContentFrame = Instance.new("Frame", MainFrame)
 ContentFrame.Name = "ContentFrame"
-ContentFrame.Size = UDim2.new(1, -180, 1, -40)
-ContentFrame.Position = UDim2.new(0, 180, 0, 45)
+ContentFrame.Size = UDim2.new(1, -200, 1, -58)
+ContentFrame.Position = UDim2.new(0, 195, 0, 58)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.BorderSizePixel = 0
 ContentFrame.ClipsDescendants = true
+ContentFrame.ZIndex = 2
 
-local ReopenButton = Instance.new("ImageButton", ScreenGui)
+local ReopenButton = Instance.new("TextButton", ScreenGui)
 ReopenButton.Name = "ReopenButton"
 ReopenButton.Size = UDim2.new(0, 0, 0, 0)
 ReopenButton.Position = UDim2.new(0.5, 0, 0, 30)
@@ -109,17 +180,44 @@ ReopenButton.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
 ReopenButton.BorderSizePixel = 0
 ReopenButton.Visible = false
 ReopenButton.ZIndex = 10
+ReopenButton.Text = ""
 
 local ReopenCorner = Instance.new("UICorner", ReopenButton)
-ReopenCorner.CornerRadius = UDim.new(1, 0)
+ReopenCorner.CornerRadius = UDim.new(0.3, 0)
+
+local ReopenGlow = Instance.new("ImageLabel", ReopenButton)
+ReopenGlow.Size = UDim2.new(1, 30, 1, 30)
+ReopenGlow.Position = UDim2.new(0, -15, 0, -15)
+ReopenGlow.BackgroundTransparency = 1
+ReopenGlow.Image = "rbxassetid://5028857084"
+ReopenGlow.ImageColor3 = Color3.fromRGB(100, 150, 255)
+ReopenGlow.ImageTransparency = 0.5
+ReopenGlow.ScaleType = Enum.ScaleType.Slice
+ReopenGlow.SliceCenter = Rect.new(24, 24, 276, 276)
+ReopenGlow.ZIndex = 9
+
+task.spawn(function()
+    while ReopenButton.Parent do
+        if ReopenButton.Visible then
+            TweenService:Create(ReopenGlow, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+                ImageTransparency = 0.8,
+                Size = UDim2.new(1, 40, 1, 40),
+                Position = UDim2.new(0, -20, 0, -20)
+            }):Play()
+        end
+        task.wait(1)
+    end
+end)
 
 local ReopenIcon = Instance.new("TextLabel", ReopenButton)
 ReopenIcon.Size = UDim2.new(1, 0, 1, 0)
 ReopenIcon.BackgroundTransparency = 1
 ReopenIcon.Text = "⚡"
 ReopenIcon.Font = Enum.Font.GothamBold
-ReopenIcon.TextSize = 24
+ReopenIcon.TextSize = 28
 ReopenIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+ReopenIcon.TextStrokeTransparency = 0.8
+ReopenIcon.ZIndex = 11
 
 _G.UniversalUtility.UI.MainFrame = MainFrame
 _G.UniversalUtility.UI.ContentFrame = ContentFrame
@@ -128,6 +226,7 @@ _G.UniversalUtility.UI.CloseButton = CloseButton
 _G.UniversalUtility.UI.ReopenButton = ReopenButton
 _G.UniversalUtility.UI.TabButtons = {}
 _G.UniversalUtility.UI.TabContents = {}
+_G.UniversalUtility.UI.TransparencyElements = {MainFrame, TopBar, SideNav}
 
 local executor = (identifyexecutor and identifyexecutor()) or 
                  (getexecutorname and getexecutorname()) or 
@@ -148,6 +247,41 @@ function _G.UniversalUtility.UI.LoadPlayerInfo()
             end
         end)
     end)
+end
+
+function _G.UniversalUtility.UI.SetTransparency(transparency)
+    transparency = math.clamp(transparency, 0, 0.75)
+    
+    for _, element in ipairs(_G.UniversalUtility.UI.TransparencyElements) do
+        if element and element:IsA("GuiObject") then
+            local baseTransparency = transparency
+            if element.Name == "TopBar" then
+                baseTransparency = transparency + 0.3
+            elseif element.Name == "SideNav" then
+                baseTransparency = transparency + 0.2
+            end
+            element.BackgroundTransparency = math.clamp(baseTransparency, 0, 1)
+        end
+    end
+    
+    for _, content in pairs(_G.UniversalUtility.UI.TabContents) do
+        for _, child in ipairs(content:GetDescendants()) do
+            if child:IsA("Frame") or child:IsA("ScrollingFrame") then
+                local originalTransp = child:GetAttribute("OriginalTransparency")
+                if not originalTransp then
+                    child:SetAttribute("OriginalTransparency", child.BackgroundTransparency)
+                    originalTransp = child.BackgroundTransparency
+                end
+                
+                if originalTransp < 1 then
+                    child.BackgroundTransparency = math.clamp(originalTransp + transparency, 0, 1)
+                end
+            end
+        end
+    end
+    
+    Config.UITransparency = transparency
+    _G.UniversalUtility.SaveConfig()
 end
 
 return _G.UniversalUtility.UI
