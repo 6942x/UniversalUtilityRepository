@@ -616,7 +616,7 @@ end
 
 _G.UniversalUtility.Tabs.CreateSettingsTab = function()
     local Container = Instance.new("Frame", SettingsContent)
-    Container.Size = UDim2.new(1, 0, 0, 180)
+    Container.Size = UDim2.new(1, 0, 0, 330)
     Container.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
     Container.BorderSizePixel = 0
     Container.LayoutOrder = 1
@@ -635,20 +635,39 @@ _G.UniversalUtility.Tabs.CreateSettingsTab = function()
     local KeybindButton = Helpers.CreateButton(Container, UDim2.new(0, 220, 0, 40), "Toggle Keybind: G")
     KeybindButton.Position = UDim2.new(0.5, 0, 0, 60)
     
-    local Status = Instance.new("TextLabel", Container)
-    Status.Size = UDim2.new(1, -20, 0, 60)
-    Status.Position = UDim2.new(0, 10, 0, 115)
-    Status.BackgroundTransparency = 1
-    Status.Text = "Click the button above to change your Toggle Keybind\n\nPress the keybind at any time to open / close this menu."
-    Status.Font = Enum.Font.Gotham
-    Status.TextSize = 16
-    Status.TextColor3 = Color3.fromRGB(150, 150, 150)
-    Status.TextXAlignment = Enum.TextXAlignment.Center
-    Status.TextWrapped = true
+    local KeybindStatus = Instance.new("TextLabel", Container)
+    KeybindStatus.Size = UDim2.new(1, -20, 0, 40)
+    KeybindStatus.Position = UDim2.new(0, 10, 0, 115)
+    KeybindStatus.BackgroundTransparency = 1
+    KeybindStatus.Text = "Click the button above to change your Toggle Keybind\n\nPress the keybind at any time to open / close this menu."
+    KeybindStatus.Font = Enum.Font.Gotham
+    KeybindStatus.TextSize = 14
+    KeybindStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+    KeybindStatus.TextXAlignment = Enum.TextXAlignment.Center
+    KeybindStatus.TextWrapped = true
+    
+    local TransparencyFrame, TransparencySlider, TransparencyFill, TransparencyButton, TransparencyBox = 
+        Helpers.CreateSlider(Container, UDim2.new(1, -20, 0, 50), 0, 0.75, Config.UITransparency or 0, "UI Transparency:")
+    TransparencyFrame.Position = UDim2.new(0, 10, 0, 170)
+    
+    local TransparencyInfo = Instance.new("TextLabel", Container)
+    TransparencyInfo.Size = UDim2.new(1, -20, 0, 60)
+    TransparencyInfo.Position = UDim2.new(0, 10, 0, 240)
+    TransparencyInfo.BackgroundTransparency = 1
+    TransparencyInfo.Text = "Adjust the transparency of the entire UI.\n\nHigher values make the UI more see-through.\nRange: 0% (solid) to 75% (very transparent)"
+    TransparencyInfo.Font = Enum.Font.Gotham
+    TransparencyInfo.TextSize = 13
+    TransparencyInfo.TextColor3 = Color3.fromRGB(150, 150, 150)
+    TransparencyInfo.TextXAlignment = Enum.TextXAlignment.Center
+    TransparencyInfo.TextWrapped = true
     
     return {
         KeybindButton = KeybindButton,
-        Status = Status
+        Status = KeybindStatus,
+        TransparencySlider = TransparencySlider,
+        TransparencyFill = TransparencyFill,
+        TransparencyButton = TransparencyButton,
+        TransparencyBox = TransparencyBox
     }
 end
 
