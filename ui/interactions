@@ -15,37 +15,32 @@ local function SetDebounce(key, duration)
 end
 
 function _G.UniversalUtility.Interactions.ToggleUI()
-    if not SetDebounce("UI", 0.7) then return end
+    if not SetDebounce("UI", 0.8) then return end
     if UI.MainFrame.Visible then
-        TweenService:Create(UI.MainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        TweenService:Create(UI.MainFrame, UI.TweenPresets.BackIn, {
             Size = UDim2.new(0, 0, 0, 0),
             Position = UDim2.new(0.5, 0, 0.5, 0)
         }):Play()
-        
         task.wait(0.45)
         UI.MainFrame.Visible = false
-        
         UI.ReopenButton.Visible = true
         UI.ReopenButton.Size = UDim2.new(0, 0, 0, 0)
         UI.ReopenButton.Position = UDim2.new(0.5, 0, 0, 30)
-        
-        TweenService:Create(UI.ReopenButton, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 65, 0, 65),
-            Position = UDim2.new(0.5, -32.5, 0, 30)
+        TweenService:Create(UI.ReopenButton, UI.TweenPresets.Back, {
+            Size = UDim2.new(0, 60, 0, 60),
+            Position = UDim2.new(0.5, -30, 0, 30)
         }):Play()
     else
-        TweenService:Create(UI.ReopenButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        TweenService:Create(UI.ReopenButton, UI.TweenPresets.BackIn, {
             Size = UDim2.new(0, 0, 0, 0),
             Position = UDim2.new(0.5, 0, 0, 30)
         }):Play()
-        
         task.wait(0.35)
         UI.ReopenButton.Visible = false
         UI.MainFrame.Visible = true
         UI.MainFrame.Size = UDim2.new(0, 0, 0, 0)
         UI.MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-        
-        TweenService:Create(UI.MainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        TweenService:Create(UI.MainFrame, UI.TweenPresets.Back, {
             Size = UDim2.new(0, 650, 0, 500),
             Position = UDim2.new(0.5, -325, 0.5, -250)
         }):Play()
@@ -63,26 +58,15 @@ function _G.UniversalUtility.Interactions.SwitchTab(tabName)
     
     for name, tabData in pairs(UI.TabButtons) do
         local isActive = (name == tabName)
-        
         TweenService:Create(tabData.Button, UI.TweenPresets.Fast, {
-            BackgroundColor3 = isActive and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(35, 35, 45),
-            Size = isActive and UDim2.new(1, -10, 0, 58) or UDim2.new(1, -14, 0, 58)
+            BackgroundColor3 = isActive and Color3.fromRGB(100, 150, 255) or Color3.fromRGB(35, 35, 42)
         }):Play()
-        
         TweenService:Create(tabData.Icon, UI.TweenPresets.Fast, {
-            TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180),
-            TextSize = isActive and 28 or 26
+            TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
         }):Play()
-        
         TweenService:Create(tabData.Label, UI.TweenPresets.Fast, {
             TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
         }):Play()
-        
-        if tabData.Glow then
-            TweenService:Create(tabData.Glow, UI.TweenPresets.Fast, {
-                ImageTransparency = isActive and 0.5 or 1
-            }):Play()
-        end
     end
 end
 
@@ -99,27 +83,27 @@ function _G.UniversalUtility.Interactions.SetupCloseButton()
     
     UI.CloseButton.MouseEnter:Connect(function()
         TweenService:Create(UI.CloseButton, UI.TweenPresets.Fast, {
-            BackgroundColor3 = Color3.fromRGB(255, 90, 90),
-            Size = UDim2.new(0, 38, 0, 38)
+            BackgroundColor3 = Color3.fromRGB(240, 70, 70),
+            Size = UDim2.new(0, 32, 0, 32)
         }):Play()
     end)
 
     UI.CloseButton.MouseLeave:Connect(function()
         TweenService:Create(UI.CloseButton, UI.TweenPresets.Fast, {
-            BackgroundColor3 = Color3.fromRGB(255, 70, 70),
-            Size = UDim2.new(0, 35, 0, 35)
+            BackgroundColor3 = Color3.fromRGB(220, 50, 50),
+            Size = UDim2.new(0, 30, 0, 30)
         }):Play()
     end)
 
     UI.CloseButton.MouseButton1Down:Connect(function()
-        TweenService:Create(UI.CloseButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 32, 0, 32)
+        TweenService:Create(UI.CloseButton, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 28, 0, 28)
         }):Play()
     end)
 
     UI.CloseButton.MouseButton1Up:Connect(function()
         TweenService:Create(UI.CloseButton, UI.TweenPresets.Fast, {
-            Size = UDim2.new(0, 35, 0, 35)
+            Size = UDim2.new(0, 30, 0, 30)
         }):Play()
     end)
 end
@@ -129,32 +113,16 @@ function _G.UniversalUtility.Interactions.SetupReopenButton()
     
     UI.ReopenButton.MouseEnter:Connect(function()
         TweenService:Create(UI.ReopenButton, UI.TweenPresets.Medium, {
-            Size = UDim2.new(0, 75, 0, 75),
-            Position = UDim2.new(0.5, -37.5, 0, 25),
-            BackgroundColor3 = Color3.fromRGB(120, 170, 255)
+            Size = UDim2.new(0, 70, 0, 70),
+            Position = UDim2.new(0.5, -35, 0, 25)
         }):Play()
-        
-        local icon = UI.ReopenButton:FindFirstChild("ReopenIcon")
-        if icon then
-            TweenService:Create(icon, UI.TweenPresets.Medium, {
-                TextSize = 32
-            }):Play()
-        end
     end)
 
     UI.ReopenButton.MouseLeave:Connect(function()
         TweenService:Create(UI.ReopenButton, UI.TweenPresets.Medium, {
-            Size = UDim2.new(0, 65, 0, 65),
-            Position = UDim2.new(0.5, -32.5, 0, 30),
-            BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+            Size = UDim2.new(0, 60, 0, 60),
+            Position = UDim2.new(0.5, -30, 0, 30)
         }):Play()
-        
-        local icon = UI.ReopenButton:FindFirstChild("ReopenIcon")
-        if icon then
-            TweenService:Create(icon, UI.TweenPresets.Medium, {
-                TextSize = 28
-            }):Play()
-        end
     end)
 end
 
