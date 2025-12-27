@@ -120,6 +120,30 @@ local function UpdateFPSSlider(percentage)
     _G.UniversalUtility.SaveConfig()
 end
 
+local draggingTransparency = false
+
+SettingsElements.TransparencyButton.MouseButton1Down:Connect(function()
+    draggingTransparency = true
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging.jump, dragging.click, dragging.spam, dragging.fps, draggingTransparency = false, false, false, false, false
+    end
+end)
+
+local function UpdateTransparencySlider(percentage)
+    local value = percentage * 0.75
+    Config.UITransparency = value
+    Helpers.UpdateSlider(SettingsElements.TransparencyFill, SettingsElements.TransparencyBox, nil, value, 0, 0.75, "%.2f")
+    
+    if UI.SetTransparency then
+        UI.SetTransparency(value)
+    end
+    
+    _G.UniversalUtility.SaveConfig()
+end
+
 UserInputService.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then
         local mouseX = UserInputService:GetMouseLocation().X
@@ -131,9 +155,22 @@ UserInputService.InputChanged:Connect(function(input)
             UpdateSpamSlider(math.clamp((mouseX - KeySpamElements.SpamDelaySlider.AbsolutePosition.X) / KeySpamElements.SpamDelaySlider.AbsoluteSize.X, 0, 1))
         elseif dragging.fps then
             UpdateFPSSlider(math.clamp((mouseX - PerformanceElements.FPSSlider.AbsolutePosition.X) / PerformanceElements.FPSSlider.AbsoluteSize.X, 0, 1))
+        elseif draggingTransparency then
+            local percentage = math.clamp((mouseX - SettingsElements.TransparencySlider.AbsolutePosition.X) / SettingsElements.TransparencySlider.AbsoluteSize.X, 0, 1)
+            UpdateTransparencySlider(percentage)
         end
     end
 end)
+
+SettingsElements.TransparencyBox.FocusLost:Connect(function()
+    local value = math.clamp(tonumber(SettingsElements.TransparencyBox.Text) or Config.UITransparency, 0, 0.75)
+    Config.UITransparency = value
+    UpdateTransparencySlider(value / 0.75)
+end)
+
+if configLoaded and Config.UITransparency then
+    UpdateTransparencySlider(Config.UITransparency / 0.75)
+end
 
 AntiAFKElements.JumpDelayBox.FocusLost:Connect(function()
     local value = math.clamp(tonumber(AntiAFKElements.JumpDelayBox.Text) or Config.JumpDelay, 5, 30)
